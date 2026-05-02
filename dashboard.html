@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adventurer's Guild - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 40px;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .welcome-section h1 {
+            font-size: 56px;
+            margin-bottom: 15px;
+        }
+
+        .welcome-section p {
+            font-size: 18px;
+            color: #8b7355;
+        }
+
+        .quest-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .quest-card {
+            background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
+            border: 2px solid #3d2f1f;
+            border-radius: 10px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .quest-card:hover {
+            border-color: #c9a45c;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(201, 164, 92, 0.3);
+        }
+
+        .quest-card h3 {
+            color: #c9a45c;
+            font-family: 'Uncial Antiqua', cursive;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .quest-card p {
+            color: #8b7355;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .quest-card .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(201, 164, 92, 0.2);
+            border: 1px solid #c9a45c;
+            border-radius: 5px;
+            color: #c9a45c;
+            font-size: 12px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            padding: 10px 20px;
+            background: rgba(139, 115, 85, 0.2);
+            border: 1px solid #8b7355;
+            border-radius: 5px;
+            color: #8b7355;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(201, 164, 92, 0.2);
+            border-color: #c9a45c;
+            color: #c9a45c;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #3d2f1f;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            color: #c9a45c;
+            font-family: 'Uncial Antiqua', cursive;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8b7355;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .options-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            padding: 10px 20px;
+            background: rgba(139, 115, 85, 0.2);
+            border: 1px solid #8b7355;
+            border-radius: 5px;
+            color: #8b7355;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .options-btn:hover {
+            background: rgba(201, 164, 92, 0.2);
+            border-color: #c9a45c;
+            color: #c9a45c;
+        }
+
+        .options-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .options-overlay.active {
+            display: flex;
+        }
+
+        .options-panel {
+            background: linear-gradient(145deg, rgba(26, 10, 46, 0.98), rgba(13, 27, 42, 0.98));
+            border: 3px solid #c9a45c;
+            border-radius: 15px;
+            padding: 40px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 0 50px rgba(201, 164, 92, 0.4);
+            position: relative;
+        }
+
+        .options-panel h2 {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 35px;
+            text-shadow: 0 0 20px rgba(201, 164, 92, 0.5);
+        }
+
+        .slider-group {
+            margin-bottom: 30px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .slider-label span {
+            color: #c9a45c;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        .slider-value {
+            color: #8b7355;
+            font-size: 14px;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .slider-container {
+            position: relative;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(61, 47, 31, 0.8);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c9a45c, #8b7355);
+            border-radius: 3px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .slider-thumb {
+            width: 20px;
+            height: 20px;
+            background: #c9a45c;
+            border: 2px solid #1a0a2e;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            transition: box-shadow 0.2s;
+            z-index: 10;
+        }
+
+        .slider-thumb:hover {
+            box-shadow: 0 0 10px rgba(201, 164, 92, 0.6);
+        }
+
+        .slider-thumb.active {
+            cursor: grabbing;
+            box-shadow: 0 0 15px rgba(201, 164, 92, 0.8);
+        }
+
+        .slider-container:focus {
+            outline: none;
+        }
+
+        .slider-container:focus .slider-thumb {
+            box-shadow: 0 0 15px rgba(201, 164, 92, 0.8);
+        }
+
+        .close-options {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #8b7355;
+            font-size: 28px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: color 0.3s;
+        }
+
+        .close-options:hover {
+            color: #c9a45c;
+        }
+
+        .options-hint {
+            text-align: center;
+            color: #5a4a3a;
+            font-size: 12px;
+            margin-top: 25px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-video"></div>
+    <div class="particles" id="particles"></div>
+
+    <button class="options-btn" onclick="openOptions()">&#9881; Settings</button>
+    <button class="logout-btn" onclick="logout()">Leave Realm</button>
+
+    <div class="options-overlay" id="optionsOverlay">
+        <div class="options-panel">
+            <button class="close-options" onclick="closeOptions()">&times;</button>
+            <h2>&#9881; Settings</h2>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>&#127925; Music</span>
+                    <span class="slider-value" id="musicValue">70</span>
+                </div>
+                <div class="slider-container" tabindex="0" data-slider="music">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: 70%"></div>
+                    </div>
+                    <div class="slider-thumb" style="left: 70%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>&#128264; Master Volume</span>
+                    <span class="slider-value" id="masterValue">80</span>
+                </div>
+                <div class="slider-container" tabindex="0" data-slider="master">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: 80%"></div>
+                    </div>
+                    <div class="slider-thumb" style="left: 80%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>&#9876; Enemies</span>
+                    <span class="slider-value" id="enemiesValue">50</span>
+                </div>
+                <div class="slider-container" tabindex="0" data-slider="enemies">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: 50%"></div>
+                    </div>
+                    <div class="slider-thumb" style="left: 50%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>&#129309; Friends</span>
+                    <span class="slider-value" id="friendsValue">60</span>
+                </div>
+                <div class="slider-container" tabindex="0" data-slider="friends">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: 60%"></div>
+                    </div>
+                    <div class="slider-thumb" style="left: 60%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>&#127752; Ambient</span>
+                    <span class="slider-value" id="ambientValue">75</span>
+                </div>
+                <div class="slider-container" tabindex="0" data-slider="ambient">
+                    <div class="slider-track">
+                        <div class="slider-fill" style="width: 75%"></div>
+                    </div>
+                    <div class="slider-thumb" style="left: 75%"></div>
+                </div>
+            </div>
+
+            <p class="options-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+
+            <button class="logout-btn" style="width: 100%; margin-top: 20px; position: static;" onclick="editCharacter()">Edit Character</button>
+        </div>
+    </div>
+
+    <div class="dnd-center">
+        <div class="dashboard-container">
+            <div class="welcome-section">
+                <div class="dnd-icon">&#9876;</div>
+                <h1 class="dnd-title">Welcome, <span id="username">Adventurer</span></h1>
+                <p class="dnd-subtitle">Your legend continues here</p>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="statQuestsDone">0</div>
+                    <div class="stat-label">Quests Done</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statActiveQuests">0</div>
+                    <div class="stat-label">Active Quests</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statGold">0</div>
+                    <div class="stat-label">Gold Pieces</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statLevel">Level 0</div>
+                    <div class="stat-label">Adventurer</div>
+                </div>
+            </div>
+
+            <h2 style="color: #c9a45c; text-align: center; margin-bottom: 30px; font-family: 'Uncial Antiqua', cursive;">Available Quests</h2>
+
+            <div class="quest-cards">
+                <div class="quest-card">
+                    <h3>The Lost Mines</h3>
+                    <p>Explore the ancient mines and recover the lost dwarven artifacts before the goblins claim them.</p>
+                    <div class="difficulty">Medium</div>
+                </div>
+
+                <div class="quest-card">
+                    <h3>Dragon's Lair</h3>
+                    <p>Face the fearsome dragon and reclaim the treasure hoard in this epic encounter.</p>
+                    <div class="difficulty">Hard</div>
+                </div>
+
+                <div class="quest-card">
+                    <h3>Village Rescue</h3>
+                    <p>Help the peaceful village defend against the incoming orc raid.</p>
+                    <div class="difficulty">Easy</div>
+                </div>
+
+                <div class="quest-card">
+                    <h3>Mystic Library</h3>
+                    <p>Navigate the magical library to find the spell of eternal protection.</p>
+                    <div class="difficulty">Medium</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        window.onload = function() {
+            const user = localStorage.getItem('dnd_user');
+            if (!user) {
+                window.location.href = 'signin.html';
+            } else {
+                document.getElementById('username').textContent = user;
+                loadUserStats(user);
+            }
+            loadSliderValues();
+        }
+
+        function loadUserStats(username) {
+            const stats = getUserStats(username);
+            document.getElementById('statQuestsDone').textContent = stats.questsDone;
+            document.getElementById('statActiveQuests').textContent = stats.activeQuests;
+            document.getElementById('statGold').textContent = stats.gold;
+            document.getElementById('statLevel').textContent = 'Level ' + stats.level;
+        }
+
+        function getUserStats(username) {
+            const key = 'dnd_stats_' + username;
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            const defaultStats = { questsDone: 0, activeQuests: 0, gold: 0, level: 0 };
+            localStorage.setItem(key, JSON.stringify(defaultStats));
+            return defaultStats;
+        }
+
+        function logout() {
+            localStorage.removeItem('dnd_user');
+            window.location.href = 'signin.html';
+        }
+
+        function editCharacter() {
+            closeOptions();
+            window.location.href = 'character.html?edit=true';
+        }
+
+        function openOptions() {
+            document.getElementById('optionsOverlay').classList.add('active');
+            const firstSlider = document.querySelector('.slider-container');
+            if (firstSlider) firstSlider.focus();
+            document.addEventListener('keydown', handleOptionsKeydown);
+        }
+
+        function closeOptions() {
+            document.getElementById('optionsOverlay').classList.remove('active');
+            document.removeEventListener('keydown', handleOptionsKeydown);
+        }
+
+        function handleOptionsKeydown(e) {
+            if (e.key === 'Escape') {
+                closeOptions();
+            }
+        }
+
+        const sliders = {
+            music: { value: 70, element: null },
+            master: { value: 80, element: null },
+            enemies: { value: 50, element: null },
+            friends: { value: 60, element: null },
+            ambient: { value: 75, element: null }
+        };
+
+        let activeSlider = null;
+        let isDragging = false;
+
+        function loadSliderValues() {
+            const saved = localStorage.getItem('dnd_sliders');
+            if (saved) {
+                const values = JSON.parse(saved);
+                Object.keys(values).forEach(key => {
+                    if (sliders[key]) {
+                        sliders[key].value = values[key];
+                        updateSliderUI(key);
+                    }
+                });
+            }
+        }
+
+        function saveSliderValues() {
+            const values = {};
+            Object.keys(sliders).forEach(key => {
+                values[key] = sliders[key].value;
+            });
+            localStorage.setItem('dnd_sliders', JSON.stringify(values));
+        }
+
+        function updateSliderUI(sliderName) {
+            const container = document.querySelector(`[data-slider="${sliderName}"]`);
+            if (!container) return;
+
+            const fill = container.querySelector('.slider-fill');
+            const thumb = container.querySelector('.slider-thumb');
+            const valueDisplay = document.getElementById(sliderName + 'Value');
+
+            const pct = sliders[sliderName].value;
+            fill.style.width = pct + '%';
+            thumb.style.left = pct + '%';
+            valueDisplay.textContent = pct;
+        }
+
+        document.querySelectorAll('.slider-container').forEach(container => {
+            const sliderName = container.dataset.slider;
+            sliders[sliderName].element = container;
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                activeSlider = sliderName;
+                container.classList.add('active');
+                updateSliderFromMouse(e, sliderName, container);
+            });
+
+            container.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const change = e.key === 'ArrowLeft' ? -1 : 1;
+                    sliders[sliderName].value = Math.max(0, Math.min(100, sliders[sliderName].value + change));
+                    updateSliderUI(sliderName);
+                    saveSliderValues();
+                }
+            });
+
+            container.addEventListener('click', (e) => {
+                updateSliderFromMouse(e, sliderName, container);
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !activeSlider) return;
+            const container = sliders[activeSlider].element;
+            updateSliderFromMouse(e, activeSlider, container);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                if (activeSlider) {
+                    sliders[activeSlider].element.classList.remove('active');
+                    activeSlider = null;
+                }
+            }
+        });
+
+        function updateSliderFromMouse(e, sliderName, container) {
+            const rect = container.getBoundingClientRect();
+            const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            const pct = Math.round((x / rect.width) * 100);
+            sliders[sliderName].value = pct;
+            updateSliderUI(sliderName);
+            saveSliderValues();
+        }
+    </script>
+</body>
+</html>
