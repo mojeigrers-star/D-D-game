@@ -1,882 +1,555 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Your Character - D&D</title>
-    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .character-page {
-            min-height: 100vh;
-            padding: 30px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Character - D&D</title>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
 
-        .character-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+/* ===== FALLBACK BACKGROUND ===== */
+body {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
+  min-height: 100vh;
+}
 
-        .character-header h1 {
-            font-family: 'Uncial Antiqua', cursive;
-            color: #c9a45c;
-            font-size: 48px;
-            text-shadow: 0 0 20px rgba(201, 164, 92, 0.5);
-            letter-spacing: 3px;
-        }
+.bg-video {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
+}
 
-        .character-header p {
-            color: #8b7355;
-            font-size: 16px;
-            margin-top: 10px;
-            letter-spacing: 2px;
-        }
+/* ===== CHARACTER PAGE ===== */
+.character-page {
+  min-height: 100vh;
+  padding: 30px;
+}
 
-        .character-layout {
-            display: flex;
-            gap: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            align-items: flex-start;
-        }
+.character-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
 
-        .customization-panel {
-            flex: 1;
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
-            border: 2px solid #c9a45c;
-            border-radius: 15px;
-            padding: 30px;
-            max-height: 75vh;
-            overflow-y: auto;
-        }
+.character-header h1 {
+  font-family: 'Uncial Antiqua', cursive;
+  color: #c9a45c;
+  font-size: 48px;
+  text-shadow: 0 0 20px rgba(201, 164, 92, 0.5);
+  letter-spacing: 3px;
+}
 
-        .customization-panel::-webkit-scrollbar {
-            width: 8px;
-        }
+.character-header p {
+  color: #8b7355;
+  font-size: 16px;
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
 
-        .customization-panel::-webkit-scrollbar-track {
-            background: rgba(61, 47, 31, 0.5);
-            border-radius: 4px;
-        }
+.character-layout {
+  display: flex;
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
 
-        .customization-panel::-webkit-scrollbar-thumb {
-            background: #c9a45c;
-            border-radius: 4px;
-        }
+.customization-panel {
+  flex: 1;
+  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
+  border: 2px solid #c9a45c;
+  border-radius: 15px;
+  padding: 30px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
 
-        .preview-panel {
-            width: 450px;
-            background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
-            border: 2px solid #c9a45c;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            position: sticky;
-            top: 30px;
-        }
+.customization-panel::-webkit-scrollbar { width: 8px; }
+.customization-panel::-webkit-scrollbar-track { background: rgba(61, 47, 31, 0.5); border-radius: 4px; }
+.customization-panel::-webkit-scrollbar-thumb { background: #c9a45c; border-radius: 4px; }
 
-        .section-title {
-            color: #c9a45c;
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 24px;
-            margin: 30px 0 15px 0;
-            border-bottom: 1px solid #3d2f1f;
-            padding-bottom: 10px;
-        }
+.preview-panel {
+  width: 450px;
+  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
+  border: 2px solid #c9a45c;
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  position: sticky;
+  top: 30px;
+}
 
-        .section-title:first-child {
-            margin-top: 0;
-        }
+.section-title {
+  color: #c9a45c;
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: 24px;
+  margin: 30px 0 15px 0;
+  border-bottom: 1px solid #3d2f1f;
+  padding-bottom: 10px;
+}
 
-        .selector-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
+.section-title:first-child { margin-top: 0; }
 
-        .selector-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #3d2f1f;
-            border-radius: 8px;
-            padding: 12px 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
 
-        .selector-card:hover {
-            border-color: #8b7355;
-            transform: translateY(-2px);
-        }
+.selector-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #3d2f1f;
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-        .selector-card.selected {
-            border-color: #c9a45c;
-            background: rgba(201, 164, 92, 0.1);
-            box-shadow: 0 0 15px rgba(201, 164, 92, 0.3);
-        }
+.selector-card:hover { border-color: #8b7355; transform: translateY(-2px); }
 
-        .selector-card .icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
+.selector-card.selected {
+  border-color: #c9a45c;
+  background: rgba(201, 164, 92, 0.1);
+  box-shadow: 0 0 15px rgba(201, 164, 92, 0.3);
+}
 
-        .selector-card .label {
-            color: #c9a45c;
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+.selector-card .icon { font-size: 32px; margin-bottom: 8px; }
+.selector-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
 
-        .color-swatches {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+.color-swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 
-        .color-swatch {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid #3d2f1f;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #3d2f1f;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-        .color-swatch:hover {
-            transform: scale(1.1);
-        }
+.color-swatch:hover { transform: scale(1.1); }
+.color-swatch.selected { border-color: #c9a45c; box-shadow: 0 0 15px rgba(201, 164, 92, 0.5); }
 
-        .color-swatch.selected {
-            border-color: #c9a45c;
-            box-shadow: 0 0 15px rgba(201, 164, 92, 0.5);
-        }
+.toggle-group { display: flex; gap: 15px; margin-bottom: 20px; }
 
-        .toggle-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+.toggle-btn {
+  flex: 1;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #3d2f1f;
+  border-radius: 8px;
+  color: #8b7355;
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
 
-        .toggle-btn {
-            flex: 1;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #3d2f1f;
-            border-radius: 8px;
-            color: #8b7355;
-            font-family: 'Cinzel', serif;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
+.toggle-btn:hover { border-color: #8b7355; }
+.toggle-btn.selected { border-color: #c9a45c; background: rgba(201, 164, 92, 0.1); color: #c9a45c; }
+.toggle-btn .icon { font-size: 28px; display: block; margin-bottom: 5px; }
 
-        .toggle-btn:hover {
-            border-color: #8b7355;
-        }
+/* ===== SPRITE SYSTEM ===== */
+.character-sprite-container {
+  width: 300px;
+  height: 400px;
+  position: relative;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
 
-        .toggle-btn.selected {
-            border-color: #c9a45c;
-            background: rgba(201, 164, 92, 0.1);
-            color: #c9a45c;
-        }
+.character-sprite-container::after {
+  content: '';
+  position: absolute;
+  bottom: 50px;
+  left: 80px;
+  width: 120px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  filter: blur(4px);
+}
 
-        .toggle-btn .icon {
-            font-size: 28px;
-            display: block;
-            margin-bottom: 5px;
-        }
+.character-sprite { width: 100%; height: 100%; position: relative; }
 
-        .accessory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+.sprite-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0; left: 0;
+  transition: all 0.3s ease;
+}
 
-        .accessory-toggle {
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid #3d2f1f;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.sprite-img {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 350px;
+  width: auto;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 
-        .accessory-toggle:hover {
-            border-color: #8b7355;
-        }
+#spriteBody        { z-index: 2; }
+#spriteRaceFeatures { z-index: 3; }
+#spriteHair        { z-index: 4; }
+#spriteOutfit      { z-index: 5; }
 
-        .accessory-toggle.selected {
-            border-color: #c9a45c;
-            background: rgba(201, 164, 92, 0.15);
-        }
+.preview-info { color: #c9a45c; font-size: 14px; margin: 10px 0; letter-spacing: 1px; }
+.preview-info span { color: #8b7355; }
 
-        .accessory-toggle .icon {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #c9a45c, #8b7355);
+  border: none;
+  border-radius: 8px;
+  color: #1a0a2e;
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+}
 
-        .accessory-toggle .label {
-            color: #c9a45c;
-            font-size: 10px;
-            letter-spacing: 1px;
-        }
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
 
-        /* ========== PNG SPRITE SYSTEM ========== */
-        .character-sprite-container {
-            width: 300px;
-            height: 400px;
-            position: relative;
-            margin: 20px auto;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
+.submit-btn:hover::before { left: 100%; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(201, 164, 92, 0.4); }
 
-        /* Ground shadow */
-        .character-sprite-container::after {
-            content: '';
-            position: absolute;
-            bottom: 50px;
-            left: 80px;
-            width: 120px;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            filter: blur(4px);
-        }
+.message { display: none; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; font-size: 14px; }
+.message.success { display: block; background: rgba(139, 195, 74, 0.2); border: 1px solid #8bc34a; color: #8bc34a; }
+.message.error   { display: block; background: rgba(244, 67, 54, 0.2);  border: 1px solid #f44336; color: #f44336; }
 
-        .character-sprite {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .sprite-layer {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            transition: all 0.3s ease;
-        }
-
-        .sprite-img {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 350px;
-            width: auto;
-            image-rendering: pixelated;
-            pointer-events: none;
-        }
-
-        /* Layer z-index */
-        #spriteBody { z-index: 2; }
-        #spriteRaceFeatures { z-index: 3; }
-        #spriteHair { z-index: 4; }
-        #spriteOutfit { z-index: 5; }
-
-        .preview-info {
-            color: #c9a45c;
-            font-size: 14px;
-            margin: 10px 0;
-            letter-spacing: 1px;
-        }
-
-        .preview-info span {
-            color: #8b7355;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #c9a45c, #8b7355);
-            border: none;
-            border-radius: 8px;
-            color: #1a0a2e;
-            font-family: 'Cinzel', serif;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .submit-btn:hover::before {
-            left: 100%;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(201, 164, 92, 0.4);
-        }
-
-        .message {
-            display: none;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .message.success {
-            display: block;
-            background: rgba(139, 195, 74, 0.2);
-            border: 1px solid #8bc34a;
-            color: #8bc34a;
-        }
-
-        .message.error {
-            display: block;
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid #f44336;
-            color: #f44336;
-        }
-
-        @media (max-width: 1000px) {
-            .character-layout {
-                flex-direction: column;
-            }
-
-            .preview-panel {
-                width: 100%;
-                position: static;
-            }
-        }
-    </style>
+@media (max-width: 1000px) {
+  .character-layout { flex-direction: column; }
+  .preview-panel { width: 100%; position: static; }
+}
+</style>
 </head>
 <body>
-    <div class="bg-video"></div>
-    <div class="particles" id="particles"></div>
 
-    <div class="character-page">
-        <div class="character-header">
-            <h1>&#9876; Create Your Character</h1>
-            <p>Shape your legend before entering the realm</p>
-        </div>
+<div class="bg-video"></div>
+<div class="particles" id="particles"></div>
 
-        <div class="character-layout">
-            <div class="customization-panel">
-                <div class="section-title">Race</div>
-                <div class="selector-grid" id="raceSelector">
-                    <div class="selector-card" data-value="human">
-                        <div class="icon">&#129489;</div>
-                        <div class="label">Human</div>
-                    </div>
-                    <div class="selector-card" data-value="elf">
-                        <div class="icon">&#129525;</div>
-                        <div class="label">Elf</div>
-                    </div>
-                    <div class="selector-card" data-value="dwarf">
-                        <div class="icon">&#129489;</div>
-                        <div class="label">Dwarf</div>
-                    </div>
-                    <div class="selector-card" data-value="halfling">
-                        <div class="icon">&#129489;</div>
-                        <div class="label">Halfling</div>
-                    </div>
-                    <div class="selector-card" data-value="dragonborn">
-                        <div class="icon">&#128009;</div>
-                        <div class="label">Dragonborn</div>
-                    </div>
-                    <div class="selector-card" data-value="tiefling">
-                        <div class="icon">&#128127;</div>
-                        <div class="label">Tiefling</div>
-                    </div>
-                    <div class="selector-card" data-value="gnome">
-                        <div class="icon">&#129489;</div>
-                        <div class="label">Gnome</div>
-                    </div>
-                    <div class="selector-card" data-value="half-elf">
-                        <div class="icon">&#129525;</div>
-                        <div class="label">Half-Elf</div>
-                    </div>
-                    <div class="selector-card" data-value="half-orc">
-                        <div class="icon">&#128058;</div>
-                        <div class="label">Half-Orc</div>
-                    </div>
-                </div>
+<div class="character-page">
+  <div class="character-header">
+    <h1 id="pageTitle">&#9876; Create Your Character</h1>
+    <p>Shape your legend before entering the realm</p>
+  </div>
 
-                <div class="section-title">Class</div>
-                <div class="selector-grid" id="classSelector">
-                    <div class="selector-card" data-value="fighter">
-                        <div class="icon">&#9876;</div>
-                        <div class="label">Fighter</div>
-                    </div>
-                    <div class="selector-card" data-value="wizard">
-                        <div class="icon">&#128302;</div>
-                        <div class="label">Wizard</div>
-                    </div>
-                    <div class="selector-card" data-value="rogue">
-                        <div class="icon">&#128640;</div>
-                        <div class="label">Rogue</div>
-                    </div>
-                    <div class="selector-card" data-value="cleric">
-                        <div class="icon">&#10014;</div>
-                        <div class="label">Cleric</div>
-                    </div>
-                    <div class="selector-card" data-value="ranger">
-                        <div class="icon">&#127993;</div>
-                        <div class="label">Ranger</div>
-                    </div>
-                    <div class="selector-card" data-value="barbarian">
-                        <div class="icon">&#128170;</div>
-                        <div class="label">Barbarian</div>
-                    </div>
-                    <div class="selector-card" data-value="bard">
-                        <div class="icon">&#127926;</div>
-                        <div class="label">Bard</div>
-                    </div>
-                    <div class="selector-card" data-value="druid">
-                        <div class="icon">&#127811;</div>
-                        <div class="label">Druid</div>
-                    </div>
-                    <div class="selector-card" data-value="monk">
-                        <div class="icon">&#9876;</div>
-                        <div class="label">Monk</div>
-                    </div>
-                    <div class="selector-card" data-value="paladin">
-                        <div class="icon">&#128737;</div>
-                        <div class="label">Paladin</div>
-                    </div>
-                    <div class="selector-card" data-value="warlock">
-                        <div class="icon">&#128128;</div>
-                        <div class="label">Warlock</div>
-                    </div>
-                    <div class="selector-card" data-value="sorcerer">
-                        <div class="icon">&#10024;</div>
-                        <div class="label">Sorcerer</div>
-                    </div>
-                </div>
+  <div class="character-layout">
 
-                <div class="section-title">Sex</div>
-                <div class="toggle-group" id="sexSelector">
-                    <div class="toggle-btn" data-value="male">
-                        <div class="icon">&#9794;</div>
-                        Male
-                    </div>
-                    <div class="toggle-btn" data-value="female">
-                        <div class="icon">&#9792;</div>
-                        Female
-                    </div>
-                </div>
+    <!-- LEFT: Customization -->
+    <div class="customization-panel">
 
-                <div class="section-title">Hair Style</div>
-                <div class="selector-grid" id="hairStyleSelector">
-                    <div class="selector-card" data-value="short">
-                        <div class="icon">&#128084;</div>
-                        <div class="label">Short</div>
-                    </div>
-                    <div class="selector-card" data-value="long">
-                        <div class="icon">&#128085;</div>
-                        <div class="label">Long</div>
-                    </div>
-                    <div class="selector-card" data-value="ponytail">
-                        <div class="icon">&#128085;</div>
-                        <div class="label">Ponytail</div>
-                    </div>
-                    <div class="selector-card" data-value="bald">
-                        <div class="icon">&#128488;</div>
-                        <div class="label">Bald</div>
-                    </div>
-                    <div class="selector-card" data-value="mohawk">
-                        <div class="icon">&#128083;</div>
-                        <div class="label">Mohawk</div>
-                    </div>
-                    <div class="selector-card" data-value="braided">
-                        <div class="icon">&#128085;</div>
-                        <div class="label">Braided</div>
-                    </div>
-                </div>
+      <div class="section-title">Race</div>
+      <div class="selector-grid" id="raceSelector">
+        <div class="selector-card" data-value="human"><div class="icon">&#129489;</div><div class="label">Human</div></div>
+        <div class="selector-card" data-value="elf"><div class="icon">&#129525;</div><div class="label">Elf</div></div>
+        <div class="selector-card" data-value="dwarf"><div class="icon">&#129489;</div><div class="label">Dwarf</div></div>
+        <div class="selector-card" data-value="halfling"><div class="icon">&#129489;</div><div class="label">Halfling</div></div>
+        <div class="selector-card" data-value="dragonborn"><div class="icon">&#128009;</div><div class="label">Dragonborn</div></div>
+        <div class="selector-card" data-value="tiefling"><div class="icon">&#128127;</div><div class="label">Tiefling</div></div>
+        <div class="selector-card" data-value="gnome"><div class="icon">&#129489;</div><div class="label">Gnome</div></div>
+        <div class="selector-card" data-value="half-elf"><div class="icon">&#129525;</div><div class="label">Half-Elf</div></div>
+        <div class="selector-card" data-value="half-orc"><div class="icon">&#128058;</div><div class="label">Half-Orc</div></div>
+      </div>
 
-                <div class="section-title">Hair Color</div>
-                <div class="color-swatches" id="hairColorSelector">
-                    <div class="color-swatch" data-value="#000000" style="background: #000000;"></div>
-                    <div class="color-swatch" data-value="#8B4513" style="background: #8B4513;"></div>
-                    <div class="color-swatch" data-value="#DAA520" style="background: #DAA520;"></div>
-                    <div class="color-swatch" data-value="#FF0000" style="background: #FF0000;"></div>
-                    <div class="color-swatch" data-value="#FFFFFF" style="background: #FFFFFF;"></div>
-                    <div class="color-swatch" data-value="#0000FF" style="background: #0000FF;"></div>
-                    <div class="color-swatch" data-value="#008000" style="background: #008000;"></div>
-                    <div class="color-swatch" data-value="#FF69B4" style="background: #FF69B4;"></div>
-                </div>
+      <div class="section-title">Class</div>
+      <div class="selector-grid" id="classSelector">
+        <div class="selector-card" data-value="fighter"><div class="icon">&#9876;</div><div class="label">Fighter</div></div>
+        <div class="selector-card" data-value="wizard"><div class="icon">&#128302;</div><div class="label">Wizard</div></div>
+        <div class="selector-card" data-value="rogue"><div class="icon">&#128640;</div><div class="label">Rogue</div></div>
+        <div class="selector-card" data-value="cleric"><div class="icon">&#10014;</div><div class="label">Cleric</div></div>
+        <div class="selector-card" data-value="ranger"><div class="icon">&#127993;</div><div class="label">Ranger</div></div>
+        <div class="selector-card" data-value="barbarian"><div class="icon">&#128170;</div><div class="label">Barbarian</div></div>
+        <div class="selector-card" data-value="bard"><div class="icon">&#127926;</div><div class="label">Bard</div></div>
+        <div class="selector-card" data-value="druid"><div class="icon">&#127811;</div><div class="label">Druid</div></div>
+        <div class="selector-card" data-value="monk"><div class="icon">&#9876;</div><div class="label">Monk</div></div>
+        <div class="selector-card" data-value="paladin"><div class="icon">&#128737;</div><div class="label">Paladin</div></div>
+        <div class="selector-card" data-value="warlock"><div class="icon">&#128128;</div><div class="label">Warlock</div></div>
+        <div class="selector-card" data-value="sorcerer"><div class="icon">&#10024;</div><div class="label">Sorcerer</div></div>
+      </div>
 
-                <div class="section-title">Skin Tone</div>
-                <div class="color-swatches" id="skinToneSelector">
-                    <div class="color-swatch" data-value="#FFE4C4" style="background: #FFE4C4;"></div>
-                    <div class="color-swatch" data-value="#DEB887" style="background: #DEB887;"></div>
-                    <div class="color-swatch" data-value="#D2B48C" style="background: #D2B48C;"></div>
-                    <div class="color-swatch" data-value="#F4A460" style="background: #F4A460;"></div>
-                    <div class="color-swatch" data-value="#8B4513" style="background: #8B4513;"></div>
-                    <div class="color-swatch" data-value="#654321" style="background: #654321;"></div>
-                </div>
+      <div class="section-title">Sex</div>
+      <div class="toggle-group" id="sexSelector">
+        <div class="toggle-btn" data-value="male"><span class="icon">&#9794;</span>Male</div>
+        <div class="toggle-btn" data-value="female"><span class="icon">&#9792;</span>Female</div>
+      </div>
 
-                <div class="section-title">Outfit</div>
-                <div class="selector-grid" id="outfitSelector">
-                    <div class="selector-card" data-value="robes">
-                        <div class="icon">&#128081;</div>
-                        <div class="label">Robes</div>
-                    </div>
-                    <div class="selector-card" data-value="casual">
-                        <div class="icon">&#128090;</div>
-                        <div class="label">Casual</div>
-                    </div>
-                    <div class="selector-card" data-value="leather">
-                        <div class="icon">&#128007;</div>
-                        <div class="label">Leather</div>
-                    </div>
-                    <div class="selector-card" data-value="plate">
-                        <div class="icon">&#129517;</div>
-                        <div class="label">Plate</div>
-                    </div>
-                    <div class="selector-card" data-value="mage-robes">
-                        <div class="icon">&#128302;</div>
-                        <div class="label">Mage Robes</div>
-                    </div>
-                </div>
-            </div>
+      <div class="section-title">Hair Style</div>
+      <div class="selector-grid" id="hairStyleSelector">
+        <div class="selector-card" data-value="short"><div class="icon">&#128084;</div><div class="label">Short</div></div>
+        <div class="selector-card" data-value="long"><div class="icon">&#128085;</div><div class="label">Long</div></div>
+        <div class="selector-card" data-value="ponytail"><div class="icon">&#128085;</div><div class="label">Ponytail</div></div>
+        <div class="selector-card" data-value="bald"><div class="icon">&#128488;</div><div class="label">Bald</div></div>
+        <div class="selector-card" data-value="mohawk"><div class="icon">&#128083;</div><div class="label">Mohawk</div></div>
+        <div class="selector-card" data-value="braided"><div class="icon">&#128085;</div><div class="label">Braided</div></div>
+      </div>
 
-            <div class="preview-panel">
-                <h2 style="font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 28px; margin-bottom: 20px;">Character Preview</h2>
+      <div class="section-title">Hair Color</div>
+      <div class="color-swatches" id="hairColorSelector">
+        <div class="color-swatch" data-value="#000000" style="background:#000000;"></div>
+        <div class="color-swatch" data-value="#8B4513" style="background:#8B4513;"></div>
+        <div class="color-swatch" data-value="#DAA520" style="background:#DAA520;"></div>
+        <div class="color-swatch" data-value="#FF0000" style="background:#FF0000;"></div>
+        <div class="color-swatch" data-value="#FFFFFF" style="background:#FFFFFF;"></div>
+        <div class="color-swatch" data-value="#0000FF" style="background:#0000FF;"></div>
+        <div class="color-swatch" data-value="#008000" style="background:#008000;"></div>
+        <div class="color-swatch" data-value="#FF69B4" style="background:#FF69B4;"></div>
+      </div>
 
-                <div class="character-sprite-container">
-                    <div class="character-sprite" id="characterSprite">
-                        <!-- Layer 1: Body (bottom) -->
-                        <div class="sprite-layer" id="spriteBody">
-                            <img src="sprites/body/male.png" id="bodyImg" alt="Body" class="sprite-img">
-                        </div>
-                        
-                        <!-- Layer 2: Race Features -->
-                        <div class="sprite-layer" id="spriteRaceFeatures">
-                            <img src="" id="raceImg" alt="Race Features" class="sprite-img" style="display:none;">
-                        </div>
-                        
-                        <!-- Layer 3: Hair -->
-                        <div class="sprite-layer" id="spriteHair">
-                            <img src="sprites/hair/short.png" id="hairImg" alt="Hair" class="sprite-img">
-                        </div>
-                        
-                        <!-- Layer 4: Outfit (top) -->
-                        <div class="sprite-layer" id="spriteOutfit">
-                            <img src="sprites/outfit/robes.png" id="outfitImg" alt="Outfit" class="sprite-img">
-                        </div>
-                    </div>
-                </div>
+      <div class="section-title">Skin Tone</div>
+      <div class="color-swatches" id="skinToneSelector">
+        <div class="color-swatch" data-value="#FFE4C4" style="background:#FFE4C4;"></div>
+        <div class="color-swatch" data-value="#DEB887" style="background:#DEB887;"></div>
+        <div class="color-swatch" data-value="#D2B48C" style="background:#D2B48C;"></div>
+        <div class="color-swatch" data-value="#F4A460" style="background:#F4A460;"></div>
+        <div class="color-swatch" data-value="#8B4513" style="background:#8B4513;"></div>
+        <div class="color-swatch" data-value="#654321" style="background:#654321;"></div>
+      </div>
 
-                <div class="preview-info" id="previewRace">Race: <span>Human</span></div>
-                <div class="preview-info" id="previewClass">Class: <span>Fighter</span></div>
-                <div class="preview-info" id="previewSex">Sex: <span>Male</span></div>
-                <div class="preview-info" id="previewHair">Hair: <span>Short</span></div>
-                <div class="preview-info" id="previewOutfit">Outfit: <span>Robes</span></div>
+      <div class="section-title">Outfit</div>
+      <div class="selector-grid" id="outfitSelector">
+        <div class="selector-card" data-value="robes"><div class="icon">&#128081;</div><div class="label">Robes</div></div>
+        <div class="selector-card" data-value="casual"><div class="icon">&#128090;</div><div class="label">Casual</div></div>
+        <div class="selector-card" data-value="leather"><div class="icon">&#128007;</div><div class="label">Leather</div></div>
+        <div class="selector-card" data-value="plate"><div class="icon">&#129517;</div><div class="label">Plate</div></div>
+        <div class="selector-card" data-value="mage-robes"><div class="icon">&#128302;</div><div class="label">Mage Robes</div></div>
+      </div>
 
-                <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
-
-                <div class="message" id="message"></div>
-            </div>
-        </div>
     </div>
 
-    <script>
-        const particlesContainer = document.getElementById('particles');
-        for (let i = 0; i < 50; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 8 + 's';
-            particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
-            particlesContainer.appendChild(particle);
-        }
+    <!-- RIGHT: Preview -->
+    <div class="preview-panel">
+      <h2 style="font-family:'Uncial Antiqua',cursive;color:#c9a45c;font-size:28px;margin-bottom:20px;">Character Preview</h2>
 
-        const character = {
-            race: 'human',
-            class: 'fighter',
-            sex: 'male',
-            hairStyle: 'short',
-            hairColor: '#8B4513',
-            skinTone: '#DEB887',
-            outfit: 'robes'
-        };
+      <div class="character-sprite-container">
+        <div class="character-sprite" id="characterSprite">
+          <div class="sprite-layer" id="spriteBody">
+            <img src="sprites/body/male.png" id="bodyImg" alt="Body" class="sprite-img">
+          </div>
+          <div class="sprite-layer" id="spriteRaceFeatures">
+            <img src="" id="raceImg" alt="Race Features" class="sprite-img" style="display:none;">
+          </div>
+          <div class="sprite-layer" id="spriteHair">
+            <img src="sprites/hair/short.png" id="hairImg" alt="Hair" class="sprite-img">
+          </div>
+          <div class="sprite-layer" id="spriteOutfit">
+            <img src="sprites/outfit/robes.png" id="outfitImg" alt="Outfit" class="sprite-img">
+          </div>
+        </div>
+      </div>
 
-        const classDefaults = {
-            fighter: [],
-            wizard: [],
-            rogue: [],
-            cleric: [],
-            ranger: [],
-            barbarian: [],
-            bard: [],
-            druid: [],
-            monk: [],
-            paladin: [],
-            warlock: [],
-            sorcerer: []
-        };
+      <div class="preview-info" id="previewRace">Race: <span>Human</span></div>
+      <div class="preview-info" id="previewClass">Class: <span>Fighter</span></div>
+      <div class="preview-info" id="previewSex">Sex: <span>Male</span></div>
+      <div class="preview-info" id="previewHair">Hair: <span>Short</span></div>
+      <div class="preview-info" id="previewOutfit">Outfit: <span>Robes</span></div>
 
-        function setupSelector(containerId, property, isMulti) {
-            const container = document.getElementById(containerId);
-            const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn, .accessory-toggle');
+      <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
+      <div class="message" id="message"></div>
+    </div>
 
-            items.forEach(item => {
-                item.addEventListener('click', () => {
-                    const value = item.dataset.value;
+  </div>
+</div>
 
-                    if (isMulti) {
-                        item.classList.toggle('selected');
-                        if (character[property].includes(value)) {
-                            character[property] = character[property].filter(v => v !== value);
-                        } else {
-                            character[property].push(value);
-                        }
-                    } else {
-                        items.forEach(i => i.classList.remove('selected'));
-                        item.classList.add('selected');
-                        character[property] = value;
+<script>
+  // ===== PARTICLES =====
+  const particlesContainer = document.getElementById('particles');
+  for (let i = 0; i < 50; i++) {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.top = Math.random() * 100 + '%';
+    particle.style.animationDelay = Math.random() * 8 + 's';
+    particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    particlesContainer.appendChild(particle);
+  }
 
-                        if (property === 'class') {
-                            applyClassDefaults();
-                        }
-                    }
+  // ===== CHARACTER STATE =====
+  const character = {
+    race: 'human',
+    class: 'fighter',
+    sex: 'male',
+    hairStyle: 'short',
+    hairColor: '#8B4513',
+    skinTone: '#DEB887',
+    outfit: 'robes'
+  };
 
-                    updateSprite();
-                });
-            });
-        }
-
-        function applyClassDefaults() {
-            // Class defaults removed with accessories
-        }
-
-        function updateSprite() {
-            updateBody();
-            updateRaceFeatures();
-            updateHair();
-            updateOutfit();
-
-            // Update text
-            document.querySelector('#previewRace span').textContent = character.race.charAt(0).toUpperCase() + character.race.slice(1);
-            document.querySelector('#previewClass span').textContent = character.class.charAt(0).toUpperCase() + character.class.slice(1);
-            document.querySelector('#previewSex span').textContent = character.sex.charAt(0).toUpperCase() + character.sex.slice(1);
-            document.querySelector('#previewHair span').textContent = character.hairStyle.charAt(0).toUpperCase() + character.hairStyle.slice(1);
-            document.querySelector('#previewOutfit span').textContent = character.outfit.charAt(0).toUpperCase() + character.outfit.slice(1);
-        }
-
-        function updateBody() {
-            const bodyImg = document.getElementById('bodyImg');
-            const bodyDiv = document.getElementById('spriteBody');
-            
-            // Set body image based on sex
-            bodyImg.src = `sprites/body/${character.sex}.png`;
-            bodyDiv.style.setProperty('--skin-tone', character.skinTone);
-        }
-
-        function updateRaceFeatures() {
-            const raceImg = document.getElementById('raceImg');
-            
-            // Race-to-image mapping (using ACTUAL filenames)
-            const raceImages = {
-                'elf': 'sprites/race/elf_ears.png',
-                'dwarf': 'sprites/race/dwarf_beard.png',
-                'tiefling': 'sprites/race/tiefling_horns.png',
-                'dragonborn': 'sprites/race/dragonborn_scales.png',
-                'half-orc': 'sprites/race/half-orc_jaw.png'
-            };
-            
-            if (raceImages[character.race]) {
-                raceImg.src = raceImages[character.race];
-                raceImg.style.display = 'block';
-            } else {
-                // Human, halfling, gnome, half-elf - no special race features
-                raceImg.style.display = 'none';
-            }
-        }
-
-        function updateHair() {
-            const hairImg = document.getElementById('hairImg');
-            const hairDiv = document.getElementById('spriteHair');
-            
-            if (character.hairStyle === 'bald') {
-                hairImg.style.display = 'none';
-            } else {
-                hairImg.style.display = 'block';
-                hairImg.src = `sprites/hair/${character.hairStyle}.png`;
-            }
-            
-            hairDiv.style.setProperty('--hair-color', character.hairColor);
-        }
-
-        function updateOutfit() {
-            const outfitImg = document.getElementById('outfitImg');
-            
-            // Map outfit names to ACTUAL filenames
-            const outfitMap = {
-                'robes': 'sprites/outfit/robes.png',
-                'casual': 'sprites/outfit/casual.png',
-                'leather': 'sprites/outfit/leather.png',
-                'plate': 'sprites/outfit/plate.png',
-                'mage-robes': 'sprites/outfit/mage_robes.png'
-            };
-            
-            outfitImg.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
-        }
-
-        function updateRaceFeatures() {
-            const raceImg = document.getElementById('raceImg');
-            const raceDiv = document.getElementById('spriteRaceFeatures');
-            
-            // Race-to-image mapping (only races with special features)
-            const raceImages = {
-                'elf': 'sprites/race/elf.png',
-                'dwarf': 'sprites/race/dwarf.png',
-                'tiefling': 'sprites/race/tiefling.png',
-                'dragonborn': 'sprites/race/dragonborn.png',
-                'half-orc': 'sprites/race/half-orc.png'
-            };
-            
-            if (raceImages[character.race]) {
-                raceImg.src = raceImages[character.race];
-                raceImg.style.display = 'block';
-            } else {
-                // Human, halfling, gnome, half-elf - no special race features
-                raceImg.style.display = 'none';
-            }
-        }
-
-        function updateHair() {
-            const hairImg = document.getElementById('hairImg');
-            const hairDiv = document.getElementById('spriteHair');
-            
-            if (character.hairStyle === 'bald') {
-                // Hide hair layer completely - show original head only
-                hairImg.style.display = 'none';
-            } else {
-                // Show hair image
-                hairImg.style.display = 'block';
-                hairImg.src = `sprites/hair/${character.hairStyle}.png`;
-            }
-            
-            hairDiv.style.setProperty('--hair-color', character.hairColor);
-        }
-
-        function updateOutfit() {
-            const outfitImg = document.getElementById('outfitImg');
-            
-            // Set outfit image
-            outfitImg.src = `sprites/outfit/${character.outfit}.png`;
-        }
-
-        setupSelector('raceSelector', 'race', false);
-        setupSelector('classSelector', 'class', false);
-        setupSelector('sexSelector', 'sex', false);
-        setupSelector('hairStyleSelector', 'hairStyle', false);
-        setupSelector('hairColorSelector', 'hairColor', false);
-        setupSelector('skinToneSelector', 'skinTone', false);
-        setupSelector('outfitSelector', 'outfit', false);
-
-        // Initialize selection
-        document.querySelector('#raceSelector .selector-card[data-value="human"]').classList.add('selected');
-        document.querySelector('#classSelector .selector-card[data-value="fighter"]').classList.add('selected');
-        document.querySelector('#sexSelector .toggle-btn[data-value="male"]').classList.add('selected');
-        document.querySelector('#hairStyleSelector .selector-card[data-value="short"]').classList.add('selected');
-        document.querySelector('#hairColorSelector .color-swatch[data-value="#8B4513"]').classList.add('selected');
-        document.querySelector('#skinToneSelector .color-swatch[data-value="#DEB887"]').classList.add('selected');
-        document.querySelector('#outfitSelector .selector-card[data-value="robes"]').classList.add('selected');
-
+  // ===== SELECTOR SETUP =====
+  function setupSelector(containerId, property) {
+    const container = document.getElementById(containerId);
+    const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn');
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        items.forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        character[property] = item.dataset.value;
         updateSprite();
+      });
+    });
+  }
 
-        updateSprite();
+  setupSelector('raceSelector',      'race');
+  setupSelector('classSelector',     'class');
+  setupSelector('sexSelector',       'sex');
+  setupSelector('hairStyleSelector', 'hairStyle');
+  setupSelector('hairColorSelector', 'hairColor');
+  setupSelector('skinToneSelector',  'skinTone');
+  setupSelector('outfitSelector',    'outfit');
 
-        function saveCharacter() {
-            const user = localStorage.getItem('dnd_user');
-            if (!user) {
-                showMessage('No user found. Please sign in again.', 'error');
-                setTimeout(() => window.location.href = 'signin.html', 2000);
-                return;
-            }
+  // ===== SPRITE UPDATE =====
+  function updateSprite() {
+    updateBody();
+    updateRaceFeatures();
+    updateHair();
+    updateOutfit();
+    updatePreviewText();
+  }
 
-            const key = 'dnd_character_' + user;
-            localStorage.setItem(key, JSON.stringify(character));
+  function updateBody() {
+    const bodyImg = document.getElementById('bodyImg');
+    bodyImg.src = `sprites/body/${character.sex}.png`;
+    document.getElementById('spriteBody').style.setProperty('--skin-tone', character.skinTone);
+  }
 
-            showMessage('Character created successfully!', 'success');
+  function updateRaceFeatures() {
+    const raceImg = document.getElementById('raceImg');
+    const raceImages = {
+      'elf':      'sprites/race/elf.png',
+      'dwarf':    'sprites/race/dwarf.png',
+      'tiefling': 'sprites/race/tiefling.png',
+      'dragonborn': 'sprites/race/dragonborn.png',
+      'half-orc': 'sprites/race/half-orc.png'
+    };
+    if (raceImages[character.race]) {
+      raceImg.src = raceImages[character.race];
+      raceImg.style.display = 'block';
+    } else {
+      raceImg.style.display = 'none';
+    }
+  }
 
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
-        }
+  function updateHair() {
+    const hairImg = document.getElementById('hairImg');
+    if (character.hairStyle === 'bald') {
+      hairImg.style.display = 'none';
+    } else {
+      hairImg.style.display = 'block';
+      hairImg.src = `sprites/hair/${character.hairStyle}.png`;
+    }
+    document.getElementById('spriteHair').style.setProperty('--hair-color', character.hairColor);
+  }
 
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = 'message ' + type;
-        }
+  function updateOutfit() {
+    const outfitMap = {
+      'robes':      'sprites/outfit/robes.png',
+      'casual':     'sprites/outfit/casual.png',
+      'leather':    'sprites/outfit/leather.png',
+      'plate':      'sprites/outfit/plate.png',
+      'mage-robes': 'sprites/outfit/mage_robes.png'
+    };
+    document.getElementById('outfitImg').src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
+  }
 
-        window.onload = function() {
-            const user = localStorage.getItem('dnd_user');
-            if (!user) {
-                window.location.href = 'signin.html';
-                return;
-            }
+  function updatePreviewText() {
+    const cap = str => str.charAt(0).toUpperCase() + str.slice(1);
+    document.querySelector('#previewRace span').textContent   = cap(character.race);
+    document.querySelector('#previewClass span').textContent  = cap(character.class);
+    document.querySelector('#previewSex span').textContent    = cap(character.sex);
+    document.querySelector('#previewHair span').textContent   = cap(character.hairStyle);
+    document.querySelector('#previewOutfit span').textContent = cap(character.outfit);
+  }
 
-            const key = 'dnd_character_' + user;
-            const saved = localStorage.getItem(key);
-            if (saved) {
-                const savedChar = JSON.parse(saved);
-                Object.assign(character, savedChar);
-                delete character.background; // Remove legacy background data
-                delete character.accessories; // Remove legacy accessories data
-                document.getElementById('submitBtn').textContent = 'Save Changes';
+  // ===== SAVE =====
+  function saveCharacter() {
+    const user = localStorage.getItem('dnd_user');
+    if (!user) {
+      showMessage('No user found. Please sign in again.', 'error');
+      setTimeout(() => window.location.href = 'signin.html', 2000);
+      return;
+    }
+    localStorage.setItem('dnd_character_' + user, JSON.stringify(character));
+    showMessage('Character saved successfully!', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+  }
 
-                // Reset selections
-                document.querySelectorAll('.selector-card, .color-swatch, .toggle-btn').forEach(el => {
-                    el.classList.remove('selected');
-                });
+  function showMessage(text, type) {
+    const msg = document.getElementById('message');
+    msg.textContent = text;
+    msg.className = 'message ' + type;
+  }
 
-                // Apply saved selections
-                const raceCard = document.querySelector(`#raceSelector .selector-card[data-value="${character.race}"]`);
-                if (raceCard) raceCard.classList.add('selected');
+  // ===== APPLY SELECTIONS TO UI =====
+  function applySelections() {
+    const selectors = [
+      { id: 'raceSelector',      prop: 'race',      type: '.selector-card' },
+      { id: 'classSelector',     prop: 'class',     type: '.selector-card' },
+      { id: 'sexSelector',       prop: 'sex',       type: '.toggle-btn'    },
+      { id: 'hairStyleSelector', prop: 'hairStyle', type: '.selector-card' },
+      { id: 'hairColorSelector', prop: 'hairColor', type: '.color-swatch'  },
+      { id: 'skinToneSelector',  prop: 'skinTone',  type: '.color-swatch'  },
+      { id: 'outfitSelector',    prop: 'outfit',    type: '.selector-card' },
+    ];
 
-                const classCard = document.querySelector(`#classSelector .selector-card[data-value="${character.class}"]`);
-                if (classCard) classCard.classList.add('selected');
+    selectors.forEach(({ id, prop, type }) => {
+      const el = document.querySelector(`#${id} ${type}[data-value="${character[prop]}"]`);
+      if (el) el.classList.add('selected');
+    });
+  }
 
-                const sexBtn = document.querySelector(`#sexSelector .toggle-btn[data-value="${character.sex}"]`);
-                if (sexBtn) sexBtn.classList.add('selected');
+  // ===== ON LOAD =====
+  window.onload = function () {
+    const user = localStorage.getItem('dnd_user');
+    if (!user) {
+      window.location.href = 'signin.html';
+      return;
+    }
 
-                const hairStyleCard = document.querySelector(`#hairStyleSelector .selector-card[data-value="${character.hairStyle}"]`);
-                if (hairStyleCard) hairStyleCard.classList.add('selected');
+    // Check if we're in edit mode via URL param
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get('edit') === 'true';
 
-                const hairColorSwatch = document.querySelector(`#hairColorSelector .color-swatch[data-value="${character.hairColor}"]`);
-                if (hairColorSwatch) hairColorSwatch.classList.add('selected');
+    const saved = localStorage.getItem('dnd_character_' + user);
+    if (saved) {
+      const savedChar = JSON.parse(saved);
+      // Strip out any old/legacy fields
+      delete savedChar.background;
+      delete savedChar.accessories;
+      Object.assign(character, savedChar);
+    }
 
-                const skinToneSwatch = document.querySelector(`#skinToneSelector .color-swatch[data-value="${character.skinTone}"]`);
-                if (skinToneSwatch) skinToneSwatch.classList.add('selected');
+    if (isEdit) {
+      document.getElementById('submitBtn').textContent = 'Save Changes';
+      document.getElementById('pageTitle').textContent = '⚔ Edit Your Character';
+    }
 
-                const outfitCard = document.querySelector(`#outfitSelector .selector-card[data-value="${character.outfit}"]`);
-                if (outfitCard) outfitCard.classList.add('selected');
+    applySelections();
+    updateSprite();
+  };
+</script>
 
-                updateSprite();
-            }
-        }
-    </script>
 </body>
 </html>
