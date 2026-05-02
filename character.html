@@ -162,6 +162,31 @@ body {
   margin: 20px auto;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
+  overflow: hidden; /* prevents broken images from expanding the box */
+}
+
+/* Silhouette shown when no body sprite loads */
+.sprite-placeholder {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 280px;
+  background: rgba(201, 164, 92, 0.08);
+  border-radius: 60px 60px 30px 30px;
+  border: 2px dashed rgba(201, 164, 92, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Hide broken img elements automatically */
+img.sprite-img[data-broken="true"] {
+  display: none !important;
 }
 
 .character-sprite-container::after {
@@ -345,18 +370,25 @@ body {
       <h2 style="font-family:'Uncial Antiqua',cursive;color:#c9a45c;font-size:28px;margin-bottom:20px;">Character Preview</h2>
 
       <div class="character-sprite-container">
+        <!-- Fallback silhouette shown when sprites are missing -->
+        <div class="sprite-placeholder" id="spritePlaceholder">🧙</div>
+
         <div class="character-sprite" id="characterSprite">
           <div class="sprite-layer" id="spriteBody">
-            <img src="sprites/body/male.png" id="bodyImg" alt="Body" class="sprite-img">
+            <img src="sprites/body/male.png" id="bodyImg" alt="Body" class="sprite-img"
+                 onerror="this.setAttribute('data-broken','true'); checkPlaceholder();">
           </div>
           <div class="sprite-layer" id="spriteRaceFeatures">
-            <img src="" id="raceImg" alt="Race Features" class="sprite-img" style="display:none;">
+            <img src="" id="raceImg" alt="Race Features" class="sprite-img" style="display:none;"
+                 onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteHair">
-            <img src="sprites/hair/short.png" id="hairImg" alt="Hair" class="sprite-img">
+            <img src="sprites/hair/short.png" id="hairImg" alt="Hair" class="sprite-img"
+                 onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteOutfit">
-            <img src="sprites/outfit/robes.png" id="outfitImg" alt="Outfit" class="sprite-img">
+            <img src="sprites/outfit/robes.png" id="outfitImg" alt="Outfit" class="sprite-img"
+                 onerror="this.setAttribute('data-broken','true');">
           </div>
         </div>
       </div>
@@ -420,6 +452,12 @@ body {
   setupSelector('skinToneSelector',  'skinTone');
   setupSelector('outfitSelector',    'outfit');
 
+  // ===== PLACEHOLDER: show wizard icon when body fails to load =====
+  function checkPlaceholder() {
+    const bodyBroken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
+    document.getElementById('spritePlaceholder').style.display = bodyBroken ? 'flex' : 'none';
+  }
+
   // ===== SPRITE UPDATE =====
   function updateSprite() {
     updateBody();
@@ -431,6 +469,7 @@ body {
 
   function updateBody() {
     const bodyImg = document.getElementById('bodyImg');
+    bodyImg.removeAttribute('data-broken');
     bodyImg.src = `sprites/body/${character.sex}.png`;
     document.getElementById('spriteBody').style.setProperty('--skin-tone', character.skinTone);
   }
@@ -438,13 +477,14 @@ body {
   function updateRaceFeatures() {
     const raceImg = document.getElementById('raceImg');
     const raceImages = {
-      'elf':      'sprites/race/elf.png',
-      'dwarf':    'sprites/race/dwarf.png',
-      'tiefling': 'sprites/race/tiefling.png',
+      'elf':        'sprites/race/elf.png',
+      'dwarf':      'sprites/race/dwarf.png',
+      'tiefling':   'sprites/race/tiefling.png',
       'dragonborn': 'sprites/race/dragonborn.png',
-      'half-orc': 'sprites/race/half-orc.png'
+      'half-orc':   'sprites/race/half-orc.png'
     };
     if (raceImages[character.race]) {
+      raceImg.removeAttribute('data-broken');
       raceImg.src = raceImages[character.race];
       raceImg.style.display = 'block';
     } else {
@@ -457,6 +497,7 @@ body {
     if (character.hairStyle === 'bald') {
       hairImg.style.display = 'none';
     } else {
+      hairImg.removeAttribute('data-broken');
       hairImg.style.display = 'block';
       hairImg.src = `sprites/hair/${character.hairStyle}.png`;
     }
@@ -471,7 +512,9 @@ body {
       'plate':      'sprites/outfit/plate.png',
       'mage-robes': 'sprites/outfit/mage_robes.png'
     };
-    document.getElementById('outfitImg').src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
+    const outfitImg = document.getElementById('outfitImg');
+    outfitImg.removeAttribute('data-broken');
+    outfitImg.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
   }
 
   function updatePreviewText() {
