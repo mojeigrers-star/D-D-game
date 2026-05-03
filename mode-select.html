@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Path - D&D Realm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .mode-card {
+            background: rgba(20, 10, 5, 0.6);
+            border: 1px solid rgba(139, 90, 43, 0.4);
+            border-radius: 12px;
+            padding: 24px 20px;
+            cursor: pointer;
+            transition: border-color 0.25s, transform 0.2s, background 0.25s;
+            position: relative;
+        }
+
+        .mode-card:hover {
+            border-color: rgba(212, 175, 55, 0.6);
+            background: rgba(30, 15, 5, 0.75);
+            transform: translateY(-3px);
+        }
+
+        .mode-card.selected {
+            border-color: #d4af37;
+            border-width: 2px;
+            background: rgba(40, 20, 5, 0.85);
+        }
+
+        .mode-icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 6px rgba(212,175,55,0.4));
+        }
+
+        .mode-name {
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #d4af37;
+            margin: 0 0 8px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px rgba(212,175,55,0.3);
+        }
+
+        .mode-desc {
+            font-family: 'IM Fell English', serif;
+            font-size: 13px;
+            color: rgba(210, 180, 140, 0.8);
+            line-height: 1.6;
+            margin: 0 0 14px;
+            font-style: italic;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-finite   { background: rgba(180, 60, 30, 0.25); color: #e8917a; border: 1px solid rgba(180,60,30,0.4); }
+        .badge-replayable { background: rgba(60, 140, 80, 0.2); color: #80c98f; border: 1px solid rgba(60,140,80,0.35); }
+        .badge-live     { background: rgba(50, 100, 200, 0.2); color: #85b0f0; border: 1px solid rgba(50,100,200,0.35); }
+
+        .sub-options {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(139, 90, 43, 0.3);
+        }
+
+        .sub-options.show { display: flex; }
+
+        .sub-btn {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(139, 90, 43, 0.4);
+            background: rgba(10, 5, 0, 0.4);
+            color: rgba(210, 180, 140, 0.75);
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .sub-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            color: #d4af37;
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+
+        .sub-btn.chosen {
+            background: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
+            border-color: #d4af37;
+        }
+
+        .lore-box {
+            display: none;
+            background: rgba(10, 5, 0, 0.5);
+            border-left: 2px solid #d4af37;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-family: 'IM Fell English', serif;
+            font-size: 13px;
+            font-style: italic;
+            color: rgba(210, 180, 140, 0.85);
+            line-height: 1.7;
+        }
+
+        .lore-box.show { display: block; }
+
+        .enter-btn-wrap { margin-top: 4px; }
+
+        .dnd-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: none;
+        }
+
+        @media (max-width: 520px) {
+            .mode-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-video"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="dnd-center">
+        <div class="dnd-container">
+            <div class="corner-decoration corner-tl"></div>
+            <div class="corner-decoration corner-tr"></div>
+            <div class="corner-decoration corner-bl"></div>
+            <div class="corner-decoration corner-br"></div>
+
+            <div class="dnd-icon">⚔</div>
+            <h1 class="dnd-title">Choose Your Path</h1>
+            <p class="dnd-subtitle">How shall your legend unfold?</p>
+
+            <div class="dnd-divider"><span>✦</span></div>
+
+            <div class="mode-grid">
+                <!-- Solo Quest -->
+                <div class="mode-card" id="card-single" onclick="selectMode('single')">
+                    <span class="mode-icon">🗡️</span>
+                    <p class="mode-name">Solo Quest</p>
+                    <p class="mode-desc">A lone adventurer walks a personal path. Your choices, your fate.</p>
+
+                    <div class="sub-options" id="sub-single">
+                        <button class="sub-btn" id="btn-oneshot" onclick="selectSub(event,'oneshot')">
+                            ⚰ One-Shot &mdash; ends forever when complete
+                        </button>
+                        <button class="sub-btn" id="btn-replay" onclick="selectSub(event,'replay')">
+                            ↺ Replayable &mdash; begin again after defeat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Multiplayer -->
+                <div class="mode-card" id="card-multi" onclick="selectMode('multi')">
+                    <span class="mode-icon">🏰</span>
+                    <p class="mode-name">Realm Online</p>
+                    <p class="mode-desc">A living world where many heroes gather. The realm never sleeps.</p>
+                    <span class="mode-badge badge-live">Always Open</span>
+
+                    <div class="sub-options" id="sub-multi">
+                        <button class="sub-btn" id="btn-join" onclick="selectSub(event,'join')">
+                            ⚑ Join an existing realm
+                        </button>
+                        <button class="sub-btn" id="btn-host" onclick="selectSub(event,'host')">
+                            ♜ Host a new realm
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lore flavour text -->
+            <div class="lore-box" id="lore"></div>
+
+            <!-- CTA -->
+            <div class="enter-btn-wrap">
+                <button class="dnd-btn" id="enter-btn" disabled onclick="proceed()">
+                    Select a path first...
+                </button>
+            </div>
+
+            <p class="dnd-footer">&#9830; May the dice be ever in your favor &#9830;</p>
+        </div>
+    </div>
+
+    <script>
+        /* Particles */
+        const pc = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top  = Math.random() * 100 + '%';
+            p.style.animationDelay    = Math.random() * 8 + 's';
+            p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            pc.appendChild(p);
+        }
+
+        /* State */
+        let currentMode = null;
+        let currentSub  = null;
+
+        const loreText = {
+            oneshot : "This session is bound by fate. When your adventure concludes — in triumph or defeat — the gates close behind you forever. There is no return. Choose wisely, brave soul.",
+            replay  : "The sands of time are merciful. Should you fall, you may rise again from the very beginning. Each run is a new chance to forge your legend.",
+            join    : "Step through the portal into a realm already breathing with life. Other adventurers have walked these roads — ally with them, or carve your own path through the chaos.",
+            host    : "You raise a new banner and open the gates. Heroes from across the land may answer your call at any time and join your realm as long as it stands."
+        };
+
+        const enterText = {
+            oneshot : "Begin the One-Shot",
+            replay  : "Start Adventure",
+            join    : "Enter the Realm",
+            host    : "Open the Gates"
+        };
+
+        /* Destination pages — adjust as needed */
+        const destination = {
+            oneshot : 'character.html?mode=oneshot',
+            replay  : 'character.html?mode=replay',
+            join    : 'lobby.html?action=join',
+            host    : 'lobby.html?action=host'
+        };
+
+        function selectMode(mode) {
+            if (currentMode === mode) return;
+            currentMode = mode;
+            currentSub  = null;
+
+            /* Reset enter button */
+            const btn = document.getElementById('enter-btn');
+            btn.textContent = 'Select a path first...';
+            btn.disabled = true;
+
+            /* Hide lore */
+            document.getElementById('lore').className = 'lore-box';
+
+            /* Toggle cards */
+            ['single','multi'].forEach(m => {
+                document.getElementById('card-' + m).className =
+                    'mode-card' + (m === mode ? ' selected' : '');
+                document.getElementById('sub-' + m).className =
+                    'sub-options' + (m === mode ? ' show' : '');
+            });
+
+            /* Clear sub selections */
+            ['btn-oneshot','btn-replay','btn-join','btn-host'].forEach(b => {
+                document.getElementById(b).className = 'sub-btn';
+            });
+        }
+
+        function selectSub(e, sub) {
+            e.stopPropagation();
+            currentSub = sub;
+
+            /* Highlight chosen sub button */
+            ['btn-oneshot','btn-replay','btn-join','btn-host'].forEach(b => {
+                document.getElementById(b).className = 'sub-btn';
+            });
+            const map = { oneshot:'btn-oneshot', replay:'btn-replay', join:'btn-join', host:'btn-host' };
+            document.getElementById(map[sub]).className = 'sub-btn chosen';
+
+            /* Show lore */
+            const lore = document.getElementById('lore');
+            lore.textContent = loreText[sub];
+            lore.className = 'lore-box show';
+
+            /* Activate button */
+            const btn = document.getElementById('enter-btn');
+            btn.textContent = enterText[sub];
+            btn.disabled = false;
+        }
+
+        function proceed() {
+            if (!currentSub) return;
+            /* Store choice in sessionStorage for next page to read */
+            sessionStorage.setItem('dnd_mode', currentMode);
+            sessionStorage.setItem('dnd_sub',  currentSub);
+            window.location.href = destination[currentSub];
+        }
+    </script>
+</body>
+</html>
