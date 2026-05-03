@@ -233,10 +233,10 @@ img.sprite-img[data-broken="true"] {
   bottom: 30px;
 }
 
-/* Outfit — same frame as body */
+/* Outfit — bigger and lower */
 #outfitImg {
-  height: 280px;
-  bottom: 30px;
+  height: 240px;
+  bottom: 10px;
 }
 
 /* Hair — small, anchored to the top of the head
@@ -246,10 +246,10 @@ img.sprite-img[data-broken="true"] {
   bottom: 210px;
 }
 
-#spriteBody        { z-index: 2; }
-#spriteRaceFeatures { z-index: 3; }
-#spriteHair        { z-index: 4; }
-#spriteOutfit      { z-index: 5; }
+#spriteBody         { z-index: 2; }
+#spriteRaceFeatures  { z-index: 3; }
+#spriteOutfit        { z-index: 4; }
+#spriteHair          { z-index: 5; }
 
 .preview-info { color: #c9a45c; font-size: 14px; margin: 10px 0; letter-spacing: 1px; }
 .preview-info span { color: #8b7355; }
@@ -380,7 +380,7 @@ img.sprite-img[data-broken="true"] {
 
       <div class="section-title">Outfit</div>
       <div class="selector-grid" id="outfitSelector">
-        <div class="selector-card" data-value="robes"><div class="icon">&#128081;</div><div class="label">Robes</div></div>
+        <div class="selector-card" data-value="rogue"><div class="icon">&#128608;</div><div class="label">Rogue</div></div>
         <div class="selector-card" data-value="casual"><div class="icon">&#128090;</div><div class="label">Casual</div></div>
         <div class="selector-card" data-value="leather"><div class="icon">&#128007;</div><div class="label">Leather</div></div>
         <div class="selector-card" data-value="plate"><div class="icon">&#129517;</div><div class="label">Plate</div></div>
@@ -411,7 +411,7 @@ img.sprite-img[data-broken="true"] {
                  onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteOutfit">
-            <img src="sprites/outfit/robes.png" id="outfitImg" alt="Outfit" class="sprite-img"
+            <img src="sprites/outfit/rogue.png" id="outfitImg" alt="Outfit" class="sprite-img"
                  onerror="this.setAttribute('data-broken','true');">
           </div>
         </div>
@@ -451,7 +451,7 @@ img.sprite-img[data-broken="true"] {
     hairStyle: 'short',
     hairColor: '#8B4513',
     skinTone: '#DEB887',
-    outfit: 'robes'
+    outfit: 'rogue'
   };
 
   // ===== SELECTOR SETUP =====
@@ -527,22 +527,25 @@ img.sprite-img[data-broken="true"] {
 
       // Per-style position & size overrides
       const overrides = {
-        'short':   { height: '90px',  left: '50%',  marginLeft: '0px'   },
-        'mohawk':  { height: '110px', left: '50%',  marginLeft: '-12px' },
-        'braided': { height: '110px', left: '50%',  marginLeft: '-12px' },
+        'short':   { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
+        'mohawk':  { height: '110px', marginLeft: '-6px',  bottom: '210px' },
+        'braided': { height: '110px', marginLeft: '-10px', bottom: '195px' },
+        'ponytail':{ height: '110px', marginLeft: '0px',   bottom: '202px' },
+        'long':    { height: '110px', marginLeft: '0px',   bottom: '205px' },
       };
-      const defaults = { height: '110px', left: '50%', marginLeft: '0px' };
+      const defaults = { height: '110px', marginLeft: '0px', bottom: '210px' };
       const style = overrides[character.hairStyle] || defaults;
       hairImg.style.height      = style.height;
-      hairImg.style.left        = style.left;
+      hairImg.style.left        = '50%';
       hairImg.style.marginLeft  = style.marginLeft;
+      hairImg.style.bottom      = style.bottom;
     }
     document.getElementById('spriteHair').style.setProperty('--hair-color', character.hairColor);
   }
 
   function updateOutfit() {
     const outfitMap = {
-      'robes':      'sprites/outfit/robes.png',
+      'rogue':      'sprites/outfit/rogue.png',
       'casual':     'sprites/outfit/casual.png',
       'leather':    'sprites/outfit/leather.png',
       'plate':      'sprites/outfit/plate.png',
