@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Realm - D&D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #0a0508;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== GAME BACKGROUND ===== */
+        .game-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 40%, rgba(60,20,10,0.6) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 80% at 20% 80%, rgba(10,30,60,0.5) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 80% at 80% 20%, rgba(40,10,60,0.4) 0%, transparent 70%),
+                linear-gradient(160deg, #0a0508 0%, #12080f 40%, #080d18 100%);
+        }
+
+        /* Atmospheric fog layers */
+        .fog-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .fog-layer::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -50%;
+            width: 200%;
+            height: 40%;
+            background: radial-gradient(ellipse at center, rgba(201,164,92,0.04) 0%, transparent 70%);
+            animation: fog-drift 20s ease-in-out infinite alternate;
+        }
+
+        .fog-layer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -30%;
+            width: 160%;
+            height: 30%;
+            background: radial-gradient(ellipse at center, rgba(100,60,160,0.06) 0%, transparent 70%);
+            animation: fog-drift 28s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes fog-drift {
+            0%   { transform: translateX(0)    scaleY(1); }
+            100% { transform: translateX(15%)  scaleY(1.15); }
+        }
+
+        /* ===== TOP HUD ===== */
+        .top-hud {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: linear-gradient(180deg, rgba(10,5,8,0.95) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(201,164,92,0.15);
+        }
+
+        .hud-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* HP Bar */
+        .hud-bar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+
+        .hud-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #8b7355;
+        }
+
+        .hud-bar-track {
+            height: 8px;
+            background: rgba(61,47,31,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(61,47,31,0.8);
+        }
+
+        .hud-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .bar-hp-fill   { background: linear-gradient(90deg, #8b1a1a, #e74c3c); }
+        .bar-mana-fill { background: linear-gradient(90deg, #1a3a8b, #3498db); }
+        .bar-xp-fill   { background: linear-gradient(90deg, #7a5a10, #c9a45c); }
+
+        /* Character info pill */
+        .char-pill {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(201,164,92,0.3);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            color: #c9a45c;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .char-pill .level { color: #8b7355; font-size: 10px; }
+
+        /* Back button */
+        .back-btn {
+            background: rgba(139,115,85,0.1);
+            border: 1px solid #5a4a3a;
+            border-radius: 6px;
+            color: #8b7355;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.1); }
+
+        /* ===== GAME AREA ===== */
+        .game-area {
+            position: fixed;
+            inset: 0;
+            top: 70px;
+            bottom: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Scene art placeholder */
+        .scene-container {
+            position: relative;
+            width: min(900px, 90vw);
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        /* Ground line */
+        .scene-ground {
+            position: absolute;
+            bottom: 0; left: 10%; right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(201,164,92,0.2), transparent);
+        }
+
+        /* Torches / atmosphere */
+        .scene-torch {
+            position: absolute;
+            bottom: 30%;
+            font-size: 32px;
+            filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
+            animation: flicker 3s ease-in-out infinite;
+        }
+        .scene-torch.left  { left:  8%; }
+        .scene-torch.right { right: 8%; animation-delay: 1.5s; }
+
+        @keyframes flicker {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(255,140,0,0.8)); transform: scale(1); }
+            25%       { filter: drop-shadow(0 0 20px rgba(255,160,0,1));   transform: scale(1.05); }
+            75%       { filter: drop-shadow(0 0 8px  rgba(255,120,0,0.6)); transform: scale(0.97); }
+        }
+
+        /* Stars */
+        .stars {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* ===== NARRATIVE / TEXT BOX ===== */
+        .narrative-area {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 220px;
+            background: linear-gradient(180deg, transparent 0%, rgba(10,5,8,0.98) 15%);
+            border-top: 1px solid rgba(201,164,92,0.2);
+            display: flex;
+            flex-direction: column;
+            padding: 16px 24px 20px;
+            z-index: 100;
+        }
+
+        .narrative-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .narrative-speaker {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 14px;
+            color: #c9a45c;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(201,164,92,0.4);
+        }
+
+        .narrative-divider {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(201,164,92,0.3), transparent);
+        }
+
+        .narrative-text {
+            font-family: 'Crimson Text', Georgia, serif;
+            font-size: 17px;
+            color: #d4c4a0;
+            line-height: 1.7;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Typewriter cursor */
+        .narrative-text .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: #c9a45c;
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+
+        /* Action buttons */
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 9px 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #3d2f1f;
+            border-radius: 6px;
+            color: #8b7355;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(201,164,92,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .action-btn:hover {
+            border-color: #c9a45c;
+            color: #c9a45c;
+            transform: translateY(-1px);
+        }
+        .action-btn:hover::before { opacity: 1; }
+        .action-btn:active { transform: translateY(0); }
+
+        /* Next button */
+        .next-btn {
+            margin-left: auto;
+            background: rgba(201,164,92,0.08);
+            border-color: #8b7355;
+            color: #c9a45c;
+        }
+        .next-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; }
+
+        /* ===== MINIMAP (top-right corner) ===== */
+        .minimap {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 120px;
+            height: 90px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(201,164,92,0.2);
+            border-radius: 6px;
+            padding: 8px;
+            z-index: 90;
+        }
+
+        .minimap-title {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            color: #5a4a3a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .minimap-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+        }
+
+        .minimap-cell {
+            aspect-ratio: 1;
+            background: rgba(61,47,31,0.3);
+            border-radius: 2px;
+        }
+
+        .minimap-cell.visited { background: rgba(201,164,92,0.15); }
+        .minimap-cell.current { background: rgba(201,164,92,0.6); }
+        .minimap-cell.wall    { background: rgba(0,0,0,0.8); }
+
+        /* ===== QUICK STATS (top-left) ===== */
+        .quick-stats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-stat {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(61,47,31,0.8);
+            border-radius: 6px;
+            padding: 5px 10px;
+            text-align: center;
+            min-width: 48px;
+        }
+
+        .quick-stat-val  { color: #c9a45c; font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; }
+        .quick-stat-name { color: #5a4a3a; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+        /* ===== INTRO OVERLAY ===== */
+        .intro-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: #0a0508;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.5s ease;
+        }
+
+        .intro-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-title {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: clamp(36px, 6vw, 72px);
+            color: #c9a45c;
+            text-align: center;
+            letter-spacing: 6px;
+            text-shadow: 0 0 40px rgba(201,164,92,0.6);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: intro-appear 1.2s ease 0.5s forwards;
+        }
+
+        .intro-sub {
+            font-family: 'Crimson Text', serif;
+            font-size: 18px;
+            color: #8b7355;
+            letter-spacing: 4px;
+            margin-top: 16px;
+            font-style: italic;
+            opacity: 0;
+            animation: intro-appear 1s ease 1.2s forwards;
+        }
+
+        .intro-skip {
+            position: absolute;
+            bottom: 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            color: #3d2f1f;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: color 0.3s;
+            opacity: 0;
+            animation: intro-appear 0.8s ease 2s forwards;
+        }
+
+        .intro-skip:hover { color: #8b7355; }
+
+        @keyframes intro-appear {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-bg"></div>
+<div class="fog-layer"></div>
+<div class="particles" id="particles"></div>
+
+<!-- ===== INTRO OVERLAY ===== -->
+<div class="intro-overlay" id="introOverlay">
+    <div class="intro-title" id="introTitle">The Realm Awaits</div>
+    <div class="intro-sub" id="introSub">Your legend begins now...</div>
+    <div class="intro-skip" onclick="skipIntro()">&#9654; Skip Intro</div>
+</div>
+
+<!-- ===== TOP HUD ===== -->
+<div class="top-hud">
+    <!-- Left: back + char info -->
+    <div class="hud-section">
+        <button class="back-btn" onclick="goBack()">&#8592; Dashboard</button>
+        <div class="char-pill">
+            <span id="hudCharName">Hero</span>
+            <span class="level" id="hudCharSub"> &mdash; Lv.1 Human Fighter</span>
+        </div>
+    </div>
+
+    <!-- Center: HP / Mana / XP bars -->
+    <div class="hud-section" style="flex-direction:column; gap:5px;">
+        <div class="hud-bar-group">
+            <div class="hud-bar-label">
+                <span>&#10084; HP</span>
+                <span id="hpText">80 / 100</span>
+            </div>
+            <div class="hud-bar-track">
+                <div class="hud-bar-fill bar-hp-fill" id="hpBar" style="width:80%"></div>
+            </div>
+        </div>
+        <div class="hud-bar-group">
+            <div class="hud-bar-label">
+                <span>&#128302; Mana</span>
+                <span id="manaText">60 / 60</span>
+            </div>
+            <div class="hud-bar-track">
+                <div class="hud-bar-fill bar-mana-fill" id="manaBar" style="width:100%"></div>
+            </div>
+        </div>
+        <div class="hud-bar-group">
+            <div class="hud-bar-label">
+                <span>&#11088; XP</span>
+                <span id="xpText">0 / 100</span>
+            </div>
+            <div class="hud-bar-track">
+                <div class="hud-bar-fill bar-xp-fill" id="xpBar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: quick stats -->
+    <div class="hud-section">
+        <div class="quick-stats">
+            <div class="quick-stat"><div class="quick-stat-val" id="statGold">0</div><div class="quick-stat-name">&#127881; Gold</div></div>
+            <div class="quick-stat"><div class="quick-stat-val" id="statAC">10</div><div class="quick-stat-name">&#128737; AC</div></div>
+            <div class="quick-stat"><div class="quick-stat-val" id="statSpd">30</div><div class="quick-stat-name">&#128640; Speed</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== SCENE ===== -->
+<div class="game-area">
+    <div class="scene-container" id="sceneContainer">
+        <!-- Stars generated by JS -->
+        <div class="stars" id="starsLayer"></div>
+
+        <!-- Torches -->
+        <div class="scene-torch left">&#128293;</div>
+        <div class="scene-torch right">&#128293;</div>
+
+        <div class="scene-ground"></div>
+    </div>
+</div>
+
+<!-- ===== MINIMAP ===== -->
+<div class="minimap">
+    <div class="minimap-title">&#9741; Map</div>
+    <div class="minimap-grid" id="minimapGrid"></div>
+</div>
+
+<!-- ===== NARRATIVE BOX ===== -->
+<div class="narrative-area">
+    <div class="narrative-header">
+        <div class="narrative-speaker" id="narrativeSpeaker">&#9830; The Dungeon Master</div>
+        <div class="narrative-divider"></div>
+    </div>
+
+    <div class="narrative-text" id="narrativeText"></div>
+
+    <div class="action-row" id="actionRow">
+        <button class="action-btn" onclick="doAction('explore')">&#128269; Explore</button>
+        <button class="action-btn" onclick="doAction('attack')">&#9876; Attack</button>
+        <button class="action-btn" onclick="doAction('magic')">&#10024; Cast Spell</button>
+        <button class="action-btn" onclick="doAction('inventory')">&#127894; Inventory</button>
+        <button class="action-btn next-btn" onclick="nextScene()">Continue &#9654;</button>
+    </div>
+</div>
+
+<script>
+    // ===== PARTICLES =====
+    const pc = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+        const p = document.createElement('div');
+        p.classList.add('particle');
+        p.style.left = Math.random() * 100 + '%';
+        p.style.top  = Math.random() * 100 + '%';
+        p.style.animationDelay    = Math.random() * 8 + 's';
+        p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+        pc.appendChild(p);
+    }
+
+    // ===== STARS =====
+    const starsLayer = document.getElementById('starsLayer');
+    for (let i = 0; i < 80; i++) {
+        const s = document.createElement('div');
+        s.style.cssText = `
+            position:absolute;
+            width:${Math.random() < 0.8 ? 1 : 2}px;
+            height:${Math.random() < 0.8 ? 1 : 2}px;
+            background:#c9a45c;
+            border-radius:50%;
+            left:${Math.random() * 100}%;
+            top:${Math.random() * 70}%;
+            opacity:${0.1 + Math.random() * 0.4};
+            animation: float ${5 + Math.random() * 8}s ease-in-out ${Math.random() * 5}s infinite alternate;
+        `;
+        starsLayer.appendChild(s);
+    }
+
+    // ===== MINIMAP =====
+    const minimapGrid = document.getElementById('minimapGrid');
+    const mapLayout = [
+        'wall','visited','current','visited','wall',
+        'wall','visited','visited','wall','wall',
+        'wall','wall','visited','visited','wall',
+        'wall','wall','wall','visited','wall',
+        'wall','wall','wall','wall','wall',
+    ];
+    mapLayout.forEach(type => {
+        const cell = document.createElement('div');
+        cell.className = 'minimap-cell ' + type;
+        minimapGrid.appendChild(cell);
+    });
+
+    // ===== LOAD PLAYER DATA =====
+    const user = localStorage.getItem('dnd_user');
+    if (!user) { window.location.href = 'index.html'; }
+
+    const charRaw   = localStorage.getItem('dnd_character_' + user);
+    const statsRaw  = localStorage.getItem('dnd_stats_' + user);
+    const character = charRaw  ? JSON.parse(charRaw)  : { race:'human', class:'fighter', sex:'male' };
+    const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
+
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+    document.getElementById('hudCharName').textContent = user;
+    document.getElementById('hudCharSub').textContent  = ` — Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
+    document.getElementById('statGold').textContent    = stats.gold;
+    document.getElementById('xpText').textContent      = `${stats.xp} / ${stats.xpMax}`;
+    document.getElementById('xpBar').style.width       = (stats.xp / stats.xpMax * 100) + '%';
+
+    const hp    = stats.con * 5 || 80;
+    const hpMax = stats.con * 5 || 100;
+    document.getElementById('hpText').textContent  = hp + ' / ' + hpMax;
+    document.getElementById('hpBar').style.width   = (hp / hpMax * 100) + '%';
+
+    const mana    = stats.int * 3 || 60;
+    const manaMax = stats.int * 3 || 60;
+    document.getElementById('manaText').textContent = mana + ' / ' + manaMax;
+
+    const ac = 10 + Math.floor((stats.dex - 10) / 2);
+    document.getElementById('statAC').textContent  = ac;
+    document.getElementById('statSpd').textContent = character.race === 'dwarf' ? 25 : 30;
+
+    // ===== NARRATIVE TYPEWRITER =====
+    const scenes = [
+        {
+            speaker: '&#9830; The Dungeon Master',
+            text: `You descend the mossy stone steps into the darkness below. The torchlight flickers against ancient walls etched with forgotten runes. A cold wind breathes from the depths ahead, carrying with it the faint scent of sulfur... and something else. Something ancient.`,
+            actions: ['explore', 'attack', 'magic', 'inventory']
+        },
+        {
+            speaker: '&#9830; The Dungeon Master',
+            text: `The corridor opens into a vast chamber. Pillars of obsidian rise to a ceiling you cannot see. In the center, upon a cracked stone altar, rests a glowing orb — pulsing like a heartbeat. Shadows move at the edges of your vision.`,
+            actions: ['explore', 'attack', 'magic', 'inventory']
+        },
+        {
+            speaker: '&#9876; A Voice from the Dark',
+            text: `"So... another adventurer dares enter my domain. How delightfully foolish." A figure materializes from the shadows — robes the color of midnight, eyes like dying embers. "Turn back now, and I may let you live. Stay... and you become part of my collection."`,
+            actions: ['attack', 'magic', 'inventory']
+        }
+    ];
+
+    let currentScene   = 0;
+    let typewriterTimer = null;
+
+    function typeText(text, el, speed = 28) {
+        el.innerHTML = '';
+        let i = 0;
+        clearInterval(typewriterTimer);
+
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        el.appendChild(cursor);
+
+        typewriterTimer = setInterval(() => {
+            if (i < text.length) {
+                el.insertBefore(document.createTextNode(text[i]), cursor);
+                i++;
+            } else {
+                clearInterval(typewriterTimer);
+                cursor.remove();
+            }
+        }, speed);
+    }
+
+    function loadScene(index) {
+        if (index >= scenes.length) {
+            // End of demo scenes
+            typeText("Your adventure continues beyond what has been written... The realm stretches endlessly before you, full of secrets yet to be discovered.", document.getElementById('narrativeText'));
+            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+            return;
+        }
+        const scene = scenes[index];
+        document.getElementById('narrativeSpeaker').innerHTML = scene.speaker;
+        typeText(scene.text.replace(/\n/g,''), document.getElementById('narrativeText'));
+    }
+
+    function nextScene() {
+        currentScene++;
+        loadScene(currentScene);
+    }
+
+    function doAction(type) {
+        const messages = {
+            explore:   `You cautiously move forward, hand on your weapon. Every shadow seems to breathe. Your ${cap(character.class)} instincts keep you alert as you examine the ancient chamber.`,
+            attack:    `You raise your weapon, battle-ready. As a ${cap(character.class)}, you channel your ${cap(character.race)} strength. The air crackles with tension — but there is nothing to strike. Yet.`,
+            magic:     `You reach into the arcane currents flowing through this ancient place. The runes on the walls pulse in response to your magical intent. Something stirs in the deep.`,
+            inventory: `You pause to check your belongings. Your pack holds ${stats.gold} gold coins and the tools of your trade. You ensure your equipment is in order before pressing onward.`
+        };
+        document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+        typeText(messages[type] || 'You act.', document.getElementById('narrativeText'));
+    }
+
+    // ===== INTRO SEQUENCE =====
+    function skipIntro() {
+        const overlay = document.getElementById('introOverlay');
+        overlay.classList.add('fade-out');
+        setTimeout(() => overlay.remove(), 1500);
+    }
+
+    window.onload = function() {
+        // Show realm name in intro based on mode
+        const sub = sessionStorage.getItem('dnd_sub');
+        if (sub === 'oneshot') {
+            document.getElementById('introTitle').textContent = 'The Final Hunt';
+            document.getElementById('introSub').textContent   = 'One path. No return.';
+        } else if (sub === 'join' || sub === 'host') {
+            document.getElementById('introTitle').textContent = 'The Shared Realm';
+            document.getElementById('introSub').textContent   = 'Adventure with companions...';
+        }
+
+        // Auto-dismiss intro after 3.5s
+        setTimeout(() => {
+            const overlay = document.getElementById('introOverlay');
+            if (overlay) {
+                overlay.classList.add('fade-out');
+                setTimeout(() => overlay && overlay.remove(), 1500);
+            }
+        }, 3500);
+
+        // Start first scene slightly after intro fades
+        setTimeout(() => loadScene(0), 800);
+    };
+
+    function goBack() {
+        window.location.href = 'dashboard.html';
+    }
+</script>
+</body>
+</html>

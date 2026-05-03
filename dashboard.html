@@ -42,7 +42,6 @@
         .options-btn { left: 20px; }
         .logout-btn  { right: 20px; }
 
-        /* Mode badge in top center */
         .mode-badge-bar {
             position: fixed;
             top: 20px;
@@ -60,11 +59,68 @@
             text-transform: uppercase;
         }
 
+        /* ===== ENTER REALM BANNER ===== */
+        .enter-realm-banner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 24px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .enter-realm-btn {
+            padding: 18px 60px;
+            background: linear-gradient(135deg, #c9a45c 0%, #8b5e1a 50%, #c9a45c 100%);
+            background-size: 200% auto;
+            border: 2px solid #c9a45c;
+            border-radius: 10px;
+            color: #0d0d1a;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(201,164,92,0.4),
+                        0 0 60px rgba(201,164,92,0.15);
+            animation: realm-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes realm-pulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(201,164,92,0.4), 0 0 60px rgba(201,164,92,0.15); }
+            50%       { box-shadow: 0 0 50px rgba(201,164,92,0.7), 0 0 90px rgba(201,164,92,0.3); }
+        }
+
+        .enter-realm-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            transition: left 0.6s;
+        }
+
+        .enter-realm-btn:hover::before { left: 100%; }
+
+        .enter-realm-btn:hover {
+            transform: translateY(-4px);
+            background-position: right center;
+            box-shadow: 0 0 60px rgba(201,164,92,0.8),
+                        0 0 100px rgba(201,164,92,0.4);
+            letter-spacing: 6px;
+        }
+
+        .enter-realm-btn:active { transform: translateY(-1px); }
+
         /* ===== MAIN LAYOUT ===== */
         .dashboard-wrapper {
             display: flex;
             gap: 22px;
-            padding: 75px 25px 25px 25px;
+            padding: 75px 25px 0 25px;
             max-width: 1400px;
             margin: 0 auto;
             min-height: 100vh;
@@ -99,7 +155,6 @@
             gap: 18px;
         }
 
-        /* ===== CHARACTER PREVIEW ===== */
         .character-name {
             text-align: center;
             color: #c9a45c;
@@ -204,11 +259,7 @@
             font-weight: bold;
         }
 
-        .xp-total {
-            color: #8b7355;
-            font-size: 11px;
-            letter-spacing: 1px;
-        }
+        .xp-total { color: #8b7355; font-size: 11px; letter-spacing: 1px; }
 
         .stat-bar-group { margin-bottom: 12px; }
 
@@ -243,14 +294,10 @@
         .bar-wis   { background: linear-gradient(90deg, #16a085, #1abc9c); }
         .bar-cha   { background: linear-gradient(90deg, #c0392b, #e91e8c); }
 
-        /* ===== RIGHT PANEL — INVENTORY ===== */
+        /* ===== RIGHT PANEL ===== */
         .right-panel { flex: 1; }
 
-        .inventory-stats {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 18px;
-        }
+        .inventory-stats { display: flex; gap: 12px; margin-bottom: 18px; }
 
         .inv-stat {
             flex: 1;
@@ -283,13 +330,7 @@
             margin: 16px 0 10px 0;
         }
 
-        /* Equipment slots */
-        .equip-slots {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
+        .equip-slots { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
 
         .equip-slot {
             flex: 1;
@@ -308,25 +349,10 @@
             gap: 4px;
         }
 
-        .equip-slot-label {
-            color: #5a4a3a;
-            font-size: 10px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+        .equip-slot-label { color: #5a4a3a; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
 
-        .equip-slot:hover {
-            border-color: #8b7355;
-            background: rgba(201,164,92,0.05);
-        }
+        .equip-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.05); }
 
-        .equip-slot.has-item {
-            border-style: solid;
-            border-color: #c9a45c;
-            background: rgba(201,164,92,0.08);
-        }
-
-        /* Inventory grid */
         .inventory-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -348,42 +374,6 @@
         }
 
         .inv-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.04); }
-
-        .inv-slot.occupied { border-color: #8b7355; }
-
-        .inv-slot.occupied:hover {
-            border-color: #c9a45c;
-            box-shadow: 0 0 10px rgba(201,164,92,0.25);
-            transform: scale(1.05);
-        }
-
-        .inv-slot .item-qty {
-            position: absolute;
-            bottom: 3px; right: 5px;
-            color: #8b7355;
-            font-size: 9px;
-            font-family: 'Cinzel', serif;
-        }
-
-        .inv-slot .item-tooltip {
-            display: none;
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(13,13,26,0.98);
-            border: 1px solid #c9a45c;
-            border-radius: 6px;
-            padding: 7px 11px;
-            white-space: nowrap;
-            color: #c9a45c;
-            font-size: 11px;
-            font-family: 'Cinzel', serif;
-            z-index: 50;
-            pointer-events: none;
-        }
-
-        .inv-slot:hover .item-tooltip { display: block; }
 
         /* ===== SETTINGS OVERLAY ===== */
         .options-overlay {
@@ -430,10 +420,8 @@
             font-family: 'Cinzel', serif;
             transition: color 0.3s;
         }
-
         .close-options:hover { color: #c9a45c; }
 
-        /* Sliders */
         .slider-group { margin-bottom: 28px; }
 
         .slider-label {
@@ -631,7 +619,7 @@
 
                 <div class="stat-bar-group">
                     <div class="stat-bar-label">
-                        <span class="stat-bar-name" title="Toughness, affects HP">&#10084; CON — Constitution</span>
+                        <span class="stat-bar-name" title="Toughness">&#10084; CON — Constitution</span>
                         <span class="stat-bar-val" id="conVal">10 / 20</span>
                     </div>
                     <div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="conBar" style="width:50%"></div></div>
@@ -639,7 +627,7 @@
 
                 <div class="stat-bar-group">
                     <div class="stat-bar-label">
-                        <span class="stat-bar-name" title="Knowledge and spellcasting">&#128302; INT — Intelligence</span>
+                        <span class="stat-bar-name" title="Knowledge">&#128302; INT — Intelligence</span>
                         <span class="stat-bar-val" id="intVal">10 / 20</span>
                     </div>
                     <div class="stat-bar-track"><div class="stat-bar-fill bar-intel" id="intBar" style="width:50%"></div></div>
@@ -647,7 +635,7 @@
 
                 <div class="stat-bar-group">
                     <div class="stat-bar-label">
-                        <span class="stat-bar-name" title="Awareness and perception">&#128065; WIS — Wisdom</span>
+                        <span class="stat-bar-name" title="Awareness">&#128065; WIS — Wisdom</span>
                         <span class="stat-bar-val" id="wisVal">10 / 20</span>
                     </div>
                     <div class="stat-bar-track"><div class="stat-bar-fill bar-wis" id="wisBar" style="width:50%"></div></div>
@@ -655,7 +643,7 @@
 
                 <div class="stat-bar-group">
                     <div class="stat-bar-label">
-                        <span class="stat-bar-name" title="Personality and persuasion">&#127931; CHA — Charisma</span>
+                        <span class="stat-bar-name" title="Personality">&#127931; CHA — Charisma</span>
                         <span class="stat-bar-val" id="chaVal">10 / 20</span>
                     </div>
                     <div class="stat-bar-track"><div class="stat-bar-fill bar-cha" id="chaBar" style="width:50%"></div></div>
@@ -699,6 +687,13 @@
         </div>
     </div>
 
+    <!-- ===== ENTER REALM BUTTON (bottom of page) ===== -->
+    <div class="enter-realm-banner">
+        <button class="enter-realm-btn" onclick="enterRealm()">
+            &#9876; Enter the Realm &#9876;
+        </button>
+    </div>
+
     <script>
         // ===== PARTICLES =====
         const pc = document.getElementById('particles');
@@ -712,10 +707,14 @@
             pc.appendChild(p);
         }
 
+        // ===== ENTER THE REALM =====
+        function enterRealm() {
+            window.location.href = 'game.html';
+        }
+
         // ===== SHOW GAME MODE BADGE =====
         function showModeBadge() {
-            const mode = sessionStorage.getItem('dnd_mode');
-            const sub  = sessionStorage.getItem('dnd_sub');
+            const sub   = sessionStorage.getItem('dnd_sub');
             const badge = document.getElementById('modeBadge');
             const labels = {
                 oneshot : '&#9876; One-Shot &mdash; No Return',
@@ -748,11 +747,7 @@
                 if (item) {
                     count++;
                     slot.classList.add('occupied');
-                    slot.innerHTML = `
-                        ${item.icon}
-                        ${item.qty > 1 ? `<span class="item-qty">${item.qty}</span>` : ''}
-                        <div class="item-tooltip">${item.name}</div>
-                    `;
+                    slot.innerHTML = `${item.icon}${item.qty > 1 ? `<span class="item-qty">${item.qty}</span>` : ''}`;
                 }
                 grid.appendChild(slot);
             }
@@ -768,7 +763,6 @@
             const c = JSON.parse(saved);
 
             document.getElementById('charSubtitle').textContent = cap(c.race) + ' ' + cap(c.class);
-
             document.getElementById('db-bodyImg').src = `sprites/body/${c.sex || 'male'}.png`;
 
             const raceMap = {
