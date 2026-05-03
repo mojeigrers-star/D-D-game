@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gathering Hall - D&D Realm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Socket.io client — loaded from CDN so it always matches the server version -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+    <style>
+        /* ===== PAGE SHELL ===== */
+        body {
+            background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
+            min-height: 100vh;
+        }
+
+        .lobby-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        /* ===== HEADER ===== */
+        .lobby-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .lobby-header .dnd-icon { font-size: 52px; display: block; margin-bottom: 6px; }
+        .lobby-header h1 {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            font-size: 40px;
+            text-shadow: 0 0 20px rgba(201,164,92,0.5);
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+        }
+        .lobby-header p { color: #8b7355; font-size: 13px; letter-spacing: 2px; font-style: italic; }
+
+        /* ===== PANELS ===== */
+        .lobby-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 22px;
+            width: 100%;
+            max-width: 960px;
+        }
+
+        .panel {
+            background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+            border: 2px solid #c9a45c;
+            border-radius: 15px;
+            padding: 28px;
+            position: relative;
+        }
+
+        .panel-title {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #3d2f1f;
+            text-shadow: 0 0 12px rgba(201,164,92,0.4);
+        }
+
+        /* Corner decorations reused from styles.css */
+        .corner-decoration { position: absolute; width: 40px; height: 40px; border: 2px solid #c9a45c; opacity: 0.3; }
+        .corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .corner-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .corner-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+        /* ===== ENTRY SCREEN (host vs join choice rendered by JS) ===== */
+        #entryScreen { display: flex; flex-direction: column; gap: 12px; }
+
+        /* ===== ROOM CODE DISPLAY ===== */
+        .room-code-box {
+            background: rgba(0,0,0,0.45);
+            border: 2px solid #c9a45c;
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .room-code-label {
+            color: #8b7355;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .room-code-value {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 52px;
+            color: #c9a45c;
+            letter-spacing: 10px;
+            text-shadow: 0 0 25px rgba(201,164,92,0.6);
+            line-height: 1;
+        }
+
+        .room-code-hint {
+            color: #5a4a3a;
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid #3d2f1f;
+            border-radius: 6px;
+            color: #8b7355;
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 6px 14px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { border-color: #c9a45c; color: #c9a45c; }
+
+        /* ===== PLAYERS LIST ===== */
+        .player-list { display: flex; flex-direction: column; gap: 10px; min-height: 80px; }
+
+        .player-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #3d2f1f;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: border-color 0.2s;
+        }
+
+        .player-row.is-host { border-color: #c9a45c; background: rgba(201,164,92,0.05); }
+
+        .player-avatar {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #c9a45c22, #8b735522);
+            border: 1px solid #3d2f1f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .player-name { flex: 1; color: #c9a45c; font-size: 14px; letter-spacing: 1px; }
+        .player-host-badge {
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #c9a45c;
+            border: 1px solid #c9a45c44;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+
+        .kick-btn {
+            background: none;
+            border: 1px solid #5a2020;
+            border-radius: 5px;
+            color: #a04040;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .kick-btn:hover { border-color: #cc4444; color: #cc4444; }
+
+        .empty-slot {
+            border: 2px dashed #2a1f0f;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            color: #3d2f1f;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== WAITING SPINNER ===== */
+        .waiting-text {
+            text-align: center;
+            color: #8b7355;
+            font-size: 12px;
+            letter-spacing: 2px;
+            margin-top: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* ===== CHAT ===== */
+        .chat-panel { display: flex; flex-direction: column; height: 100%; }
+
+        .chat-messages {
+            flex: 1;
+            min-height: 200px;
+            max-height: 320px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid #3d2f1f;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #3d2f1f; border-radius: 3px; }
+
+        .chat-msg { font-size: 12px; line-height: 1.6; }
+        .chat-msg .who { color: #c9a45c; }
+        .chat-msg .text { color: #8b7355; }
+        .chat-msg.system .text { color: #5a4a3a; font-style: italic; }
+
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input-row input {
+            flex: 1;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #3d2f1f;
+            border-radius: 6px;
+            color: #c9a45c;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            padding: 10px 12px;
+            transition: border-color 0.2s;
+        }
+        .chat-input-row input:focus { outline: none; border-color: #c9a45c; }
+        .chat-input-row input::placeholder { color: #3d2f1f; }
+
+        .chat-send-btn {
+            padding: 10px 16px;
+            background: rgba(201,164,92,0.1);
+            border: 1px solid #8b7355;
+            border-radius: 6px;
+            color: #c9a45c;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chat-send-btn:hover { background: rgba(201,164,92,0.2); }
+
+        /* ===== STATUS BADGE ===== */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #3d2f1f;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #8b7355;
+            letter-spacing: 1px;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #c9a45c;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* ===== BUTTONS ===== */
+        .start-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #c9a45c, #8b7355);
+            border: none;
+            border-radius: 8px;
+            color: #1a0a2e;
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .start-btn:hover::before { left: 100%; }
+        .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(201,164,92,0.4); }
+        .start-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .start-btn:disabled::before { display: none; }
+
+        .leave-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 11px;
+            background: none;
+            border: 1px solid #5a2020;
+            border-radius: 8px;
+            color: #8b4040;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .leave-btn:hover { border-color: #cc4444; color: #cc4444; }
+
+        /* ===== JOIN CODE INPUT ===== */
+        .code-input {
+            width: 100%;
+            text-align: center;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 32px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #3d2f1f;
+            border-radius: 8px;
+            color: #c9a45c;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: #c9a45c;
+            box-shadow: 0 0 15px rgba(201,164,92,0.25);
+        }
+        .code-input::placeholder { color: #3d2f1f; letter-spacing: 4px; font-size: 24px; }
+
+        /* ===== NOTIFICATION ===== */
+        .notif {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(13,13,26,0.97);
+            border: 1px solid #c9a45c;
+            border-radius: 10px;
+            padding: 14px 24px;
+            color: #c9a45c;
+            font-size: 13px;
+            letter-spacing: 1px;
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 380px;
+            text-align: center;
+        }
+        .notif.show { transform: translateX(-50%) translateY(0); }
+        .notif.error { border-color: #cc4444; color: #cc4444; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 700px) {
+            .lobby-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-video"></div>
+<div class="particles" id="particles"></div>
+
+<div class="lobby-wrapper">
+    <div class="lobby-header">
+        <span class="dnd-icon">&#127963;</span>
+        <h1 id="lobbyTitle">The Gathering Hall</h1>
+        <p id="lobbySubtitle">Where adventurers unite before the quest begins</p>
+    </div>
+
+    <!-- ====== ENTRY SCREEN (before connecting) ====== -->
+    <div id="entryWrapper" style="width:100%;max-width:480px;display:block;">
+        <div class="panel" style="padding:36px 32px;">
+            <div class="corner-decoration corner-tl"></div>
+            <div class="corner-decoration corner-tr"></div>
+            <div class="corner-decoration corner-bl"></div>
+            <div class="corner-decoration corner-br"></div>
+
+            <div class="panel-title" id="entryTitle">&#127963; Realm Online</div>
+
+            <!-- HOST view -->
+            <div id="hostEntry">
+                <p style="color:#8b7355;font-size:13px;text-align:center;margin-bottom:20px;letter-spacing:1px;line-height:1.7;">
+                    You are opening the gates.<br>A room code will be generated for others to join.
+                </p>
+                <div class="dnd-form-group">
+                    <label class="dnd-label">Max Adventurers</label>
+                    <select id="maxPlayers" class="dnd-input" style="cursor:pointer;">
+                        <option value="2">2 Players</option>
+                        <option value="4" selected>4 Players</option>
+                        <option value="6">6 Players</option>
+                        <option value="8">8 Players</option>
+                    </select>
+                </div>
+                <button class="dnd-btn" onclick="doHost()">&#9820; Open the Gates</button>
+            </div>
+
+            <!-- JOIN view -->
+            <div id="joinEntry" style="display:none;">
+                <p style="color:#8b7355;font-size:13px;text-align:center;margin-bottom:20px;letter-spacing:1px;line-height:1.7;">
+                    Step through the portal.<br>Enter the 4-letter realm code your host shared.
+                </p>
+                <input
+                    class="code-input"
+                    id="joinCodeInput"
+                    maxlength="4"
+                    placeholder="CODE"
+                    autocomplete="off"
+                    spellcheck="false"
+                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');"
+                    onkeydown="if(event.key==='Enter') doJoin();"
+                >
+                <button class="dnd-btn" onclick="doJoin()">&#9873; Enter the Realm</button>
+            </div>
+
+            <button class="leave-btn" onclick="goBack()">&#8592; Back to Path Selection</button>
+        </div>
+    </div>
+
+    <!-- ====== LOBBY SCREEN (after connecting) ====== -->
+    <div id="lobbyScreen" style="width:100%;max-width:960px;display:none;">
+        <div class="lobby-grid">
+
+            <!-- LEFT: Players & Controls -->
+            <div class="panel">
+                <div class="corner-decoration corner-tl"></div>
+                <div class="corner-decoration corner-tr"></div>
+                <div class="corner-decoration corner-bl"></div>
+                <div class="corner-decoration corner-br"></div>
+
+                <div class="panel-title">&#9876; Adventurers Gathered</div>
+
+                <!-- Room code shown to everyone -->
+                <div class="room-code-box">
+                    <div class="room-code-label">&#9830; Realm Code &#9830;</div>
+                    <div class="room-code-value" id="displayCode">????</div>
+                    <div class="room-code-hint">Share this with your companions</div>
+                    <button class="copy-btn" onclick="copyCode()">&#128203; Copy Code</button>
+                </div>
+
+                <!-- Status -->
+                <div class="status-bar">
+                    <div class="status-dot"></div>
+                    <span id="statusText">Waiting for adventurers...</span>
+                </div>
+
+                <!-- Player list -->
+                <div class="player-list" id="playerList"></div>
+
+                <p class="waiting-text" id="waitingText">Awaiting companions...</p>
+
+                <!-- Host-only controls -->
+                <div id="hostControls" style="display:none;">
+                    <button class="start-btn" id="startBtn" onclick="startGame()" disabled>
+                        Begin the Quest
+                    </button>
+                </div>
+
+                <!-- Non-host message -->
+                <div id="guestWait" style="display:none;text-align:center;color:#5a4a3a;font-size:12px;letter-spacing:1px;margin-top:16px;">
+                    Waiting for the Host to begin the quest...
+                </div>
+
+                <button class="leave-btn" onclick="leaveRoom()">&#8592; Leave Realm</button>
+            </div>
+
+            <!-- RIGHT: Chat -->
+            <div class="panel" style="display:flex;flex-direction:column;">
+                <div class="panel-title">&#128172; Tavern Chat</div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-msg system"><span class="text">&#9830; You have entered the gathering hall. Speak freely...</span></div>
+                </div>
+                <div class="chat-input-row">
+                    <input
+                        type="text"
+                        id="chatInput"
+                        placeholder="Speak, adventurer..."
+                        maxlength="200"
+                        onkeydown="if(event.key==='Enter') sendChat();"
+                    >
+                    <button class="chat-send-btn" onclick="sendChat()">&#9654;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification toast -->
+<div class="notif" id="notif"></div>
+
+<script>
+// ===== PARTICLES =====
+const pc = document.getElementById('particles');
+for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top  = Math.random() * 100 + '%';
+    p.style.animationDelay    = Math.random() * 8 + 's';
+    p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    pc.appendChild(p);
+}
+
+// ===== STATE =====
+const username = localStorage.getItem('dnd_user');
+const params   = new URLSearchParams(window.location.search);
+const action   = params.get('action'); // 'host' or 'join'
+let isHost = false;
+let myRoom = null;
+let socket = null;
+
+// Guard: must be logged in
+if (!username) { window.location.href = 'index.html'; }
+
+// Show correct entry panel
+if (action === 'host') {
+    document.getElementById('joinEntry').style.display = 'none';
+    document.getElementById('hostEntry').style.display = 'block';
+    document.getElementById('entryTitle').innerHTML    = '&#9820; Open a New Realm';
+} else {
+    document.getElementById('hostEntry').style.display = 'none';
+    document.getElementById('joinEntry').style.display = 'block';
+    document.getElementById('entryTitle').innerHTML    = '&#9873; Enter an Existing Realm';
+}
+
+// ===== SOCKET SETUP =====
+// Connect lazily so we don't consume sockets before user presses a button
+function connectSocket() {
+    if (socket) return; // already connected
+
+    // Connect to the same origin the page was served from
+    socket = io({ transports: ['websocket', 'polling'] });
+
+    socket.on('connect', () => console.log('Socket connected:', socket.id));
+
+    socket.on('room-created', (room) => {
+        myRoom = room;
+        isHost = true;
+        showLobby(room);
+        addSystemMsg(`Your realm is open. Code: ${room.code}`);
+    });
+
+    socket.on('room-joined', (room) => {
+        myRoom = room;
+        isHost = false;
+        showLobby(room);
+        addSystemMsg(`You entered the realm of ${room.host}.`);
+    });
+
+    socket.on('join-error', (msg) => showNotif(msg, true));
+
+    socket.on('player-list-updated', (room) => {
+        myRoom = room;
+        renderPlayers(room);
+        updateStatus(room);
+    });
+
+    socket.on('host-changed', ({ newHost }) => {
+        if (newHost === username) {
+            isHost = true;
+            document.getElementById('hostControls').style.display = 'block';
+            document.getElementById('guestWait').style.display    = 'none';
+            showNotif('The previous host departed. You are now the Host.');
+        }
+        addSystemMsg(`${newHost} is now the Host.`);
+    });
+
+    socket.on('kicked', ({ reason }) => {
+        showNotif(reason, true);
+        setTimeout(() => window.location.href = 'mode-select.html', 2500);
+    });
+
+    socket.on('game-started', (room) => {
+        // Store room info for the game page
+        sessionStorage.setItem('dnd_room', JSON.stringify(room));
+        showNotif('The quest begins! Entering the realm...');
+        setTimeout(() => window.location.href = 'dashboard.html', 1800);
+    });
+
+    socket.on('lobby-chat', ({ username: who, message, ts }) => {
+        addChatMsg(who, message, who === username);
+    });
+
+    socket.on('disconnect', () => {
+        addSystemMsg('Connection lost. Attempting to reconnect...');
+    });
+}
+
+// ===== ACTIONS =====
+function doHost() {
+    connectSocket();
+    const maxPlayers = parseInt(document.getElementById('maxPlayers').value);
+    socket.emit('host-room', { username, maxPlayers });
+}
+
+function doJoin() {
+    const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+    if (code.length !== 4) {
+        showNotif('Please enter the full 4-letter realm code.', true);
+        return;
+    }
+    connectSocket();
+    socket.emit('join-room', { username, code });
+}
+
+function startGame() {
+    if (!isHost || !socket) return;
+    socket.emit('start-game');
+}
+
+function kickPlayer(targetUsername) {
+    if (!isHost || !socket) return;
+    socket.emit('kick-player', { targetUsername });
+    addSystemMsg(`${targetUsername} was removed from the realm.`);
+}
+
+function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg || !socket) return;
+    socket.emit('lobby-chat', { message: msg });
+    input.value = '';
+}
+
+function copyCode() {
+    if (!myRoom) return;
+    navigator.clipboard.writeText(myRoom.code).then(() => showNotif('Room code copied!'));
+}
+
+function leaveRoom() {
+    if (socket) socket.disconnect();
+    window.location.href = 'mode-select.html';
+}
+
+function goBack() {
+    window.location.href = 'mode-select.html';
+}
+
+// ===== RENDER =====
+function showLobby(room) {
+    document.getElementById('entryWrapper').style.display = 'none';
+    document.getElementById('lobbyScreen').style.display  = 'block';
+    document.getElementById('displayCode').textContent    = room.code;
+    document.getElementById('lobbyTitle').textContent     = isHost ? 'Your Realm is Open' : 'Realm Joined';
+    document.getElementById('lobbySubtitle').textContent  = isHost
+        ? 'Awaiting your companions — share the code below'
+        : `You have entered the realm of ${room.host}`;
+
+    if (isHost) {
+        document.getElementById('hostControls').style.display = 'block';
+        document.getElementById('guestWait').style.display    = 'none';
+    } else {
+        document.getElementById('hostControls').style.display = 'none';
+        document.getElementById('guestWait').style.display    = 'block';
+    }
+
+    renderPlayers(room);
+    updateStatus(room);
+}
+
+function renderPlayers(room) {
+    const list = document.getElementById('playerList');
+    list.innerHTML = '';
+
+    room.players.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'player-row' + (name === room.host ? ' is-host' : '');
+
+        const avatar = document.createElement('div');
+        avatar.className = 'player-avatar';
+        avatar.textContent = name.charAt(0).toUpperCase();
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'player-name';
+        nameEl.textContent = name;
+
+        row.appendChild(avatar);
+        row.appendChild(nameEl);
+
+        if (name === room.host) {
+            const badge = document.createElement('div');
+            badge.className = 'player-host-badge';
+            badge.textContent = 'Host';
+            row.appendChild(badge);
+        }
+
+        // Kick button: only shown to host, not for themselves
+        if (isHost && name !== username) {
+            const kick = document.createElement('button');
+            kick.className = 'kick-btn';
+            kick.textContent = 'Kick';
+            kick.onclick = () => kickPlayer(name);
+            row.appendChild(kick);
+        }
+
+        list.appendChild(row);
+    });
+
+    // Empty slots
+    const emptySlots = (room.maxPlayers || 4) - room.players.length;
+    for (let i = 0; i < emptySlots; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'empty-slot';
+        slot.textContent = '— awaiting adventurer —';
+        list.appendChild(slot);
+    }
+
+    // Enable start only when ≥2 players
+    const startBtn = document.getElementById('startBtn');
+    if (startBtn) {
+        startBtn.disabled = room.players.length < 2;
+        startBtn.textContent = room.players.length < 2
+            ? 'Awaiting companions...'
+            : `Begin the Quest (${room.players.length} adventurers)`;
+    }
+}
+
+function updateStatus(room) {
+    const count = room.players.length;
+    const max   = room.maxPlayers || 4;
+    document.getElementById('statusText').textContent = `${count} / ${max} adventurers gathered`;
+
+    const waiting = document.getElementById('waitingText');
+    waiting.textContent = count < 2
+        ? 'Awaiting companions...'
+        : count >= max
+            ? 'The realm is full!'
+            : 'Ready to begin!';
+}
+
+// ===== CHAT HELPERS =====
+function addChatMsg(who, text, isSelf) {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg';
+    div.innerHTML = `<span class="who">${isSelf ? 'You' : who}:</span> <span class="text">${text}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function addSystemMsg(text) {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg system';
+    div.innerHTML = `<span class="text">&#9830; ${text}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+// ===== TOAST NOTIFICATION =====
+let notifTimer;
+function showNotif(msg, isError = false) {
+    const el = document.getElementById('notif');
+    el.textContent = msg;
+    el.className   = 'notif' + (isError ? ' error' : '') + ' show';
+    clearTimeout(notifTimer);
+    notifTimer = setTimeout(() => { el.className = 'notif' + (isError ? ' error' : ''); }, 3500);
+}
+</script>
+</body>
+</html>
