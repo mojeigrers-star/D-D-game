@@ -211,15 +211,39 @@ img.sprite-img[data-broken="true"] {
   transition: all 0.3s ease;
 }
 
+/* Base for all sprite images */
 .sprite-img {
   position: absolute;
-  bottom: 50px;
   left: 50%;
   transform: translateX(-50%);
-  height: 350px;
   width: auto;
   image-rendering: pixelated;
   pointer-events: none;
+}
+
+/* Body — full character */
+#bodyImg {
+  height: 280px;
+  bottom: 30px;
+}
+
+/* Race features — same frame as body */
+#raceImg {
+  height: 280px;
+  bottom: 30px;
+}
+
+/* Outfit — same frame as body */
+#outfitImg {
+  height: 280px;
+  bottom: 30px;
+}
+
+/* Hair — small, anchored to the top of the head
+   Tweak bottom to move up/down, height to scale */
+#hairImg {
+  height: 110px;
+  bottom: 210px;
 }
 
 #spriteBody        { z-index: 2; }
@@ -500,6 +524,18 @@ img.sprite-img[data-broken="true"] {
       hairImg.removeAttribute('data-broken');
       hairImg.style.display = 'block';
       hairImg.src = `sprites/hair/${character.hairStyle}.png`;
+
+      // Per-style position & size overrides
+      const overrides = {
+        'short':   { height: '90px',  left: '50%',  marginLeft: '0px'   },
+        'mohawk':  { height: '110px', left: '50%',  marginLeft: '-12px' },
+        'braided': { height: '110px', left: '50%',  marginLeft: '-12px' },
+      };
+      const defaults = { height: '110px', left: '50%', marginLeft: '0px' };
+      const style = overrides[character.hairStyle] || defaults;
+      hairImg.style.height      = style.height;
+      hairImg.style.left        = style.left;
+      hairImg.style.marginLeft  = style.marginLeft;
     }
     document.getElementById('spriteHair').style.setProperty('--hair-color', character.hairColor);
   }
