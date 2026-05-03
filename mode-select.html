@@ -7,6 +7,131 @@
     <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* ===== SETTINGS BUTTON ===== */
+        .top-btn {
+            position: fixed;
+            top: 20px;
+            padding: 10px 20px;
+            background: rgba(139,115,85,0.15);
+            border: 1px solid #8b7355;
+            border-radius: 6px;
+            color: #8b7355;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            transition: all 0.3s;
+            z-index: 100;
+            letter-spacing: 1px;
+        }
+        .top-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; color: #c9a45c; }
+        .options-btn { left: 20px; }
+
+        /* ===== SETTINGS OVERLAY ===== */
+        .options-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.82);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .options-overlay.active { display: flex; }
+
+        .options-panel {
+            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
+            border: 3px solid #c9a45c;
+            border-radius: 15px;
+            padding: 40px;
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 0 50px rgba(201,164,92,0.4);
+            position: relative;
+        }
+
+        .options-panel h2 {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            text-align: center;
+            font-size: 34px;
+            margin-bottom: 32px;
+            text-shadow: 0 0 20px rgba(201,164,92,0.5);
+        }
+
+        .close-options {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: none;
+            border: none;
+            color: #8b7355;
+            font-size: 28px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: color 0.3s;
+        }
+        .close-options:hover { color: #c9a45c; }
+
+        .slider-group { margin-bottom: 28px; }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 11px;
+        }
+        .slider-label span { color: #c9a45c; font-size: 15px; letter-spacing: 1px; }
+        .slider-value { color: #8b7355; font-size: 13px; min-width: 36px; text-align: right; }
+
+        .slider-container {
+            position: relative;
+            height: 28px;
+            display: flex;
+            align-items: center;
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(61,47,31,0.8);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c9a45c, #8b7355);
+            border-radius: 3px;
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;
+        }
+
+        .slider-thumb {
+            width: 20px; height: 20px;
+            background: #c9a45c;
+            border: 2px solid #1a0a2e;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: grab;
+            transition: box-shadow 0.2s;
+            z-index: 10;
+        }
+        .slider-thumb:hover  { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
+        .slider-thumb.active { cursor: grabbing; box-shadow: 0 0 15px rgba(201,164,92,0.8); }
+
+        .options-hint {
+            text-align: center;
+            color: #5a4a3a;
+            font-size: 11px;
+            margin-top: 22px;
+            letter-spacing: 1px;
+        }
+
+        /* ===== MODE CARDS ===== */
         .mode-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -82,7 +207,6 @@
             padding-top: 14px;
             border-top: 1px solid #3d2f1f;
         }
-
         .sub-options.show { display: flex; }
 
         .sub-btn {
@@ -98,18 +222,8 @@
             text-align: left;
             transition: background 0.15s, color 0.15s, border-color 0.15s;
         }
-
-        .sub-btn:hover {
-            background: rgba(201,164,92,0.08);
-            color: #c9a45c;
-            border-color: #8b7355;
-        }
-
-        .sub-btn.chosen {
-            background: rgba(201,164,92,0.12);
-            color: #c9a45c;
-            border-color: #c9a45c;
-        }
+        .sub-btn:hover  { background: rgba(201,164,92,0.08); color: #c9a45c; border-color: #8b7355; }
+        .sub-btn.chosen { background: rgba(201,164,92,0.12); color: #c9a45c; border-color: #c9a45c; }
 
         .lore-box {
             display: none;
@@ -124,7 +238,6 @@
             color: #8b7355;
             line-height: 1.7;
         }
-
         .lore-box.show { display: block; }
 
         .dnd-btn:disabled {
@@ -133,7 +246,6 @@
             transform: none !important;
             box-shadow: none !important;
         }
-
         .dnd-btn:disabled::before { display: none; }
 
         @media (max-width: 500px) {
@@ -144,6 +256,59 @@
 <body>
     <div class="bg-video"></div>
     <div class="particles" id="particles"></div>
+
+    <!-- Settings button -->
+    <button class="top-btn options-btn" onclick="openOptions()">&#9881; Settings</button>
+
+    <!-- Settings Overlay -->
+    <div class="options-overlay" id="optionsOverlay">
+        <div class="options-panel">
+            <button class="close-options" onclick="closeOptions()">&times;</button>
+            <h2>&#9881; Settings</h2>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>&#127925; Music</span><span class="slider-value" id="musicValue">70</span></div>
+                <div class="slider-container" tabindex="0" data-slider="music">
+                    <div class="slider-track"><div class="slider-fill" style="width:70%"></div></div>
+                    <div class="slider-thumb" style="left:70%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>&#128264; Master Volume</span><span class="slider-value" id="masterValue">80</span></div>
+                <div class="slider-container" tabindex="0" data-slider="master">
+                    <div class="slider-track"><div class="slider-fill" style="width:80%"></div></div>
+                    <div class="slider-thumb" style="left:80%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>&#9876; Enemies</span><span class="slider-value" id="enemiesValue">50</span></div>
+                <div class="slider-container" tabindex="0" data-slider="enemies">
+                    <div class="slider-track"><div class="slider-fill" style="width:50%"></div></div>
+                    <div class="slider-thumb" style="left:50%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>&#129309; Friends</span><span class="slider-value" id="friendsValue">60</span></div>
+                <div class="slider-container" tabindex="0" data-slider="friends">
+                    <div class="slider-track"><div class="slider-fill" style="width:60%"></div></div>
+                    <div class="slider-thumb" style="left:60%"></div>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>&#127752; Ambient</span><span class="slider-value" id="ambientValue">75</span></div>
+                <div class="slider-container" tabindex="0" data-slider="ambient">
+                    <div class="slider-track"><div class="slider-fill" style="width:75%"></div></div>
+                    <div class="slider-thumb" style="left:75%"></div>
+                </div>
+            </div>
+
+            <p class="options-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+        </div>
+    </div>
 
     <div class="dnd-center">
         <div class="dnd-container">
@@ -202,8 +367,10 @@
             if (!localStorage.getItem('dnd_user')) {
                 window.location.href = 'index.html';
             }
+            loadSliderValues();
         };
 
+        // ===== PARTICLES =====
         const pc = document.getElementById('particles');
         for (let i = 0; i < 50; i++) {
             const p = document.createElement('div');
@@ -215,6 +382,7 @@
             pc.appendChild(p);
         }
 
+        // ===== MODE SELECTION =====
         const loreText = {
             oneshot : 'This session is bound by fate. When your adventure concludes — in triumph or defeat — the gates close behind you forever. There is no return. Choose wisely, brave soul.',
             replay  : 'The sands of time are merciful. Should you fall, you may rise again from the beginning. Each run is a new chance to forge your legend.',
@@ -284,6 +452,82 @@
             sessionStorage.setItem('dnd_mode', currentMode);
             sessionStorage.setItem('dnd_sub',  currentSub);
             window.location.href = destination[currentSub];
+        }
+
+        // ===== SETTINGS =====
+        function openOptions() {
+            document.getElementById('optionsOverlay').classList.add('active');
+            document.addEventListener('keydown', handleEsc);
+        }
+
+        function closeOptions() {
+            document.getElementById('optionsOverlay').classList.remove('active');
+            document.removeEventListener('keydown', handleEsc);
+        }
+
+        function handleEsc(e) { if (e.key === 'Escape') closeOptions(); }
+
+        const sliders = {
+            music:   { value: 70 }, master:  { value: 80 },
+            enemies: { value: 50 }, friends: { value: 60 }, ambient: { value: 75 }
+        };
+
+        let activeSlider = null, isDragging = false;
+
+        function loadSliderValues() {
+            const saved = localStorage.getItem('dnd_sliders');
+            if (saved) {
+                const vals = JSON.parse(saved);
+                Object.keys(vals).forEach(k => {
+                    if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); }
+                });
+            }
+        }
+
+        function saveSliderValues() {
+            const vals = {};
+            Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; });
+            localStorage.setItem('dnd_sliders', JSON.stringify(vals));
+        }
+
+        function updateSliderUI(name) {
+            const container = document.querySelector(`[data-slider="${name}"]`);
+            if (!container) return;
+            const pct = sliders[name].value;
+            container.querySelector('.slider-fill').style.width = pct + '%';
+            container.querySelector('.slider-thumb').style.left = pct + '%';
+            document.getElementById(name + 'Value').textContent = pct;
+        }
+
+        document.querySelectorAll('.slider-container').forEach(container => {
+            const name = container.dataset.slider;
+            sliders[name].element = container;
+            container.addEventListener('mousedown', e => {
+                isDragging = true; activeSlider = name;
+                updateFromMouse(e, name, container);
+            });
+            container.addEventListener('click', e => updateFromMouse(e, name, container));
+            container.addEventListener('keydown', e => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    sliders[name].value = Math.max(0, Math.min(100,
+                        sliders[name].value + (e.key === 'ArrowLeft' ? -1 : 1)));
+                    updateSliderUI(name); saveSliderValues();
+                }
+            });
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!isDragging || !activeSlider) return;
+            updateFromMouse(e, activeSlider, sliders[activeSlider].element);
+        });
+        document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
+
+        function updateFromMouse(e, name, container) {
+            const rect = container.getBoundingClientRect();
+            const pct  = Math.round(Math.max(0, Math.min(e.clientX - rect.left, rect.width)) / rect.width * 100);
+            sliders[name].value = pct;
+            updateSliderUI(name); saveSliderValues();
         }
     </script>
 </body>
