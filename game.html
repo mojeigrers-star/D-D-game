@@ -12,24 +12,20 @@
         /* ===== GAME BACKGROUND ===== */
         .game-bg {
             position: fixed; inset: 0; z-index: -1;
-            background:
-                radial-gradient(ellipse 80% 60% at 50% 40%, rgba(60,20,10,0.6) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 80% at 20% 80%, rgba(10,30,60,0.5) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 80% at 80% 20%, rgba(40,10,60,0.4) 0%, transparent 70%),
-                linear-gradient(160deg, #0a0508 0%, #12080f 40%, #080d18 100%);
+            background: linear-gradient(160deg, #0a0508 0%, #12080f 40%, #080d18 100%);
         }
 
-        .fog-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .fog-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         .fog-layer::before {
             content: ''; position: absolute; bottom: 0; left: -50%;
-            width: 200%; height: 40%;
-            background: radial-gradient(ellipse at center, rgba(201,164,92,0.04) 0%, transparent 70%);
+            width: 200%; height: 25%;
+            background: radial-gradient(ellipse at center, rgba(201,164,92,0.06) 0%, transparent 70%);
             animation: fog-drift 20s ease-in-out infinite alternate;
         }
         .fog-layer::after {
             content: ''; position: absolute; top: 0; left: -30%;
-            width: 160%; height: 30%;
-            background: radial-gradient(ellipse at center, rgba(100,60,160,0.06) 0%, transparent 70%);
+            width: 160%; height: 20%;
+            background: radial-gradient(ellipse at center, rgba(100,60,160,0.05) 0%, transparent 70%);
             animation: fog-drift 28s ease-in-out infinite alternate-reverse;
         }
         @keyframes fog-drift {
@@ -42,7 +38,7 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 20px;
-            background: linear-gradient(180deg, rgba(10,5,8,0.95) 0%, transparent 100%);
+            background: linear-gradient(180deg, rgba(10,5,8,0.97) 0%, transparent 100%);
             border-bottom: 1px solid rgba(201,164,92,0.15);
         }
 
@@ -69,7 +65,6 @@
         }
         .char-pill .level { color: #8b7355; font-size: 10px; }
 
-        /* Inventory HUD button */
         .inv-hud-btn {
             background: rgba(139,115,85,0.1); border: 1px solid #5a4a3a;
             border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
@@ -86,50 +81,65 @@
         .quick-stat-val  { color: #c9a45c; font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; }
         .quick-stat-name { color: #5a4a3a; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
 
-        /* ===== GAME AREA ===== */
+        /* ===== MAP AREA ===== */
         .game-area {
-            position: fixed; inset: 0; top: 70px; bottom: 220px;
-            display: flex; align-items: center; justify-content: center;
+            position: fixed; inset: 0; top: 68px; bottom: 220px;
+            display: flex; align-items: stretch; justify-content: center;
+            overflow: hidden;
         }
-        .scene-container {
-            position: relative; width: min(900px, 90vw); height: 100%;
-            display: flex; align-items: flex-end; justify-content: center;
+
+        #mapCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            image-rendering: pixelated;
         }
-        .scene-ground {
-            position: absolute; bottom: 0; left: 10%; right: 10%; height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(201,164,92,0.2), transparent);
+
+        /* New island button */
+        .new-island-btn {
+            position: fixed; top: 80px; left: 20px; z-index: 110;
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(201,164,92,0.3);
+            border-radius: 6px; padding: 6px 14px; font-family: 'Cinzel', serif;
+            font-size: 11px; color: #8b7355; letter-spacing: 1px; cursor: pointer;
+            transition: all 0.3s; pointer-events: all;
         }
-        .scene-torch {
-            position: absolute; bottom: 30%; font-size: 32px;
-            filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
-            animation: flicker 3s ease-in-out infinite;
+        .new-island-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.08); }
+
+        /* ===== LOCATION TOOLTIP ===== */
+        .map-tooltip {
+            position: fixed; z-index: 200; pointer-events: none;
+            background: rgba(10,5,8,0.95); border: 1px solid #c9a45c;
+            border-radius: 8px; padding: 8px 14px;
+            font-family: 'Cinzel', serif; font-size: 12px; color: #c9a45c;
+            letter-spacing: 1px; display: none; white-space: nowrap;
         }
-        .scene-torch.left  { left:  8%; }
-        .scene-torch.right { right: 8%; animation-delay: 1.5s; }
-        @keyframes flicker {
-            0%, 100% { filter: drop-shadow(0 0 12px rgba(255,140,0,0.8)); transform: scale(1);    }
-            25%       { filter: drop-shadow(0 0 20px rgba(255,160,0,1));   transform: scale(1.05); }
-            75%       { filter: drop-shadow(0 0  8px rgba(255,120,0,0.6)); transform: scale(0.97); }
-        }
-        .stars { position: absolute; inset: 0; pointer-events: none; }
+        .map-tooltip .tt-sub { color: #8b7355; font-size: 10px; margin-top: 2px; }
 
         /* ===== MINIMAP ===== */
         .minimap {
-            position: fixed; top: 80px; right: 20px; width: 120px; height: 90px;
-            background: rgba(0,0,0,0.7); border: 1px solid rgba(201,164,92,0.2);
-            border-radius: 6px; padding: 8px; z-index: 90;
+            position: fixed; top: 80px; right: 20px; z-index: 110;
+            background: rgba(0,0,0,0.8); border: 1px solid rgba(201,164,92,0.25);
+            border-radius: 8px; padding: 8px;
         }
-        .minimap-title { font-family: 'Cinzel', serif; font-size: 8px; color: #5a4a3a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
-        .minimap-grid  { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
-        .minimap-cell  { aspect-ratio: 1; background: rgba(61,47,31,0.3); border-radius: 2px; }
-        .minimap-cell.visited { background: rgba(201,164,92,0.15); }
-        .minimap-cell.current { background: rgba(201,164,92,0.6);  }
-        .minimap-cell.wall    { background: rgba(0,0,0,0.8);       }
+        .minimap-title { font-family: 'Cinzel', serif; font-size: 8px; color: #5a4a3a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; text-align: center; }
+        #minimapCanvas { display: block; border-radius: 4px; }
+
+        /* ===== LEGEND ===== */
+        .map-legend {
+            position: fixed; bottom: 228px; right: 20px; z-index: 110;
+            background: rgba(0,0,0,0.75); border: 1px solid rgba(201,164,92,0.2);
+            border-radius: 6px; padding: 8px 10px;
+            font-family: 'Cinzel', serif; font-size: 9px; color: #8b7355;
+        }
+        .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+        .legend-row:last-child { margin-bottom: 0; }
+        .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
         /* ===== NARRATIVE BOX ===== */
         .narrative-area {
             position: fixed; bottom: 0; left: 0; right: 0; height: 220px;
-            background: linear-gradient(180deg, transparent 0%, rgba(10,5,8,0.98) 15%);
+            background: linear-gradient(180deg, transparent 0%, rgba(10,5,8,0.99) 12%);
             border-top: 1px solid rgba(201,164,92,0.2);
             display: flex; flex-direction: column; padding: 16px 24px 20px; z-index: 100;
         }
@@ -297,12 +307,12 @@
 
         <div class="inv-section-label">&#9876; Equipped</div>
         <div class="equip-slots">
-            <div class="equip-slot" title="Head">  <span>&#128081;</span><span class="equip-slot-label">Head</span></div>
-            <div class="equip-slot" title="Chest"> <span>&#128093;</span><span class="equip-slot-label">Chest</span></div>
-            <div class="equip-slot" title="Weapon"><span>&#9876;</span>  <span class="equip-slot-label">Weapon</span></div>
-            <div class="equip-slot" title="Shield"><span>&#128737;</span><span class="equip-slot-label">Shield</span></div>
-            <div class="equip-slot" title="Boots"> <span>&#128098;</span><span class="equip-slot-label">Boots</span></div>
-            <div class="equip-slot" title="Ring">  <span>&#128141;</span><span class="equip-slot-label">Ring</span></div>
+            <div class="equip-slot"><span>&#128081;</span><span class="equip-slot-label">Head</span></div>
+            <div class="equip-slot"><span>&#128093;</span><span class="equip-slot-label">Chest</span></div>
+            <div class="equip-slot"><span>&#9876;</span>  <span class="equip-slot-label">Weapon</span></div>
+            <div class="equip-slot"><span>&#128737;</span><span class="equip-slot-label">Shield</span></div>
+            <div class="equip-slot"><span>&#128098;</span><span class="equip-slot-label">Boots</span></div>
+            <div class="equip-slot"><span>&#128141;</span><span class="equip-slot-label">Ring</span></div>
         </div>
 
         <div class="inv-section-label">&#127894; Bag</div>
@@ -310,9 +320,14 @@
     </div>
 </div>
 
+<!-- ===== LOCATION TOOLTIP ===== -->
+<div class="map-tooltip" id="mapTooltip">
+    <div id="ttName">Location</div>
+    <div class="tt-sub" id="ttSub">Click to explore</div>
+</div>
+
 <!-- ===== TOP HUD ===== -->
 <div class="top-hud">
-    <!-- Left: inventory button + char info -->
     <div class="hud-section">
         <button class="inv-hud-btn" onclick="openInventory()">&#127894; Inventory</button>
         <div class="char-pill">
@@ -321,7 +336,6 @@
         </div>
     </div>
 
-    <!-- Center: bars -->
     <div class="hud-section" style="flex-direction:column; gap:5px;">
         <div class="hud-bar-group">
             <div class="hud-bar-label"><span>&#10084; HP</span><span id="hpText">80 / 100</span></div>
@@ -337,7 +351,6 @@
         </div>
     </div>
 
-    <!-- Right: quick stats -->
     <div class="hud-section">
         <div class="quick-stats">
             <div class="quick-stat"><div class="quick-stat-val" id="statGold">0</div><div class="quick-stat-name">&#127881; Gold</div></div>
@@ -347,20 +360,30 @@
     </div>
 </div>
 
-<!-- ===== SCENE ===== -->
+<!-- ===== MAP CANVAS ===== -->
 <div class="game-area">
-    <div class="scene-container" id="sceneContainer">
-        <div class="stars" id="starsLayer"></div>
-        <div class="scene-torch left">&#128293;</div>
-        <div class="scene-torch right">&#128293;</div>
-        <div class="scene-ground"></div>
-    </div>
+    <canvas id="mapCanvas"></canvas>
 </div>
+
+<!-- ===== NEW ISLAND BUTTON ===== -->
+<button class="new-island-btn" onclick="generateNewIsland()">&#8635; New Island</button>
 
 <!-- ===== MINIMAP ===== -->
 <div class="minimap">
     <div class="minimap-title">&#9741; Map</div>
-    <div class="minimap-grid" id="minimapGrid"></div>
+    <canvas id="minimapCanvas" width="110" height="80"></canvas>
+</div>
+
+<!-- ===== TERRAIN LEGEND ===== -->
+<div class="map-legend">
+    <div class="legend-row"><div class="legend-swatch" style="background:#1a3a6b"></div>Deep Sea</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#2a5fa0"></div>Shallow Water</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#c9a45c"></div>Beach</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#4a7c3f"></div>Grassland</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#2d5c28"></div>Forest</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#7a6a5a"></div>Hills</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#a09080"></div>Mountains</div>
+    <div class="legend-row"><div class="legend-swatch" style="background:#d4d0cc"></div>Snow Peak</div>
 </div>
 
 <!-- ===== NARRATIVE BOX ===== -->
@@ -380,188 +403,555 @@
 </div>
 
 <script>
-    // Guard
-    const user = localStorage.getItem('dnd_user');
-    if (!user) window.location.href = 'index.html';
+// ===== GUARD =====
+const user = localStorage.getItem('dnd_user');
+if (!user) window.location.href = 'index.html';
 
-    // ===== PARTICLES =====
-    const pc = document.getElementById('particles');
-    for (let i = 0; i < 50; i++) {
-        const p = document.createElement('div');
-        p.classList.add('particle');
-        p.style.left = Math.random() * 100 + '%';
-        p.style.top  = Math.random() * 100 + '%';
-        p.style.animationDelay    = Math.random() * 8 + 's';
-        p.style.animationDuration = (Math.random() * 5 + 5) + 's';
-        pc.appendChild(p);
+// ===== PARTICLES =====
+const pc = document.getElementById('particles');
+for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top  = Math.random() * 100 + '%';
+    p.style.animationDelay    = Math.random() * 8 + 's';
+    p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    pc.appendChild(p);
+}
+
+// ===== PLAYER DATA =====
+const charRaw   = localStorage.getItem('dnd_character_' + user);
+const statsRaw  = localStorage.getItem('dnd_stats_' + user);
+const character = charRaw  ? JSON.parse(charRaw)  : { race:'human', class:'fighter', sex:'male' };
+const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+document.getElementById('hudCharName').textContent = user;
+document.getElementById('hudCharSub').textContent  = ` — Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
+document.getElementById('statGold').textContent    = stats.gold;
+document.getElementById('xpText').textContent      = `${stats.xp} / ${stats.xpMax}`;
+document.getElementById('xpBar').style.width       = (stats.xp / stats.xpMax * 100) + '%';
+
+const hp = stats.con * 5 || 80, hpMax = stats.con * 5 || 100;
+document.getElementById('hpText').textContent = `${hp} / ${hpMax}`;
+document.getElementById('hpBar').style.width  = (hp / hpMax * 100) + '%';
+
+const mana = stats.int * 3 || 60;
+document.getElementById('manaText').textContent = `${mana} / ${mana}`;
+document.getElementById('statAC').textContent   = 10 + Math.floor((stats.dex - 10) / 2);
+document.getElementById('statSpd').textContent  = character.race === 'dwarf' ? 25 : 30;
+
+// ===== INVENTORY =====
+function openInventory() {
+    document.getElementById('invGold').textContent = stats.gold;
+    buildInvGrid();
+    document.getElementById('invOverlay').classList.add('active');
+    document.addEventListener('keydown', handleInvEsc);
+}
+function closeInventory() {
+    document.getElementById('invOverlay').classList.remove('active');
+    document.removeEventListener('keydown', handleInvEsc);
+}
+function handleInvEsc(e) { if (e.key === 'Escape') closeInventory(); }
+
+function buildInvGrid() {
+    const saved = localStorage.getItem('dnd_inventory_' + user);
+    const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
+    while (items.length < 24) items.push(null);
+    const grid = document.getElementById('invGrid');
+    grid.innerHTML = '';
+    let count = 0;
+    for (let i = 0; i < 24; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        const item = items[i];
+        if (item) {
+            count++;
+            slot.classList.add('occupied');
+            slot.innerHTML = `${item.icon}${item.qty > 1 ? `<span class="item-qty">${item.qty}</span>` : ''}<div class="item-tooltip">${item.name}</div>`;
+        }
+        grid.appendChild(slot);
     }
+    document.getElementById('invItems').textContent = count;
+}
 
-    // ===== STARS =====
-    const starsLayer = document.getElementById('starsLayer');
-    for (let i = 0; i < 80; i++) {
-        const s = document.createElement('div');
-        s.style.cssText = `
-            position:absolute;
-            width:${Math.random() < 0.8 ? 1 : 2}px;
-            height:${Math.random() < 0.8 ? 1 : 2}px;
-            background:#c9a45c; border-radius:50%;
-            left:${Math.random() * 100}%; top:${Math.random() * 70}%;
-            opacity:${0.1 + Math.random() * 0.4};
-            animation: float ${5 + Math.random() * 8}s ease-in-out ${Math.random() * 5}s infinite alternate;
-        `;
-        starsLayer.appendChild(s);
+// ===== NARRATIVE =====
+const scenes = [
+    {
+        speaker: '&#9830; The Dungeon Master',
+        text: 'Before you stretches a vast island realm — ancient, mysterious, and alive with hidden dangers. Mountains pierce the clouds to the north, dense forests whisper secrets in the east. Click any location marker on the map to begin your investigation, or choose an action below.'
+    },
+    {
+        speaker: '&#9830; The Dungeon Master',
+        text: 'The island holds many secrets. Ruins of a forgotten civilization dot the coastline, and deep within the forest, something stirs. Travelers speak of a dungeon beneath the central peak, sealed for a thousand years. What draws you here, adventurer?'
+    },
+    {
+        speaker: '&#9876; A Voice on the Wind',
+        text: '"So... another hero washes ashore on the Shattered Isle. How many have come before you? How many remain?" The voice fades into the crash of distant waves. Something watches from the shadows of the treeline.'
     }
+];
 
-    // ===== MINIMAP =====
-    const mapLayout = ['wall','visited','current','visited','wall','wall','visited','visited','wall','wall','wall','wall','visited','visited','wall','wall','wall','wall','visited','wall','wall','wall','wall','wall','wall'];
-    mapLayout.forEach(type => {
-        const cell = document.createElement('div');
-        cell.className = 'minimap-cell ' + type;
-        document.getElementById('minimapGrid').appendChild(cell);
-    });
+let currentScene = 0, typewriterTimer = null;
 
-    // ===== PLAYER DATA =====
-    const charRaw   = localStorage.getItem('dnd_character_' + user);
-    const statsRaw  = localStorage.getItem('dnd_stats_'     + user);
-    const character = charRaw  ? JSON.parse(charRaw)  : { race:'human', class:'fighter', sex:'male' };
-    const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
+function typeText(text, el, speed = 28) {
+    el.innerHTML = '';
+    let i = 0;
+    clearInterval(typewriterTimer);
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    el.appendChild(cursor);
+    typewriterTimer = setInterval(() => {
+        if (i < text.length) {
+            el.insertBefore(document.createTextNode(text[i]), cursor);
+            i++;
+        } else {
+            clearInterval(typewriterTimer);
+            cursor.remove();
+        }
+    }, speed);
+}
 
-    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
-
-    document.getElementById('hudCharName').textContent = user;
-    document.getElementById('hudCharSub').textContent  = ` — Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
-    document.getElementById('statGold').textContent    = stats.gold;
-    document.getElementById('xpText').textContent      = `${stats.xp} / ${stats.xpMax}`;
-    document.getElementById('xpBar').style.width       = (stats.xp / stats.xpMax * 100) + '%';
-
-    const hp = stats.con * 5 || 80, hpMax = stats.con * 5 || 100;
-    document.getElementById('hpText').textContent = `${hp} / ${hpMax}`;
-    document.getElementById('hpBar').style.width  = (hp / hpMax * 100) + '%';
-
-    const mana = stats.int * 3 || 60;
-    document.getElementById('manaText').textContent = `${mana} / ${mana}`;
-    document.getElementById('statAC').textContent   = 10 + Math.floor((stats.dex - 10) / 2);
-    document.getElementById('statSpd').textContent  = character.race === 'dwarf' ? 25 : 30;
-
-    // ===== INVENTORY OVERLAY =====
-    function openInventory() {
-        document.getElementById('invGold').textContent = stats.gold;
-        buildInvGrid();
-        document.getElementById('invOverlay').classList.add('active');
-        document.addEventListener('keydown', handleInvEsc);
+function loadScene(index) {
+    const el = document.getElementById('narrativeText');
+    if (index >= scenes.length) {
+        document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+        typeText('The island sprawls endlessly before you. Every hill, ruin, and forest trail holds a story waiting to be uncovered.', el);
+        return;
     }
+    document.getElementById('narrativeSpeaker').innerHTML = scenes[index].speaker;
+    typeText(scenes[index].text, el);
+}
 
-    function closeInventory() {
-        document.getElementById('invOverlay').classList.remove('active');
-        document.removeEventListener('keydown', handleInvEsc);
-    }
+function nextScene() { currentScene++; loadScene(currentScene); }
 
-    function handleInvEsc(e) { if (e.key === 'Escape') closeInventory(); }
+function doAction(type) {
+    const terrain = currentTerrain || 'ancient land';
+    const msgs = {
+        explore: `You cautiously survey the surrounding terrain. Your ${cap(character.class)} instincts keep you sharp as you study the ${terrain} ahead. Strange markings in the earth suggest others have passed this way.`,
+        attack:  `You raise your weapon, ready for battle. As a ${cap(character.race)} ${cap(character.class)}, your training takes over. The island is quiet now... but danger never stays hidden for long.`,
+        magic:   `You reach into the arcane currents flowing through this ancient island. The earth hums beneath your feet, resonating with old magic. Something deep within the island stirs in response.`
+    };
+    document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+    typeText(msgs[type] || 'You act.', document.getElementById('narrativeText'));
+}
 
-    function buildInvGrid() {
-        const saved = localStorage.getItem('dnd_inventory_' + user);
-        const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
-        while (items.length < 24) items.push(null);
+// ===== INTRO =====
+function skipIntro() {
+    const o = document.getElementById('introOverlay');
+    o.classList.add('fade-out');
+    setTimeout(() => o.remove(), 1500);
+}
 
-        const grid = document.getElementById('invGrid');
-        grid.innerHTML = '';
-        let count = 0;
+// ===== MAP GENERATION =====
+const MAP_W = 160, MAP_H = 110;
+let mapData = null;       // { heightMap, moisture, locations, seed }
+let currentTerrain = '';  // terrain name under cursor
 
-        for (let i = 0; i < 24; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'inv-slot';
-            const item = items[i];
-            if (item) {
-                count++;
-                slot.classList.add('occupied');
-                slot.innerHTML = `${item.icon}${item.qty > 1 ? `<span class="item-qty">${item.qty}</span>` : ''}<div class="item-tooltip">${item.name}</div>`;
+function mulberry32(a) {
+    return function() {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+
+function smoothNoise(w, h, rng, scale, octaves) {
+    const base = Array.from({length: h}, () => Array.from({length: w}, () => rng()));
+    const result = Array.from({length: h}, () => new Float32Array(w));
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let val = 0, amp = 1, freq = 1, max = 0;
+            for (let o = 0; o < octaves; o++) {
+                const fx = (x / w) * freq * scale;
+                const fy = (y / h) * freq * scale;
+                const ix = Math.floor(fx) % w, iy = Math.floor(fy) % h;
+                const fxf = fx - Math.floor(fx), fyf = fy - Math.floor(fy);
+                const u = fxf * fxf * (3 - 2 * fxf);
+                const v = fyf * fyf * (3 - 2 * fyf);
+                const a = base[iy % h][(ix) % w];
+                const b = base[iy % h][(ix + 1) % w];
+                const c = base[(iy + 1) % h][(ix) % w];
+                const d = base[(iy + 1) % h][(ix + 1) % w];
+                val += amp * (a + u * (b - a) + v * (c - a + u * (d - b - c + a)));
+                max += amp; amp *= 0.5; freq *= 2.1;
             }
-            grid.appendChild(slot);
+            result[y][x] = val / max;
         }
-        document.getElementById('invItems').textContent = count;
     }
+    return result;
+}
 
-    // ===== NARRATIVE TYPEWRITER =====
-    const scenes = [
-        {
-            speaker: '&#9830; The Dungeon Master',
-            text: 'You descend the mossy stone steps into the darkness below. The torchlight flickers against ancient walls etched with forgotten runes. A cold wind breathes from the depths ahead, carrying with it the faint scent of sulfur... and something else. Something ancient.'
+function getTerrainColor(h, m) {
+    if (h < 0.0)  return { r:22,  g:48,  b:100, name:'Deep Sea'     };
+    if (h < 0.08) return { r:38,  g:82,  b:150, name:'Shallow Water' };
+    if (h < 0.15) return { r:195, g:162, b:88,  name:'Beach'         };
+    if (h < 0.38) return m > 0.55
+        ? { r:34, g:85,  b:30,  name:'Forest'    }
+        : { r:65, g:115, b:48,  name:'Grassland'  };
+    if (h < 0.55) return m > 0.52
+        ? { r:28, g:70,  b:24,  name:'Dense Forest' }
+        : { r:50, g:100, b:38,  name:'Grassland'    };
+    if (h < 0.70) return { r:115, g:100, b:82, name:'Hills'      };
+    if (h < 0.85) return { r:145, g:130, b:112, name:'Mountains' };
+    return { r:210, g:205, b:200, name:'Snow Peak' };
+}
+
+function generateMap(seed) {
+    const rng = mulberry32(seed);
+    const noise    = smoothNoise(MAP_W, MAP_H, rng, 3.5, 5);
+    const moisture = smoothNoise(MAP_W, MAP_H, rng, 2.8, 4);
+
+    const cx = MAP_W / 2 + (rng() - 0.5) * 16;
+    const cy = MAP_H / 2 + (rng() - 0.5) * 10;
+    const rx = MAP_W * (0.28 + rng() * 0.12);
+    const ry = MAP_H * (0.30 + rng() * 0.10);
+
+    const heightMap = Array.from({length: MAP_H}, (_, y) =>
+        Array.from({length: MAP_W}, (_, x) => {
+            const dx = (x - cx) / rx, dy = (y - cy) / ry;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const wobble = 0.18 * Math.sin(dx * 7.3 + rng() * 2) + 0.12 * Math.cos(dy * 5.1 + rng() * 2);
+            return noise[y][x] * 0.6 + Math.max(0, 1 - dist + wobble) * 0.55 - 0.35;
+        })
+    );
+
+    // ===== LOCATION TYPES =====
+    const locationTypes = [
+        { icon: '⚔', name: 'Ancient Dungeon',  color: '#c0392b',
+          narratives: [
+            `The dungeon entrance yawns before you like a wound in the earth. Carved runes flicker with a sickly green light, warning those who can read them: "Abandon hope." As a ${cap(character.class)}, you feel the pull of whatever lies within.`,
+            `Cold air breathes from the dungeon's maw, carrying the scent of rot and old magic. Iron doors hang ajar, one twisted off its hinges. Something left in a hurry... or something got in.`
+          ]
         },
-        {
-            speaker: '&#9830; The Dungeon Master',
-            text: 'The corridor opens into a vast chamber. Pillars of obsidian rise to a ceiling you cannot see. In the center, upon a cracked stone altar, rests a glowing orb — pulsing like a heartbeat. Shadows move at the edges of your vision.'
+        { icon: '🏰', name: 'Ruined Castle',    color: '#8b7355',
+          narratives: [
+            `A crumbled castle rises against the sky, its towers broken like snapped teeth. The banners that once flew here have long since rotted away. In the courtyard, a dry fountain bears the crest of a kingdom no one remembers.`,
+            `The castle walls are pocked with scars from some ancient siege. Moss claims the fallen stone. Through a shattered window, you glimpse movement — shadow, or wind, or something worse.`
+          ]
         },
-        {
-            speaker: '&#9876; A Voice from the Dark',
-            text: '"So... another adventurer dares enter my domain. How delightfully foolish." A figure materializes from the shadows — robes the color of midnight, eyes like dying embers. "Turn back now, and I may let you live. Stay... and you become part of my collection."'
-        }
+        { icon: '⛪', name: 'Coastal Village',  color: '#c9a45c',
+          narratives: [
+            `A small village clings to the coast, its fishing boats rocking at weathered docks. Smoke rises from a handful of chimneys. The villagers watch you with wary eyes — strangers rarely bring good news to this island.`,
+            `The village seems peaceful at first glance, but the doors are barred in daylight and effigies of protective spirits hang over every threshold. The innkeeper speaks in hushed tones about what stalks the forest at night.`
+          ]
+        },
+        { icon: '💀', name: 'Ancient Ruins',    color: '#7a6a5a',
+          narratives: [
+            `Stone pillars jut from the earth at odd angles, their carvings worn smooth by centuries of rain. This was once a place of power — an altar, perhaps, or a temple to a god whose name was struck from all records.`,
+            `The ruins hum faintly under your feet, a resonance you feel more than hear. Shards of something crystalline litter the ground, and at the center, a stone basin still holds water that doesn't reflect the sky above.`
+          ]
+        },
+        { icon: '🌋', name: 'Smoldering Peak',  color: '#e74c3c',
+          narratives: [
+            `The mountain vents sulfurous smoke in lazy coils, painting the air with the smell of the underworld. Flows of cooled lava form jagged black ridges. Something lives in the caldera — you can see its silhouette against the orange glow.`,
+            `Heat shimmers off the volcanic rock as you approach. The ground is warm underfoot. A crude altar of lava stone bears fresh offerings — someone is appeasing whatever dwells here.`
+          ]
+        },
+        { icon: '🌿', name: 'Sacred Grove',     color: '#27ae60',
+          narratives: [
+            `Ancient trees form a perfect circle here, their branches interlaced overhead like clasped hands. The light that filters through is golden and still, and the air carries the scent of rain and something floral you can't name.`,
+            `A spring wells up at the center of the grove, its water impossibly clear. Offerings of woven grass and carved wood line the bank. The grove feels watched — but benevolently so. You sense healing power here.`
+          ]
+        },
+        { icon: '⚓', name: 'Hidden Port',      color: '#2980b9',
+          narratives: [
+            `A natural cove shelters weathered ships of dubious origin. Crates stamped with foreign sigils are stacked on the dock, and lanterns burn at odd hours. This is no lawful harbor — questions here come at a price.`,
+            `The port smells of salt, pitch, and secrets. A harbormaster of indeterminate loyalty eyes you from beneath a wide hat. Ships come and go without registering names. Whatever you need, it can probably be found here — for a cost.`
+          ]
+        },
     ];
 
-    let currentScene = 0, typewriterTimer = null;
-
-    function typeText(text, el, speed = 28) {
-        el.innerHTML = '';
-        let i = 0;
-        clearInterval(typewriterTimer);
-        const cursor = document.createElement('span');
-        cursor.className = 'cursor';
-        el.appendChild(cursor);
-        typewriterTimer = setInterval(() => {
-            if (i < text.length) {
-                el.insertBefore(document.createTextNode(text[i]), cursor);
-                i++;
-            } else {
-                clearInterval(typewriterTimer);
-                cursor.remove();
+    // Place locations on valid land tiles
+    const locations = [];
+    const numLocs = 4 + Math.floor(rng() * 4);
+    for (let i = 0; i < numLocs; i++) {
+        let placed = false, attempts = 0;
+        while (!placed && attempts++ < 80) {
+            const lx = Math.floor(MAP_W * 0.1 + rng() * MAP_W * 0.8);
+            const ly = Math.floor(MAP_H * 0.1 + rng() * MAP_H * 0.8);
+            const h  = heightMap[ly][lx];
+            if (h > 0.13 && h < 0.88) {
+                const tooClose = locations.some(l => Math.hypot(l.x - lx, l.y - ly) < 18);
+                if (!tooClose) {
+                    const type = locationTypes[Math.floor(rng() * locationTypes.length)];
+                    locations.push({ x: lx, y: ly, ...type });
+                    placed = true;
+                }
             }
-        }, speed);
-    }
-
-    function loadScene(index) {
-        const el = document.getElementById('narrativeText');
-        if (index >= scenes.length) {
-            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-            typeText('Your adventure continues beyond what has been written... The realm stretches endlessly before you, full of secrets yet to be discovered.', el);
-            return;
         }
-        document.getElementById('narrativeSpeaker').innerHTML = scenes[index].speaker;
-        typeText(scenes[index].text, el);
     }
 
-    function nextScene()    { currentScene++; loadScene(currentScene); }
+    return { heightMap, moisture, locations, seed };
+}
 
-    function doAction(type) {
-        const msgs = {
-            explore:   `You cautiously move forward, hand on your weapon. Your ${cap(character.class)} instincts keep you alert as you examine the ancient chamber.`,
-            attack:    `You raise your weapon, battle-ready. As a ${cap(character.class)}, you channel your ${cap(character.race)} strength. The air crackles with tension — but there is nothing to strike. Yet.`,
-            magic:     `You reach into the arcane currents flowing through this ancient place. The runes on the walls pulse in response to your magical intent. Something stirs in the deep.`
-        };
+// ===== RENDER MAP =====
+function renderMap() {
+    const canvas = document.getElementById('mapCanvas');
+    const area   = document.querySelector('.game-area');
+    const aW = area.clientWidth  || window.innerWidth;
+    const aH = area.clientHeight || (window.innerHeight - 68 - 220);
+    if (canvas.width  !== aW) canvas.width  = aW;
+    if (canvas.height !== aH) canvas.height = aH;
+    const ctx = canvas.getContext('2d');
+
+    const scaleX = canvas.width  / MAP_W;
+    const scaleY = canvas.height / MAP_H;
+
+    const { heightMap, moisture, locations } = mapData;
+
+    // Draw terrain tiles
+    for (let y = 0; y < MAP_H; y++) {
+        for (let x = 0; x < MAP_W; x++) {
+            const h = heightMap[y][x];
+            const m = moisture[y][x];
+            const tc = getTerrainColor(h, m);
+            const vary = (Math.sin(x * 7.3 + y * 3.1) * 0.5 + 0.5) * 10 - 5;
+            ctx.fillStyle = `rgb(${Math.round(tc.r+vary)},${Math.round(tc.g+vary)},${Math.round(tc.b+vary)})`;
+            ctx.fillRect(Math.floor(x * scaleX), Math.floor(y * scaleY),
+                         Math.ceil(scaleX) + 1, Math.ceil(scaleY) + 1);
+        }
+    }
+
+    // Vignette
+    const vig = ctx.createRadialGradient(
+        canvas.width/2, canvas.height/2, Math.min(canvas.width, canvas.height) * 0.3,
+        canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height) * 0.75
+    );
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw location markers
+    locations.forEach(loc => {
+        const px = (loc.x + 0.5) * scaleX;
+        const py = (loc.y + 0.5) * scaleY;
+        const r  = Math.max(10, Math.min(scaleX * 2.5, 18));
+
+        // Glow ring
+        ctx.beginPath();
+        ctx.arc(px, py, r + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = loc.color + '55';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Marker circle
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.72)';
+        ctx.fill();
+        ctx.strokeStyle = loc.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Icon
+        ctx.font = `${Math.round(r * 1.1)}px sans-serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle    = '#fff';
+        ctx.fillText(loc.icon, px, py);
+
+        // Name label
+        ctx.font         = `bold ${Math.max(9, Math.round(scaleX * 0.9))}px 'Cinzel', serif`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle    = '#fff';
+        ctx.shadowColor  = '#000';
+        ctx.shadowBlur   = 5;
+        ctx.fillText(loc.name, px, py + r + 4);
+        ctx.shadowBlur   = 0;
+    });
+
+    // Render minimap
+    renderMinimap();
+}
+
+function renderMinimap() {
+    const mc  = document.getElementById('minimapCanvas');
+    const mCtx = mc.getContext('2d');
+    const mW = mc.width, mH = mc.height;
+    const { heightMap, moisture, locations } = mapData;
+
+    const sX = mW / MAP_W, sY = mH / MAP_H;
+
+    for (let y = 0; y < MAP_H; y++) {
+        for (let x = 0; x < MAP_W; x++) {
+            const tc = getTerrainColor(heightMap[y][x], moisture[y][x]);
+            mCtx.fillStyle = `rgb(${tc.r},${tc.g},${tc.b})`;
+            mCtx.fillRect(Math.floor(x * sX), Math.floor(y * sY),
+                          Math.ceil(sX) + 1, Math.ceil(sY) + 1);
+        }
+    }
+
+    locations.forEach(loc => {
+        const px = (loc.x + 0.5) * sX;
+        const py = (loc.y + 0.5) * sY;
+        mCtx.beginPath();
+        mCtx.arc(px, py, 2.5, 0, Math.PI * 2);
+        mCtx.fillStyle = loc.color;
+        mCtx.fill();
+        mCtx.strokeStyle = '#fff';
+        mCtx.lineWidth = 0.5;
+        mCtx.stroke();
+    });
+}
+
+// ===== MOUSE INTERACTION =====
+document.getElementById('mapCanvas').addEventListener('mousemove', function(e) {
+    if (!mapData) return;
+    const canvas  = this;
+    const rect    = canvas.getBoundingClientRect();
+    const mx      = e.clientX - rect.left;
+    const my      = e.clientY - rect.top;
+    const scaleX  = canvas.width  / MAP_W;
+    const scaleY  = canvas.height / MAP_H;
+    const tileX   = Math.floor(mx / scaleX);
+    const tileY   = Math.floor(my / scaleY);
+
+    // Check hover over location
+    let hoveredLoc = null;
+    mapData.locations.forEach(loc => {
+        const px   = (loc.x + 0.5) * scaleX;
+        const py   = (loc.y + 0.5) * scaleY;
+        const dist = Math.hypot(mx - px, my - py);
+        if (dist < Math.max(12, scaleX * 2.8)) hoveredLoc = loc;
+    });
+
+    const tooltip = document.getElementById('mapTooltip');
+    if (hoveredLoc) {
+        canvas.style.cursor = 'pointer';
+        document.getElementById('ttName').textContent = hoveredLoc.icon + ' ' + hoveredLoc.name;
+        document.getElementById('ttSub').textContent  = 'Click to explore';
+        tooltip.style.display = 'block';
+        tooltip.style.left    = (e.clientX + 14) + 'px';
+        tooltip.style.top     = (e.clientY - 10) + 'px';
+    } else {
+        canvas.style.cursor = 'crosshair';
+        tooltip.style.display = 'none';
+        // Update terrain name for doAction
+        if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
+            const h = mapData.heightMap[tileY][tileX];
+            const m = mapData.moisture[tileY][tileX];
+            currentTerrain = getTerrainColor(h, m).name.toLowerCase();
+        }
+    }
+});
+
+document.getElementById('mapCanvas').addEventListener('mouseleave', function() {
+    document.getElementById('mapTooltip').style.display = 'none';
+});
+
+document.getElementById('mapCanvas').addEventListener('click', function(e) {
+    if (!mapData) return;
+    const canvas = this;
+    const rect   = canvas.getBoundingClientRect();
+    const mx     = e.clientX - rect.left;
+    const my     = e.clientY - rect.top;
+    const scaleX = canvas.width  / MAP_W;
+    const scaleY = canvas.height / MAP_H;
+
+    // Check click on location
+    let clicked = null;
+    mapData.locations.forEach(loc => {
+        const px   = (loc.x + 0.5) * scaleX;
+        const py   = (loc.y + 0.5) * scaleY;
+        const dist = Math.hypot(mx - px, my - py);
+        if (dist < Math.max(14, scaleX * 3)) clicked = loc;
+    });
+
+    if (clicked) {
+        const narrative = clicked.narratives[Math.floor(Math.random() * clicked.narratives.length)];
         document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-        typeText(msgs[type] || 'You act.', document.getElementById('narrativeText'));
+        typeText(narrative, document.getElementById('narrativeText'));
+        document.getElementById('mapTooltip').style.display = 'none';
+        return;
     }
 
-    // ===== INTRO =====
-    function skipIntro() {
-        const o = document.getElementById('introOverlay');
-        o.classList.add('fade-out');
-        setTimeout(() => o.remove(), 1500);
-    }
-
-    window.onload = function() {
-        const sub = sessionStorage.getItem('dnd_sub');
-        if (sub === 'oneshot') {
-            document.getElementById('introTitle').textContent = 'The Final Hunt';
-            document.getElementById('introSub').textContent   = 'One path. No return.';
-        } else if (sub === 'join' || sub === 'host') {
-            document.getElementById('introTitle').textContent = 'The Shared Realm';
-            document.getElementById('introSub').textContent   = 'Adventure with companions...';
+    // Click on terrain — generic terrain narrative
+    const tileX = Math.floor(mx / scaleX);
+    const tileY = Math.floor(my / scaleY);
+    if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
+        const h = mapData.heightMap[tileY][tileX];
+        const m = mapData.moisture[tileY][tileX];
+        const tc = getTerrainColor(h, m);
+        if (tc.name === 'Deep Sea' || tc.name === 'Shallow Water') {
+            typeText('The cold sea stretches before you, waves breaking against jagged rocks. You would need a vessel to venture further in this direction.', document.getElementById('narrativeText'));
+        } else {
+            const terrainNarratives = {
+                'Beach':        `You walk along the tide-swept beach. The sand is dark and fine, littered with strange shells and fragments of rope that speak of shipwrecks long past. Gulls cry overhead.`,
+                'Grassland':    `Open grassland rolls before you, bending in the ocean wind. Wildflowers push through in bursts of color. Somewhere in the grass, something rustles — animal or human, you can't yet say.`,
+                'Forest':       `The forest closes around you, canopy filtering the light to green shadow. Ancient trees bear carvings — old territory markers, or warnings. The silence here is heavy and deliberate.`,
+                'Dense Forest': `The forest here is thick and old, the undergrowth tangled and dark. Your path narrows to a deer trail. A strange symbol has been scored into the bark of every tenth tree.`,
+                'Hills':        `Rolling hills offer a view of the surrounding terrain. From this vantage, you can see the sweep of the island — the glint of water, the dark smudge of forest, the pale thread of a path between settlements.`,
+                'Mountains':    `The mountain terrain is punishing — loose scree and cold wind. But from the ridge, the entire island is laid out below. You can see movement on the plains far below. More than one kind of movement.`,
+                'Snow Peak':    `Ice and stone. The air is thin and bitterly cold up here. A cairn of rocks marks the summit — left by someone who was here before you. Tucked beneath the topmost stone is a small rolled parchment.`
+            };
+            const msg = terrainNarratives[tc.name] || `You move through the ${tc.name.toLowerCase()}, alert to every sound.`;
+            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+            typeText(msg, document.getElementById('narrativeText'));
         }
-        setTimeout(() => {
-            const o = document.getElementById('introOverlay');
-            if (o) { o.classList.add('fade-out'); setTimeout(() => o && o.remove(), 1500); }
-        }, 3500);
-        setTimeout(() => loadScene(0), 800);
-    };
+    }
+});
+
+// ===== GENERATE & PERSIST ISLAND =====
+function generateNewIsland() {
+    try {
+        const seed = Math.floor(Math.random() * 999999);
+        const u = localStorage.getItem('dnd_user') || '';
+        if (u) localStorage.setItem('dnd_map_seed_' + u, seed);
+        mapData = generateMap(seed);
+        requestAnimationFrame(() => {
+            renderMap();
+            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
+            typeText('The realm shifts and reshapes itself. A new island rises from the mists — uncharted, unmapped, full of danger and promise. Where will you venture first?', document.getElementById('narrativeText'));
+        });
+    } catch(e) { console.error('Island gen error:', e); }
+}
+
+// ===== RESIZE HANDLER =====
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (mapData) renderMap(); }, 150);
+});
+
+// ===== INTRO =====
+function skipIntro() {
+    const o = document.getElementById('introOverlay');
+    o.classList.add('fade-out');
+    setTimeout(() => o.remove(), 1500);
+}
+
+// ===== INIT =====
+window.onload = function() {
+    const sub = sessionStorage.getItem('dnd_sub');
+    if (sub === 'oneshot') {
+        document.getElementById('introTitle').textContent = 'The Final Hunt';
+        document.getElementById('introSub').textContent   = 'One path. No return.';
+    } else if (sub === 'join' || sub === 'host') {
+        document.getElementById('introTitle').textContent = 'The Shared Realm';
+        document.getElementById('introSub').textContent   = 'Adventure with companions...';
+    }
+
+    // Fade out intro
+    setTimeout(() => {
+        const o = document.getElementById('introOverlay');
+        if (o) { o.classList.add('fade-out'); setTimeout(() => o && o.remove(), 1500); }
+    }, 3500);
+
+    // Load or generate island — persistent per user
+    const savedSeed = localStorage.getItem('dnd_map_seed_' + user);
+    const seed = savedSeed ? parseInt(savedSeed) : Math.floor(Math.random() * 999999);
+    if (!savedSeed) localStorage.setItem('dnd_map_seed_' + user, seed);
+
+    mapData = generateMap(seed);
+    renderMap();
+
+    // Start narrative after short delay
+    setTimeout(() => loadScene(0), 800);
+};
 </script>
 </body>
 </html>
