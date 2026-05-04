@@ -7,79 +7,148 @@
 <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
+
 body {
   background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
   min-height: 100vh;
 }
+
 .bg-video {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  z-index: -1; background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
 }
-.character-page { min-height: 100vh; padding: 30px; }
+
+/* ===== SETTINGS ===== */
+.top-btn {
+  position: fixed; top: 20px; padding: 10px 20px;
+  background: rgba(139,115,85,0.15); border: 1px solid #8b7355; border-radius: 6px;
+  color: #8b7355; cursor: pointer; font-family: 'Cinzel', serif; font-size: 13px;
+  transition: all 0.3s; z-index: 100; letter-spacing: 1px;
+}
+.top-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; color: #c9a45c; }
+.options-btn { left: 20px; }
+.logout-btn  { right: 20px; }
+
+.options-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.82); z-index: 1000; justify-content: center; align-items: center; }
+.options-overlay.active { display: flex; }
+.options-panel { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98)); border: 3px solid #c9a45c; border-radius: 15px; padding: 40px; width: 500px; max-width: 90%; box-shadow: 0 0 50px rgba(201,164,92,0.4); position: relative; }
+.options-panel h2 { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; text-align: center; font-size: 34px; margin-bottom: 32px; text-shadow: 0 0 20px rgba(201,164,92,0.5); }
+.close-options { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #8b7355; font-size: 28px; cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.3s; }
+.close-options:hover { color: #c9a45c; }
+.slider-group { margin-bottom: 28px; }
+.slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; }
+.slider-label span { color: #c9a45c; font-size: 15px; letter-spacing: 1px; }
+.slider-value { color: #8b7355; font-size: 13px; min-width: 36px; text-align: right; }
+.slider-container { position: relative; height: 28px; display: flex; align-items: center; }
+.slider-track { width: 100%; height: 6px; background: rgba(61,47,31,0.8); border-radius: 3px; position: relative; cursor: pointer; }
+.slider-fill { height: 100%; background: linear-gradient(90deg, #c9a45c, #8b7355); border-radius: 3px; position: absolute; top: 0; left: 0; pointer-events: none; }
+.slider-thumb { width: 20px; height: 20px; background: #c9a45c; border: 2px solid #1a0a2e; border-radius: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.2s; z-index: 10; }
+.slider-thumb:hover { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
+.options-hint { text-align: center; color: #5a4a3a; font-size: 11px; margin-top: 22px; letter-spacing: 1px; }
+
+/* ===== CHARACTER PAGE ===== */
+.character-page { min-height: 100vh; padding: 80px 30px 30px; }
+
 .character-header { text-align: center; margin-bottom: 30px; }
-.character-header h1 {
-  font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 48px;
-  text-shadow: 0 0 20px rgba(201,164,92,0.5); letter-spacing: 3px;
-}
+.character-header h1 { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 48px; text-shadow: 0 0 20px rgba(201, 164, 92, 0.5); letter-spacing: 3px; }
 .character-header p { color: #8b7355; font-size: 16px; margin-top: 10px; letter-spacing: 2px; }
+
 .character-layout { display: flex; gap: 40px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+
 .customization-panel {
   flex: 1;
-  background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
   border: 2px solid #c9a45c; border-radius: 15px; padding: 30px;
   max-height: 75vh; overflow-y: auto;
 }
 .customization-panel::-webkit-scrollbar { width: 8px; }
-.customization-panel::-webkit-scrollbar-track { background: rgba(61,47,31,0.5); border-radius: 4px; }
+.customization-panel::-webkit-scrollbar-track { background: rgba(61, 47, 31, 0.5); border-radius: 4px; }
 .customization-panel::-webkit-scrollbar-thumb { background: #c9a45c; border-radius: 4px; }
+
 .preview-panel {
   width: 450px;
-  background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
   border: 2px solid #c9a45c; border-radius: 15px; padding: 40px;
   text-align: center; position: sticky; top: 30px;
 }
+
 .section-title {
   color: #c9a45c; font-family: 'Uncial Antiqua', cursive; font-size: 24px;
   margin: 30px 0 15px 0; border-bottom: 1px solid #3d2f1f; padding-bottom: 10px;
 }
 .section-title:first-child { margin-top: 0; }
+
 .selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-bottom: 20px; }
+
 .selector-card {
-  background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f; border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3); border: 2px solid #3d2f1f; border-radius: 8px;
   padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.3s ease;
 }
 .selector-card:hover { border-color: #8b7355; transform: translateY(-2px); }
-.selector-card.selected { border-color: #c9a45c; background: rgba(201,164,92,0.1); box-shadow: 0 0 15px rgba(201,164,92,0.3); }
+.selector-card.selected { border-color: #c9a45c; background: rgba(201, 164, 92, 0.1); box-shadow: 0 0 15px rgba(201, 164, 92, 0.3); }
 .selector-card .icon { font-size: 32px; margin-bottom: 8px; }
 .selector-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ===== HAIR STYLE CARDS WITH PNG PREVIEW ===== */
+.hair-style-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-bottom: 20px; }
+
+.hair-style-card {
+  background: rgba(0, 0, 0, 0.3); border: 2px solid #3d2f1f; border-radius: 8px;
+  padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.3s ease;
+}
+.hair-style-card:hover { border-color: #8b7355; transform: translateY(-2px); }
+.hair-style-card.selected { border-color: #c9a45c; background: rgba(201, 164, 92, 0.1); box-shadow: 0 0 15px rgba(201, 164, 92, 0.3); }
+
+.hair-style-card .hair-preview {
+  width: 64px; height: 64px; object-fit: contain;
+  image-rendering: pixelated;
+  margin: 0 auto 8px auto; display: block;
+  /* fallback bg so broken images don't collapse the card */
+  background: rgba(201,164,92,0.05); border-radius: 6px;
+}
+.hair-style-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+
+/* bald has no image — show an icon instead */
+.hair-style-card .bald-icon { font-size: 40px; margin-bottom: 8px; display: block; line-height: 64px; }
+
+/* ===== COLOR SWATCHES ===== */
 .color-swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-.color-swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #3d2f1f; cursor: pointer; transition: all 0.3s ease; }
+.color-swatch {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid #3d2f1f; cursor: pointer; transition: all 0.3s ease;
+}
 .color-swatch:hover { transform: scale(1.1); }
-.color-swatch.selected { border-color: #c9a45c; box-shadow: 0 0 15px rgba(201,164,92,0.5); }
+.color-swatch.selected { border-color: #c9a45c; box-shadow: 0 0 15px rgba(201, 164, 92, 0.5); }
+
 .toggle-group { display: flex; gap: 15px; margin-bottom: 20px; }
 .toggle-btn {
-  flex: 1; padding: 15px; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f;
+  flex: 1; padding: 15px; background: rgba(0, 0, 0, 0.3); border: 2px solid #3d2f1f;
   border-radius: 8px; color: #8b7355; font-family: 'Cinzel', serif; font-size: 16px;
   cursor: pointer; transition: all 0.3s ease; text-align: center;
 }
 .toggle-btn:hover { border-color: #8b7355; }
-.toggle-btn.selected { border-color: #c9a45c; background: rgba(201,164,92,0.1); color: #c9a45c; }
+.toggle-btn.selected { border-color: #c9a45c; background: rgba(201, 164, 92, 0.1); color: #c9a45c; }
 .toggle-btn .icon { font-size: 28px; display: block; margin-bottom: 5px; }
+
+/* ===== SPRITE SYSTEM ===== */
 .character-sprite-container {
   width: 300px; height: 400px; position: relative; margin: 20px auto;
-  background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden;
+  background: rgba(0, 0, 0, 0.2); border-radius: 10px; overflow: hidden;
 }
 .sprite-placeholder {
   position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
-  width: 120px; height: 280px; background: rgba(201,164,92,0.08);
-  border-radius: 60px 60px 30px 30px; border: 2px dashed rgba(201,164,92,0.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 60px; opacity: 0.4; pointer-events: none;
+  width: 120px; height: 280px; background: rgba(201, 164, 92, 0.08);
+  border-radius: 60px 60px 30px 30px; border: 2px dashed rgba(201, 164, 92, 0.2);
+  display: flex; align-items: center; justify-content: center; font-size: 60px;
+  opacity: 0.4; pointer-events: none;
 }
 img.sprite-img[data-broken="true"] { display: none !important; }
 .character-sprite-container::after {
   content: ''; position: absolute; bottom: 50px; left: 80px;
-  width: 120px; height: 10px; background: rgba(0,0,0,0.3);
+  width: 120px; height: 10px; background: rgba(0, 0, 0, 0.3);
   border-radius: 50%; filter: blur(4px);
 }
 .character-sprite { width: 100%; height: 100%; position: relative; }
@@ -93,26 +162,25 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 #spriteRaceFeatures { z-index: 5; }
 #spriteOutfit       { z-index: 3; }
 #spriteHair         { z-index: 4; }
+
 .preview-info { color: #c9a45c; font-size: 14px; margin: 10px 0; letter-spacing: 1px; }
 .preview-info span { color: #8b7355; }
+
 .submit-btn {
   width: 100%; padding: 18px;
-  background: linear-gradient(135deg, #c9a45c, #8b7355);
-  border: none; border-radius: 8px; color: #1a0a2e; font-family: 'Cinzel', serif;
-  font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-  cursor: pointer; transition: all 0.3s ease; margin-top: 20px; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #c9a45c, #8b7355); border: none; border-radius: 8px;
+  color: #1a0a2e; font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease;
+  margin-top: 20px; position: relative; overflow: hidden;
 }
-.submit-btn::before {
-  content: ''; position: absolute; top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
+.submit-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.5s; }
 .submit-btn:hover::before { left: 100%; }
-.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(201,164,92,0.4); }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(201, 164, 92, 0.4); }
+
 .message { display: none; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; font-size: 14px; }
-.message.success { display: block; background: rgba(139,195,74,0.2); border: 1px solid #8bc34a; color: #8bc34a; }
-.message.error   { display: block; background: rgba(244,67,54,0.2);  border: 1px solid #f44336; color: #f44336; }
+.message.success { display: block; background: rgba(139, 195, 74, 0.2); border: 1px solid #8bc34a; color: #8bc34a; }
+.message.error   { display: block; background: rgba(244, 67, 54, 0.2);  border: 1px solid #f44336; color: #f44336; }
+
 @media (max-width: 1000px) {
   .character-layout { flex-direction: column; }
   .preview-panel { width: 100%; position: static; }
@@ -124,6 +192,54 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 <div class="bg-video"></div>
 <div class="particles" id="particles"></div>
 
+<!-- Settings button -->
+<button class="top-btn options-btn" onclick="openOptions()">&#9881; Settings</button>
+<button class="top-btn logout-btn" onclick="logout()">Leave Realm</button>
+
+<!-- Settings Overlay -->
+<div class="options-overlay" id="optionsOverlay">
+  <div class="options-panel">
+    <button class="close-options" onclick="closeOptions()">&times;</button>
+    <h2>&#9881; Settings</h2>
+    <div class="slider-group">
+      <div class="slider-label"><span>&#127925; Music</span><span class="slider-value" id="musicValue">70</span></div>
+      <div class="slider-container" tabindex="0" data-slider="music">
+        <div class="slider-track"><div class="slider-fill" style="width:70%"></div></div>
+        <div class="slider-thumb" style="left:70%"></div>
+      </div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>&#128264; Master Volume</span><span class="slider-value" id="masterValue">80</span></div>
+      <div class="slider-container" tabindex="0" data-slider="master">
+        <div class="slider-track"><div class="slider-fill" style="width:80%"></div></div>
+        <div class="slider-thumb" style="left:80%"></div>
+      </div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>&#9876; Enemies</span><span class="slider-value" id="enemiesValue">50</span></div>
+      <div class="slider-container" tabindex="0" data-slider="enemies">
+        <div class="slider-track"><div class="slider-fill" style="width:50%"></div></div>
+        <div class="slider-thumb" style="left:50%"></div>
+      </div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>&#129309; Friends</span><span class="slider-value" id="friendsValue">60</span></div>
+      <div class="slider-container" tabindex="0" data-slider="friends">
+        <div class="slider-track"><div class="slider-fill" style="width:60%"></div></div>
+        <div class="slider-thumb" style="left:60%"></div>
+      </div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>&#127752; Ambient</span><span class="slider-value" id="ambientValue">75</span></div>
+      <div class="slider-container" tabindex="0" data-slider="ambient">
+        <div class="slider-track"><div class="slider-fill" style="width:75%"></div></div>
+        <div class="slider-thumb" style="left:75%"></div>
+      </div>
+    </div>
+    <p class="options-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+  </div>
+</div>
+
 <div class="character-page">
   <div class="character-header">
     <h1 id="pageTitle">&#9876; Create Your Character</h1>
@@ -131,6 +247,8 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   </div>
 
   <div class="character-layout">
+
+    <!-- LEFT: Customization -->
     <div class="customization-panel">
 
       <div class="section-title">Race</div>
@@ -159,7 +277,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
         <div class="selector-card" data-value="monk">     <div class="icon">&#9876;</div>  <div class="label">Monk</div></div>
         <div class="selector-card" data-value="paladin">  <div class="icon">&#128737;</div><div class="label">Paladin</div></div>
         <div class="selector-card" data-value="warlock">  <div class="icon">&#128128;</div><div class="label">Warlock</div></div>
-        <div class="selector-card" data-value="sorcerer"> <div class="icon">&#10024;</div> <div class="label">Sorcerer</div></div>
+        <div class="selector-card" data-value="sorcerer">  <div class="icon">&#10024;</div><div class="label">Sorcerer</div></div>
       </div>
 
       <div class="section-title">Sex</div>
@@ -168,31 +286,59 @@ img.sprite-img[data-broken="true"] { display: none !important; }
         <div class="toggle-btn" data-value="female"><span class="icon">&#9792;</span>Female</div>
       </div>
 
-      <div class="section-title">Hair Style</div>
-      <div class="selector-grid" id="hairStyleSelector">
-        <div class="selector-card" data-value="short">   <div class="icon">&#128084;</div><div class="label">Short</div></div>
-        <div class="selector-card" data-value="long">    <div class="icon">&#128085;</div><div class="label">Long</div></div>
-        <div class="selector-card" data-value="ponytail"><div class="icon">&#128085;</div><div class="label">Ponytail</div></div>
-        <div class="selector-card" data-value="bald">    <div class="icon">&#128488;</div><div class="label">Bald</div></div>
-        <div class="selector-card" data-value="mohawk">  <div class="icon">&#128083;</div><div class="label">Mohawk</div></div>
-        <div class="selector-card" data-value="braided"> <div class="icon">&#128085;</div><div class="label">Braided</div></div>
-      </div>
-
+      <!-- HAIR COLOR first so it's set before style cards render -->
       <div class="section-title">Hair Color</div>
       <div class="color-swatches" id="hairColorSelector">
-        <div class="color-swatch" data-color="black"  style="background:#000000;"></div>
-        <div class="color-swatch" data-color="brown"  style="background:#8B4513;"></div>
-        <div class="color-swatch" data-color="blonde" style="background:#DAA520;"></div>
-        <div class="color-swatch" data-color="red"    style="background:#CC2200;"></div>
-        <div class="color-swatch" data-color="white"  style="background:#FFFFFF; border-color:#5a4a3a;"></div>
-        <div class="color-swatch" data-color="blue"   style="background:#1155CC;"></div>
-        <div class="color-swatch" data-color="green"  style="background:#2E7D32;"></div>
-        <div class="color-swatch" data-color="pink"   style="background:#FF69B4;"></div>
+        <div class="color-swatch" data-value="black"  data-color-name="black"  style="background:#1a1a1a;"></div>
+        <div class="color-swatch" data-value="brown"  data-color-name="brown"  style="background:#8B4513;"></div>
+        <div class="color-swatch" data-value="blonde" data-color-name="blonde" style="background:#DAA520;"></div>
+        <div class="color-swatch" data-value="red"    data-color-name="red"    style="background:#CC2200;"></div>
+        <div class="color-swatch" data-value="white"  data-color-name="white"  style="background:#f0ece4; border-color:#8b7355;"></div>
+        <div class="color-swatch" data-value="blue"   data-color-name="blue"   style="background:#1155CC;"></div>
+        <div class="color-swatch" data-value="green"  data-color-name="green"  style="background:#2E7D32;"></div>
+        <div class="color-swatch" data-value="pink"   data-color-name="pink"   style="background:#E91E8C;"></div>
+      </div>
+
+      <!-- HAIR STYLE — cards show PNGs that reflect the selected color -->
+      <div class="section-title">Hair Style</div>
+      <div class="hair-style-grid" id="hairStyleSelector">
+
+        <div class="hair-style-card" data-value="short">
+          <img class="hair-preview" id="hair-preview-short" src="sprites/hair/short/short_black.png" alt="Short">
+          <div class="label">Short</div>
+        </div>
+
+        <div class="hair-style-card" data-value="long">
+          <img class="hair-preview" id="hair-preview-long" src="sprites/hair/long/long_black.png" alt="Long">
+          <div class="label">Long</div>
+        </div>
+
+        <div class="hair-style-card" data-value="ponytail">
+          <img class="hair-preview" id="hair-preview-ponytail" src="sprites/hair/ponytail/ponytail_black.png" alt="Ponytail">
+          <div class="label">Ponytail</div>
+        </div>
+
+        <div class="hair-style-card" data-value="mohawk">
+          <img class="hair-preview" id="hair-preview-mohawk" src="sprites/hair/mohawk/mohawk_black.png" alt="Mohawk">
+          <div class="label">Mohawk</div>
+        </div>
+
+        <div class="hair-style-card" data-value="braided">
+          <img class="hair-preview" id="hair-preview-braided" src="sprites/hair/braided/braided_black.png" alt="Braided">
+          <div class="label">Braided</div>
+        </div>
+
+        <!-- Bald has no color so no img needed -->
+        <div class="hair-style-card" data-value="bald">
+          <span class="bald-icon">&#128488;</span>
+          <div class="label">Bald</div>
+        </div>
+
       </div>
 
       <div class="section-title">Skin Tone</div>
       <div class="color-swatches" id="skinToneSelector">
-        <div class="color-swatch" data-value="#FFE4C4" style="background:#FFE4C4; border-color:#5a4a3a;"></div>
+        <div class="color-swatch" data-value="#FFE4C4" style="background:#FFE4C4;"></div>
         <div class="color-swatch" data-value="#DEB887" style="background:#DEB887;"></div>
         <div class="color-swatch" data-value="#D2B48C" style="background:#D2B48C;"></div>
         <div class="color-swatch" data-value="#F4A460" style="background:#F4A460;"></div>
@@ -246,6 +392,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
       <div class="message" id="message"></div>
     </div>
+
   </div>
 </div>
 
@@ -262,24 +409,41 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     particlesContainer.appendChild(p);
   }
 
-  // ===== STATE =====
-  let isEditMode = false;
-
+  // ===== CHARACTER STATE =====
   const character = {
     race: 'human', class: 'fighter', sex: 'male',
     hairStyle: 'short', hairColor: 'black',
     skinTone: '#DEB887', outfit: 'rogue'
   };
 
-  // ===== SELECTORS =====
-  function setupSelector(containerId, property) {
+  // All hair styles that have colored PNGs (bald excluded)
+  const HAIR_STYLES_WITH_COLOR = ['short', 'long', 'ponytail', 'mohawk', 'braided'];
+
+  // Map hex swatch values → color name used in filenames
+  const HEX_TO_COLOR_NAME = {
+    '#1a1a1a': 'black', '#8b4513': 'brown', '#daa520': 'blonde',
+    '#cc2200': 'red',   '#f0ece4': 'white', '#1155cc': 'blue',
+    '#2e7d32': 'green', '#e91e8c': 'pink'
+  };
+
+  // ===== UPDATE ALL HAIR STYLE CARD PREVIEWS =====
+  function updateHairStylePreviews(colorName) {
+    HAIR_STYLES_WITH_COLOR.forEach(style => {
+      const img = document.getElementById('hair-preview-' + style);
+      if (img) img.src = `sprites/hair/${style}/${style}_${colorName}.png`;
+    });
+  }
+
+  // ===== SELECTOR SETUP =====
+  function setupSelector(containerId, property, onChange) {
     const container = document.getElementById(containerId);
-    const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn');
+    const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn, .hair-style-card');
     items.forEach(item => {
       item.addEventListener('click', () => {
         items.forEach(i => i.classList.remove('selected'));
         item.classList.add('selected');
         character[property] = item.dataset.value;
+        if (onChange) onChange(item.dataset.value, item);
         updateSprite();
       });
     });
@@ -291,71 +455,76 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   setupSelector('skinToneSelector','skinTone');
   setupSelector('outfitSelector',  'outfit');
 
-  document.getElementById('hairStyleSelector').querySelectorAll('.selector-card').forEach(item => {
-    item.addEventListener('click', () => {
-      document.getElementById('hairStyleSelector').querySelectorAll('.selector-card')
-        .forEach(i => i.classList.remove('selected'));
-      item.classList.add('selected');
-      character.hairStyle = item.dataset.value;
-      updateSprite();
-    });
-  });
+  // Hair style — uses hair-style-card class
+  setupSelector('hairStyleSelector', 'hairStyle');
 
-  document.getElementById('hairColorSelector').querySelectorAll('.color-swatch').forEach(item => {
-    item.addEventListener('click', () => {
-      document.getElementById('hairColorSelector').querySelectorAll('.color-swatch')
-        .forEach(i => i.classList.remove('selected'));
-      item.classList.add('selected');
-      character.hairColor = item.dataset.color;
-      updateSprite();
-    });
+  // Hair color — triggers preview image update on ALL style cards
+  setupSelector('hairColorSelector', 'hairColor', (val, item) => {
+    const colorName = item.dataset.colorName || HEX_TO_COLOR_NAME[val.toLowerCase()] || 'black';
+    character.hairColor = colorName;
+    updateHairStylePreviews(colorName);
   });
 
   // ===== PLACEHOLDER =====
   function checkPlaceholder() {
-    const broken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
-    document.getElementById('spritePlaceholder').style.display = broken ? 'flex' : 'none';
+    const bodyBroken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
+    document.getElementById('spritePlaceholder').style.display = bodyBroken ? 'flex' : 'none';
   }
 
   // ===== SPRITE UPDATE =====
   function updateSprite() {
-    updateBody(); updateRaceFeatures(); updateHair(); updateOutfit(); updatePreviewText();
+    updateBody();
+    updateRaceFeatures();
+    updateHair();
+    updateOutfit();
+    updatePreviewText();
   }
 
   function updateBody() {
-    const img = document.getElementById('bodyImg');
-    img.removeAttribute('data-broken');
-    img.src = `sprites/body/${character.sex}.png`;
+    const bodyImg = document.getElementById('bodyImg');
+    bodyImg.removeAttribute('data-broken');
+    bodyImg.src = `sprites/body/${character.sex}.png`;
   }
 
   function updateRaceFeatures() {
-    const img = document.getElementById('raceImg');
-    const raceMap = {
+    const raceImg = document.getElementById('raceImg');
+    const raceImages = {
       elf: 'sprites/race/elf.png', dwarf: 'sprites/race/dwarf.png',
       tiefling: 'sprites/race/tiefling.png', dragonborn: 'sprites/race/dragonborn.png',
       'half-orc': 'sprites/race/half-orc.png'
     };
-    if (raceMap[character.race]) {
-      img.removeAttribute('data-broken'); img.src = raceMap[character.race]; img.style.display = 'block';
-    } else { img.style.display = 'none'; }
+    if (raceImages[character.race]) {
+      raceImg.removeAttribute('data-broken');
+      raceImg.src = raceImages[character.race];
+      raceImg.style.display = 'block';
+    } else {
+      raceImg.style.display = 'none';
+    }
   }
 
   function updateHair() {
-    const img = document.getElementById('hairImg');
-    if (character.hairStyle === 'bald') { img.style.display = 'none'; return; }
-    img.removeAttribute('data-broken');
-    img.style.display = 'block';
-    // Path: sprites/hair/<style>/<style>_<color>.png
-    img.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
-    const overrides = {
-      short:    { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
-      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
-      braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
-      ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
-      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
-    };
-    const s = overrides[character.hairStyle] || { height: '110px', marginLeft: '0px', bottom: '210px' };
-    img.style.height = s.height; img.style.left = '50%'; img.style.marginLeft = s.marginLeft; img.style.bottom = s.bottom;
+    const hairImg = document.getElementById('hairImg');
+    if (character.hairStyle === 'bald') {
+      hairImg.style.display = 'none';
+    } else {
+      hairImg.removeAttribute('data-broken');
+      hairImg.style.display = 'block';
+      hairImg.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
+
+      const overrides = {
+        short:    { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
+        mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
+        braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
+        ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
+        long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
+      };
+      const defaults = { height: '110px', marginLeft: '0px', bottom: '210px' };
+      const s = overrides[character.hairStyle] || defaults;
+      hairImg.style.height     = s.height;
+      hairImg.style.left       = '50%';
+      hairImg.style.marginLeft = s.marginLeft;
+      hairImg.style.bottom     = s.bottom;
+    }
   }
 
   function updateOutfit() {
@@ -364,18 +533,17 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       leather: 'sprites/outfit/leather.png', plate: 'sprites/outfit/plate.png',
       'mage-robes': 'sprites/outfit/mage_robes.png'
     };
-    const img = document.getElementById('outfitImg');
-    img.removeAttribute('data-broken');
-    img.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
+    const outfitImg = document.getElementById('outfitImg');
+    outfitImg.removeAttribute('data-broken');
+    outfitImg.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
   }
 
   function updatePreviewText() {
-    const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    const cap = str => str.charAt(0).toUpperCase() + str.slice(1);
     document.querySelector('#previewRace span').textContent   = cap(character.race);
     document.querySelector('#previewClass span').textContent  = cap(character.class);
     document.querySelector('#previewSex span').textContent    = cap(character.sex);
-    document.querySelector('#previewHair span').textContent   =
-      character.hairStyle === 'bald' ? 'Bald' : cap(character.hairStyle) + ' / ' + cap(character.hairColor);
+    document.querySelector('#previewHair span').textContent   = cap(character.hairStyle) + ' / ' + cap(character.hairColor);
     document.querySelector('#previewOutfit span').textContent = cap(character.outfit);
   }
 
@@ -384,68 +552,121 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     const user = localStorage.getItem('dnd_user');
     if (!user) {
       showMessage('No user found. Please sign in again.', 'error');
-      setTimeout(() => window.location.href = 'index.html', 2000);
+      setTimeout(() => window.location.href = 'signin.html', 2000);
       return;
     }
     localStorage.setItem('dnd_character_' + user, JSON.stringify(character));
-
-    if (isEditMode) {
-      // Came from dashboard — go back there
-      showMessage('Character updated!', 'success');
-      setTimeout(() => window.location.href = 'dashboard.html', 1200);
-    } else {
-      // Fresh creation — go to mode select
-      showMessage('Character created! Entering the realm...', 'success');
-      setTimeout(() => window.location.href = 'mode-select.html', 1500);
-    }
+    showMessage('Character saved successfully!', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 1500);
   }
 
   function showMessage(text, type) {
     const msg = document.getElementById('message');
-    msg.textContent = text; msg.className = 'message ' + type;
+    msg.textContent = text;
+    msg.className = 'message ' + type;
   }
 
-  // ===== APPLY SAVED UI SELECTIONS =====
+  // ===== APPLY SAVED SELECTIONS TO UI =====
   function applySelections() {
-    [
-      { id: 'raceSelector',     prop: 'race',     sel: '.selector-card' },
-      { id: 'classSelector',    prop: 'class',    sel: '.selector-card' },
-      { id: 'sexSelector',      prop: 'sex',      sel: '.toggle-btn'    },
-      { id: 'hairStyleSelector',prop: 'hairStyle',sel: '.selector-card' },
-      { id: 'skinToneSelector', prop: 'skinTone', sel: '.color-swatch'  },
-      { id: 'outfitSelector',   prop: 'outfit',   sel: '.selector-card' },
-    ].forEach(({ id, prop, sel }) => {
-      const el = document.querySelector(`#${id} ${sel}[data-value="${character[prop]}"]`);
+    const map = [
+      { id: 'raceSelector',      prop: 'race',      sel: '.selector-card'  },
+      { id: 'classSelector',     prop: 'class',     sel: '.selector-card'  },
+      { id: 'sexSelector',       prop: 'sex',       sel: '.toggle-btn'     },
+      { id: 'hairStyleSelector', prop: 'hairStyle', sel: '.hair-style-card'},
+      { id: 'hairColorSelector', prop: 'hairColor', sel: '.color-swatch'   },
+      { id: 'skinToneSelector',  prop: 'skinTone',  sel: '.color-swatch'   },
+      { id: 'outfitSelector',    prop: 'outfit',    sel: '.selector-card'  },
+    ];
+    map.forEach(({ id, prop, sel }) => {
+      // For hairColor, match on data-color-name; for others match data-value
+      const attr = (prop === 'hairColor') ? 'data-color-name' : 'data-value';
+      const el = document.querySelector(`#${id} ${sel}[${attr}="${character[prop]}"]`);
       if (el) el.classList.add('selected');
     });
-    // Hair color uses data-color
-    const hairColorEl = document.querySelector(`#hairColorSelector .color-swatch[data-color="${character.hairColor}"]`);
-    if (hairColorEl) hairColorEl.classList.add('selected');
+    updateHairStylePreviews(character.hairColor);
+  }
+
+  // ===== SETTINGS =====
+  function openOptions()  { document.getElementById('optionsOverlay').classList.add('active');    document.addEventListener('keydown', handleEsc); }
+  function closeOptions() { document.getElementById('optionsOverlay').classList.remove('active'); document.removeEventListener('keydown', handleEsc); }
+  function handleEsc(e)   { if (e.key === 'Escape') closeOptions(); }
+
+  function logout() {
+    localStorage.removeItem('dnd_user');
+    sessionStorage.removeItem('dnd_mode');
+    sessionStorage.removeItem('dnd_sub');
+    window.location.href = 'index.html';
+  }
+
+  const sliders = { music:{value:70}, master:{value:80}, enemies:{value:50}, friends:{value:60}, ambient:{value:75} };
+  let activeSlider = null, isDragging = false;
+
+  function loadSliderValues() {
+    const saved = localStorage.getItem('dnd_sliders');
+    if (saved) { const vals = JSON.parse(saved); Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } }); }
+  }
+  function saveSliderValues() { const vals = {}; Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; }); localStorage.setItem('dnd_sliders', JSON.stringify(vals)); }
+  function updateSliderUI(name) {
+    const container = document.querySelector(`[data-slider="${name}"]`);
+    if (!container) return;
+    const pct = sliders[name].value;
+    container.querySelector('.slider-fill').style.width = pct + '%';
+    container.querySelector('.slider-thumb').style.left = pct + '%';
+    document.getElementById(name + 'Value').textContent = pct;
+  }
+  document.querySelectorAll('.slider-container').forEach(container => {
+    const name = container.dataset.slider;
+    sliders[name].element = container;
+    container.addEventListener('mousedown', e => { isDragging = true; activeSlider = name; updateFromMouse(e, name, container); });
+    container.addEventListener('click', e => updateFromMouse(e, name, container));
+    container.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        sliders[name].value = Math.max(0, Math.min(100, sliders[name].value + (e.key === 'ArrowLeft' ? -1 : 1)));
+        updateSliderUI(name); saveSliderValues();
+      }
+    });
+  });
+  document.addEventListener('mousemove', e => { if (!isDragging || !activeSlider) return; updateFromMouse(e, activeSlider, sliders[activeSlider].element); });
+  document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
+  function updateFromMouse(e, name, container) {
+    const rect = container.getBoundingClientRect();
+    const pct  = Math.round(Math.max(0, Math.min(e.clientX - rect.left, rect.width)) / rect.width * 100);
+    sliders[name].value = pct; updateSliderUI(name); saveSliderValues();
   }
 
   // ===== ON LOAD =====
-  window.onload = function() {
+  window.onload = function () {
     const user = localStorage.getItem('dnd_user');
-    if (!user) { window.location.href = 'index.html'; return; }
+    if (!user) { window.location.href = 'signin.html'; return; }
 
-    const params = new URLSearchParams(window.location.search);
-    isEditMode = params.get('edit') === 'true';
+    const params  = new URLSearchParams(window.location.search);
+    const isEdit  = params.get('edit') === 'true';
+    const saved   = localStorage.getItem('dnd_character_' + user);
 
-    const saved = localStorage.getItem('dnd_character_' + user);
     if (saved) {
       const savedChar = JSON.parse(saved);
-      delete savedChar.background; delete savedChar.accessories;
+      delete savedChar.background;
+      delete savedChar.accessories;
+
+      // Normalise legacy hex hairColor to name
+      if (savedChar.hairColor && savedChar.hairColor.startsWith('#')) {
+        savedChar.hairColor = HEX_TO_COLOR_NAME[savedChar.hairColor.toLowerCase()] || 'black';
+      }
+
       Object.assign(character, savedChar);
     }
 
-    if (isEditMode) {
+    if (isEdit) {
       document.getElementById('submitBtn').textContent = 'Save Changes';
       document.getElementById('pageTitle').textContent = '⚔ Edit Your Character';
     }
 
+    loadSliderValues();
     applySelections();
     updateSprite();
   };
 </script>
+
 </body>
 </html>
