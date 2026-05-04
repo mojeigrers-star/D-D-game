@@ -109,8 +109,6 @@ body {
   background: rgba(201,164,92,0.05); border-radius: 6px;
 }
 .hair-style-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-
-/* bald has no image — show an icon instead */
 .hair-style-card .bald-icon { font-size: 40px; margin-bottom: 8px; display: block; line-height: 64px; }
 
 /* ===== COLOR SWATCHES ===== */
@@ -274,7 +272,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
         <div class="selector-card" data-value="monk">     <div class="icon">&#9876;</div>  <div class="label">Monk</div></div>
         <div class="selector-card" data-value="paladin">  <div class="icon">&#128737;</div><div class="label">Paladin</div></div>
         <div class="selector-card" data-value="warlock">  <div class="icon">&#128128;</div><div class="label">Warlock</div></div>
-        <div class="selector-card" data-value="sorcerer">  <div class="icon">&#10024;</div><div class="label">Sorcerer</div></div>
+        <div class="selector-card" data-value="sorcerer"> <div class="icon">&#10024;</div> <div class="label">Sorcerer</div></div>
       </div>
 
       <div class="section-title">Sex</div>
@@ -376,12 +374,15 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       <div class="preview-info" id="previewHair">Hair: <span>Short / Black</span></div>
       <div class="preview-info" id="previewOutfit">Outfit: <span>Rogue</span></div>
 
-      <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
+      <button class="submit-btn" id="submitBtn" onclick="saveChar()">Create Character</button>
       <div class="message" id="message"></div>
     </div>
 
   </div>
 </div>
+
+<!-- Shared utilities (sprite paths, loadCharacter, saveCharacter, applyCharacterSprites) -->
+<script src="character-utils.js"></script>
 
 <script>
   // ===== PARTICLES =====
@@ -405,36 +406,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 
   const HAIR_STYLES_WITH_COLOR = ['short', 'long', 'ponytail', 'mohawk', 'braided'];
 
-  const HEX_TO_COLOR_NAME = {
-    '#1a1a1a': 'black', '#8b4513': 'brown', '#daa520': 'blonde',
-    '#cc2200': 'red',   '#f0ece4': 'white', '#1155cc': 'blue',
-    '#2e7d32': 'green', '#e91e8c': 'pink'
-  };
-
-  // ===== PER-SEX HAIR OFFSETS =====
-  // Adjust these values to position hair correctly for each sex and style.
-  // height    = size of the hair sprite
-  // marginLeft = horizontal nudge (positive = right, negative = left)
-  // bottom    = how high up the hair sits on the character
-  const HAIR_OFFSETS = {
-    male: {
-      short:    { height: '80px',  marginLeft: '-6px',   bottom: '240px' },
-      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
-      braided:  { height: '80px', marginLeft: '0px', bottom: '225px' },
-      ponytail: { height: '100px', marginLeft: '3px',   bottom: '210px' },
-      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
-    },
-    female: {
-      short:    { height: '75px',  marginLeft: '-2px',   bottom: '240px' },
-      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
-      braided:  { height: '70px', marginLeft: '2px', bottom: '230px' },
-      ponytail: { height: '100px', marginLeft: '7px',   bottom: '210px' },
-      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
-    }
-  };
-  const HAIR_OFFSET_FALLBACK = { height: '110px', marginLeft: '0px', bottom: '210px' };
-
-  // ===== UPDATE ALL HAIR STYLE CARD PREVIEWS =====
+  // ===== UPDATE HAIR STYLE CARD THUMBNAILS =====
   function updateHairStylePreviews(colorName) {
     HAIR_STYLES_WITH_COLOR.forEach(style => {
       const img = document.getElementById('hair-preview-' + style);
@@ -465,94 +437,44 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   setupSelector('hairStyleSelector', 'hairStyle');
 
   setupSelector('hairColorSelector', 'hairColor', (val, item) => {
-    const colorName = item.dataset.colorName || HEX_TO_COLOR_NAME[val.toLowerCase()] || 'black';
+    const colorName = item.dataset.colorName || charUtilsNormaliseColor(val);
     character.hairColor = colorName;
     updateHairStylePreviews(colorName);
   });
 
   // ===== PLACEHOLDER =====
   function checkPlaceholder() {
-    const bodyBroken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
-    document.getElementById('spritePlaceholder').style.display = bodyBroken ? 'flex' : 'none';
+    const broken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
+    document.getElementById('spritePlaceholder').style.display = broken ? 'flex' : 'none';
   }
 
-  // ===== SPRITE UPDATE =====
+  // ===== SPRITE UPDATE — delegates to character-utils.js =====
   function updateSprite() {
-    updateBody();
-    updateRaceFeatures();
-    updateHair();
-    updateOutfit();
+    applyCharacterSprites(
+      character,
+      { body: 'bodyImg', race: 'raceImg', hair: 'hairImg', outfit: 'outfitImg' },
+      'large'
+    );
     updatePreviewText();
   }
 
-  function updateBody() {
-    const bodyImg = document.getElementById('bodyImg');
-    bodyImg.removeAttribute('data-broken');
-    bodyImg.src = `sprites/body/${character.sex}.png`;
-  }
-
-  function updateRaceFeatures() {
-    const raceImg = document.getElementById('raceImg');
-    const raceImages = {
-      elf: 'sprites/race/elf.png', dwarf: 'sprites/race/dwarf.png',
-      tiefling: 'sprites/race/tiefling.png', dragonborn: 'sprites/race/dragonborn.png',
-      'half-orc': 'sprites/race/half-orc.png'
-    };
-    if (raceImages[character.race]) {
-      raceImg.removeAttribute('data-broken');
-      raceImg.src = raceImages[character.race];
-      raceImg.style.display = 'block';
-    } else {
-      raceImg.style.display = 'none';
-    }
-  }
-
-  function updateHair() {
-    const hairImg = document.getElementById('hairImg');
-    if (character.hairStyle === 'bald') {
-      hairImg.style.display = 'none';
-    } else {
-      hairImg.removeAttribute('data-broken');
-      hairImg.style.display = 'block';
-      hairImg.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
-
-      const s = (HAIR_OFFSETS[character.sex] || HAIR_OFFSETS.male)[character.hairStyle] || HAIR_OFFSET_FALLBACK;
-      hairImg.style.height     = s.height;
-      hairImg.style.left       = '50%';
-      hairImg.style.marginLeft = s.marginLeft;
-      hairImg.style.bottom     = s.bottom;
-    }
-  }
-
-  function updateOutfit() {
-    const outfitMap = {
-      rogue: 'sprites/outfit/rogue.png', casual: 'sprites/outfit/casual.png',
-      leather: 'sprites/outfit/leather.png', plate: 'sprites/outfit/plate.png',
-      'mage-robes': 'sprites/outfit/mage_robes.png'
-    };
-    const outfitImg = document.getElementById('outfitImg');
-    outfitImg.removeAttribute('data-broken');
-    outfitImg.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
-  }
-
   function updatePreviewText() {
-    const cap = str => str.charAt(0).toUpperCase() + str.slice(1);
-    document.querySelector('#previewRace span').textContent   = cap(character.race);
-    document.querySelector('#previewClass span').textContent  = cap(character.class);
-    document.querySelector('#previewSex span').textContent    = cap(character.sex);
-    document.querySelector('#previewHair span').textContent   = cap(character.hairStyle) + ' / ' + cap(character.hairColor);
-    document.querySelector('#previewOutfit span').textContent = cap(character.outfit);
+    document.querySelector('#previewRace span').textContent   = charUtilsCap(character.race);
+    document.querySelector('#previewClass span').textContent  = charUtilsCap(character.class);
+    document.querySelector('#previewSex span').textContent    = charUtilsCap(character.sex);
+    document.querySelector('#previewHair span').textContent   = charUtilsCap(character.hairStyle) + ' / ' + charUtilsCap(character.hairColor);
+    document.querySelector('#previewOutfit span').textContent = charUtilsCap(character.outfit);
   }
 
-  // ===== SAVE =====
-  function saveCharacter() {
+  // ===== SAVE — uses saveCharacter() from character-utils.js =====
+  function saveChar() {
     const user = localStorage.getItem('dnd_user');
     if (!user) {
       showMessage('No user found. Please sign in again.', 'error');
       setTimeout(() => window.location.href = 'signin.html', 2000);
       return;
     }
-    localStorage.setItem('dnd_character_' + user, JSON.stringify(character));
+    saveCharacter(user, character);   // ← character-utils.js
     showMessage('Character saved successfully!', 'success');
     setTimeout(() => window.location.href = 'dashboard.html', 1500);
   }
@@ -636,20 +558,15 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     const user = localStorage.getItem('dnd_user');
     if (!user) { window.location.href = 'signin.html'; return; }
 
-    const params  = new URLSearchParams(window.location.search);
-    const isEdit  = params.get('edit') === 'true';
-    const saved   = localStorage.getItem('dnd_character_' + user);
+    const params = new URLSearchParams(window.location.search);
+    const isEdit = params.get('edit') === 'true';
 
+    // loadCharacter() comes from character-utils.js — normalises hex colours automatically
+    const saved = loadCharacter(user);
     if (saved) {
-      const savedChar = JSON.parse(saved);
-      delete savedChar.background;
-      delete savedChar.accessories;
-
-      if (savedChar.hairColor && savedChar.hairColor.startsWith('#')) {
-        savedChar.hairColor = HEX_TO_COLOR_NAME[savedChar.hairColor.toLowerCase()] || 'black';
-      }
-
-      Object.assign(character, savedChar);
+      delete saved.background;
+      delete saved.accessories;
+      Object.assign(character, saved);
     }
 
     if (isEdit) {

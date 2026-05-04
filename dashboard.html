@@ -65,7 +65,7 @@
         #db-bodyImg   { height: 210px; bottom: 18px; }
         #db-raceImg   { height: 210px; bottom: 18px; }
         #db-outfitImg { height: 180px; bottom: 8px; }
-        #db-hairImg   { height: 80px; bottom: 168px; }
+        #db-hairImg   { height: 80px;  bottom: 168px; }
         #db-spriteBody         { z-index: 2; }
         #db-spriteRaceFeatures { z-index: 5; }
         #db-spriteOutfit       { z-index: 3; }
@@ -269,6 +269,9 @@
         <button class="enter-realm-btn" onclick="enterRealm()">&#9876; Enter the Realm &#9876;</button>
     </div>
 
+    <!-- Shared utilities -->
+    <script src="character-utils.js"></script>
+
     <script>
         const pc = document.getElementById('particles');
         for (let i = 0; i < 50; i++) {
@@ -314,86 +317,24 @@
             document.getElementById('statItems').textContent = count;
         }
 
-        function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
-
+        // ── Load & render the character sprite using character-utils.js ──
         function loadCharacterSprite() {
-            const user  = localStorage.getItem('dnd_user');
+            const user = localStorage.getItem('dnd_user');
             if (!user) return;
-            const saved = localStorage.getItem('dnd_character_' + user);
-            if (!saved) return;
-            const c = JSON.parse(saved);
 
-            document.getElementById('charSubtitle').textContent = cap(c.race) + ' ' + cap(c.class);
-            document.getElementById('db-bodyImg').src = `sprites/body/${c.sex || 'male'}.png`;
+            // loadCharacter() from character-utils.js — normalises hex hair colours
+            const c = loadCharacter(user);
+            if (!c) return;
 
-            const raceMap = {
-                elf: 'sprites/race/elf.png', dwarf: 'sprites/race/dwarf.png',
-                tiefling: 'sprites/race/tiefling.png', dragonborn: 'sprites/race/dragonborn.png',
-                'half-orc': 'sprites/race/half-orc.png'
-            };
-            const raceImg = document.getElementById('db-raceImg');
-            if (raceMap[c.race]) { raceImg.src = raceMap[c.race]; raceImg.style.display = 'block'; }
+            document.getElementById('charSubtitle').textContent =
+                charUtilsCap(c.race) + ' ' + charUtilsCap(c.class);
 
-            const outfitMap = {
-                rogue: 'sprites/outfit/rogue.png', casual: 'sprites/outfit/casual.png',
-                leather: 'sprites/outfit/leather.png', plate: 'sprites/outfit/plate.png',
-                'mage-robes': 'sprites/outfit/mage_robes.png'
-            };
-            document.getElementById('db-outfitImg').src = outfitMap[c.outfit] || `sprites/outfit/${c.outfit}.png`;
-
-            // ===== HAIR: uses style + color — sprites/hair/<style>/<style>_<color>.png =====
-            const hairImg = document.getElementById('db-hairImg');
-            if (c.hairStyle === 'bald') {
-                hairImg.style.display = 'none';
-            } else {
-                const style = c.hairStyle || 'short';
-                const sex   = c.sex || 'male';
-
-                // Map legacy hex values saved by old character.html to color names
-                const hexToName = {
-                    '#000000': 'black',  '#8b4513': 'brown',  '#daa520': 'blonde',
-                    '#ff0000': 'red',    '#cc2200': 'red',    '#ffffff': 'white',
-                    '#0000ff': 'blue',   '#1155cc': 'blue',   '#008000': 'green',
-                    '#2e7d32': 'green',  '#ff69b4': 'pink'
-                };
-                let color = c.hairColor || 'black';
-                if (color.startsWith('#')) {
-                    color = hexToName[color.toLowerCase()] || 'black';
-                }
-
-                hairImg.removeAttribute('data-broken');
-                hairImg.src = `sprites/hair/${style}/${style}_${color}.png`;
-                hairImg.style.display = 'block';
-
-                // ===== PER-SEX HAIR OFFSETS =====
-                // Adjust these values to position hair correctly for each sex and style.
-                // height    = size of the hair sprite
-                // marginLeft = horizontal nudge (positive = right, negative = left)
-                // bottom    = how high up the hair sits on the character
-                const offsets = {
-                    male: {
-                        short:    { height: '60px',  marginLeft: '-4px',  bottom: '175px' },
-                        mohawk:   { height: '46px',  marginLeft: '8px',   bottom: '118px' },
-                        braided:  { height: '60px',  marginLeft: '0px',   bottom: '162px' },
-                        ponytail: { height: '70px',  marginLeft: '1px',  bottom: '158px' },
-                        long:     { height: '46px',  marginLeft: '12px',  bottom: '116px' },
-                    },
-                    female: {
-                        short:    { height: '55px',  marginLeft: '-2px',  bottom: '175px' },
-                        mohawk:   { height: '46px',  marginLeft: '8px',   bottom: '118px' },
-                        braided:  { height: '55px',  marginLeft: '2px',   bottom: '165px' },
-                        ponytail: { height: '70px',  marginLeft: '5px',  bottom: '158px' },
-                        long:     { height: '46px',  marginLeft: '12px',  bottom: '116px' },
-                    }
-                };
-
-                const fallback = { height: '42px', marginLeft: '8px', bottom: '120px' };
-                const o = (offsets[sex] || offsets.male)[style] || fallback;
-
-                hairImg.style.height     = o.height;
-                hairImg.style.marginLeft = o.marginLeft;
-                hairImg.style.bottom     = o.bottom;
-            }
+            // applyCharacterSprites() from character-utils.js
+            applyCharacterSprites(
+                c,
+                { body: 'db-bodyImg', race: 'db-raceImg', hair: 'db-hairImg', outfit: 'db-outfitImg' },
+                'small'   // dashboard uses the smaller sprite scale
+            );
         }
 
         function loadStats(user) {
@@ -426,7 +367,7 @@
             if (!user) { window.location.href = 'index.html'; return; }
             document.getElementById('charName').textContent = user;
             showModeBadge();
-            loadCharacterSprite();
+            loadCharacterSprite();   // ← now uses character-utils.js
             loadStats(user);
             buildInventory();
             loadSliderValues();
@@ -439,9 +380,7 @@
             window.location.href = 'index.html';
         }
 
-        function editCharacter() {
-            window.location.href = 'character.html?edit=true';
-        }
+        function editCharacter() { window.location.href = 'character.html?edit=true'; }
 
         // ===== SETTINGS =====
         function openOptions()  { document.getElementById('optionsOverlay').classList.add('active');    document.addEventListener('keydown', handleEsc); }
@@ -477,7 +416,6 @@
             sliders[name].value = pct;
             updateSliderUI(name); saveSliderValues();
         }
-
         document.querySelectorAll('.slider-container').forEach(container => {
             const name = container.dataset.slider;
             sliders[name].element = container;
