@@ -72,14 +72,14 @@ const CHAR_UTILS_HAIR_OFFSETS = {
   large: {
     male: {
       short:    { height: '80px',  marginLeft: '-6px', bottom: '240px' },
-      mohawk:   { height: '110px', marginLeft: '-6px', bottom: '210px' },
+      mohawk:   { height: '80px', marginLeft: '-7px', bottom: '230px' },
       braided:  { height: '80px',  marginLeft: '0px',  bottom: '225px' },
       ponytail: { height: '100px', marginLeft: '3px',  bottom: '210px' },
       long:     { height: '110px', marginLeft: '0px',  bottom: '205px' },
     },
     female: {
       short:    { height: '75px',  marginLeft: '-2px', bottom: '240px' },
-      mohawk:   { height: '110px', marginLeft: '-6px', bottom: '210px' },
+      mohawk:   { height: '70px', marginLeft: '-3px', bottom: '238px' },
       braided:  { height: '70px',  marginLeft: '2px',  bottom: '230px' },
       ponytail: { height: '100px', marginLeft: '7px',  bottom: '210px' },
       long:     { height: '110px', marginLeft: '0px',  bottom: '205px' },
