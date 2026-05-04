@@ -7,246 +7,112 @@
 <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-
 body {
   background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
   min-height: 100vh;
 }
-
 .bg-video {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: -1;
-  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1; background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
 }
-
 .character-page { min-height: 100vh; padding: 30px; }
-
 .character-header { text-align: center; margin-bottom: 30px; }
-
 .character-header h1 {
-  font-family: 'Uncial Antiqua', cursive;
-  color: #c9a45c;
-  font-size: 48px;
-  text-shadow: 0 0 20px rgba(201, 164, 92, 0.5);
-  letter-spacing: 3px;
+  font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 48px;
+  text-shadow: 0 0 20px rgba(201,164,92,0.5); letter-spacing: 3px;
 }
-
-.character-header p {
-  color: #8b7355;
-  font-size: 16px;
-  margin-top: 10px;
-  letter-spacing: 2px;
-}
-
-.character-layout {
-  display: flex;
-  gap: 40px;
-  max-width: 1400px;
-  margin: 0 auto;
-  align-items: flex-start;
-}
-
+.character-header p { color: #8b7355; font-size: 16px; margin-top: 10px; letter-spacing: 2px; }
+.character-layout { display: flex; gap: 40px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
 .customization-panel {
   flex: 1;
-  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
-  border: 2px solid #c9a45c;
-  border-radius: 15px;
-  padding: 30px;
-  max-height: 75vh;
-  overflow-y: auto;
+  background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+  border: 2px solid #c9a45c; border-radius: 15px; padding: 30px;
+  max-height: 75vh; overflow-y: auto;
 }
-
 .customization-panel::-webkit-scrollbar { width: 8px; }
-.customization-panel::-webkit-scrollbar-track { background: rgba(61, 47, 31, 0.5); border-radius: 4px; }
+.customization-panel::-webkit-scrollbar-track { background: rgba(61,47,31,0.5); border-radius: 4px; }
 .customization-panel::-webkit-scrollbar-thumb { background: #c9a45c; border-radius: 4px; }
-
 .preview-panel {
   width: 450px;
-  background: linear-gradient(145deg, rgba(26, 10, 46, 0.95), rgba(13, 27, 42, 0.95));
-  border: 2px solid #c9a45c;
-  border-radius: 15px;
-  padding: 40px;
-  text-align: center;
-  position: sticky;
-  top: 30px;
+  background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+  border: 2px solid #c9a45c; border-radius: 15px; padding: 40px;
+  text-align: center; position: sticky; top: 30px;
 }
-
 .section-title {
-  color: #c9a45c;
-  font-family: 'Uncial Antiqua', cursive;
-  font-size: 24px;
-  margin: 30px 0 15px 0;
-  border-bottom: 1px solid #3d2f1f;
-  padding-bottom: 10px;
+  color: #c9a45c; font-family: 'Uncial Antiqua', cursive; font-size: 24px;
+  margin: 30px 0 15px 0; border-bottom: 1px solid #3d2f1f; padding-bottom: 10px;
 }
 .section-title:first-child { margin-top: 0; }
-
-.selector-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
+.selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .selector-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid #3d2f1f;
-  border-radius: 8px;
-  padding: 12px 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f; border-radius: 8px;
+  padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.3s ease;
 }
-
 .selector-card:hover { border-color: #8b7355; transform: translateY(-2px); }
-.selector-card.selected {
-  border-color: #c9a45c;
-  background: rgba(201, 164, 92, 0.1);
-  box-shadow: 0 0 15px rgba(201, 164, 92, 0.3);
-}
-
-.selector-card .icon  { font-size: 32px; margin-bottom: 8px; }
+.selector-card.selected { border-color: #c9a45c; background: rgba(201,164,92,0.1); box-shadow: 0 0 15px rgba(201,164,92,0.3); }
+.selector-card .icon { font-size: 32px; margin-bottom: 8px; }
 .selector-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-
 .color-swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-
-.color-swatch {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  border: 3px solid #3d2f1f;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
+.color-swatch { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #3d2f1f; cursor: pointer; transition: all 0.3s ease; }
 .color-swatch:hover { transform: scale(1.1); }
-.color-swatch.selected { border-color: #c9a45c; box-shadow: 0 0 15px rgba(201, 164, 92, 0.5); }
-
+.color-swatch.selected { border-color: #c9a45c; box-shadow: 0 0 15px rgba(201,164,92,0.5); }
 .toggle-group { display: flex; gap: 15px; margin-bottom: 20px; }
-
 .toggle-btn {
-  flex: 1;
-  padding: 15px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid #3d2f1f;
-  border-radius: 8px;
-  color: #8b7355;
-  font-family: 'Cinzel', serif;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
+  flex: 1; padding: 15px; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f;
+  border-radius: 8px; color: #8b7355; font-family: 'Cinzel', serif; font-size: 16px;
+  cursor: pointer; transition: all 0.3s ease; text-align: center;
 }
-
 .toggle-btn:hover { border-color: #8b7355; }
-.toggle-btn.selected { border-color: #c9a45c; background: rgba(201, 164, 92, 0.1); color: #c9a45c; }
+.toggle-btn.selected { border-color: #c9a45c; background: rgba(201,164,92,0.1); color: #c9a45c; }
 .toggle-btn .icon { font-size: 28px; display: block; margin-bottom: 5px; }
-
-/* ===== SPRITE SYSTEM ===== */
 .character-sprite-container {
-  width: 300px; height: 400px;
-  position: relative;
-  margin: 20px auto;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  overflow: hidden;
+  width: 300px; height: 400px; position: relative; margin: 20px auto;
+  background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden;
 }
-
 .sprite-placeholder {
-  position: absolute;
-  bottom: 50px; left: 50%;
-  transform: translateX(-50%);
-  width: 120px; height: 280px;
-  background: rgba(201, 164, 92, 0.08);
-  border-radius: 60px 60px 30px 30px;
-  border: 2px dashed rgba(201, 164, 92, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 60px;
-  opacity: 0.4;
-  pointer-events: none;
+  position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 280px; background: rgba(201,164,92,0.08);
+  border-radius: 60px 60px 30px 30px; border: 2px dashed rgba(201,164,92,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px; opacity: 0.4; pointer-events: none;
 }
-
 img.sprite-img[data-broken="true"] { display: none !important; }
-
 .character-sprite-container::after {
-  content: '';
-  position: absolute;
-  bottom: 50px; left: 80px;
-  width: 120px; height: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 50%;
-  filter: blur(4px);
+  content: ''; position: absolute; bottom: 50px; left: 80px;
+  width: 120px; height: 10px; background: rgba(0,0,0,0.3);
+  border-radius: 50%; filter: blur(4px);
 }
-
 .character-sprite { width: 100%; height: 100%; position: relative; }
-
-.sprite-layer {
-  position: absolute;
-  width: 100%; height: 100%;
-  top: 0; left: 0;
-  transition: all 0.3s ease;
-}
-
-.sprite-img {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: auto;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
+.sprite-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; transition: all 0.3s ease; }
+.sprite-img { position: absolute; left: 50%; transform: translateX(-50%); width: auto; image-rendering: pixelated; pointer-events: none; }
 #bodyImg   { height: 280px; bottom: 30px; }
 #raceImg   { height: 280px; bottom: 30px; }
 #outfitImg { height: 240px; bottom: 10px; }
 #hairImg   { height: 110px; bottom: 210px; }
-
 #spriteBody         { z-index: 2; }
 #spriteRaceFeatures { z-index: 5; }
 #spriteOutfit       { z-index: 3; }
 #spriteHair         { z-index: 4; }
-
 .preview-info { color: #c9a45c; font-size: 14px; margin: 10px 0; letter-spacing: 1px; }
 .preview-info span { color: #8b7355; }
-
 .submit-btn {
-  width: 100%;
-  padding: 18px;
+  width: 100%; padding: 18px;
   background: linear-gradient(135deg, #c9a45c, #8b7355);
-  border: none;
-  border-radius: 8px;
-  color: #1a0a2e;
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 20px;
-  position: relative;
-  overflow: hidden;
+  border: none; border-radius: 8px; color: #1a0a2e; font-family: 'Cinzel', serif;
+  font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s ease; margin-top: 20px; position: relative; overflow: hidden;
 }
-
 .submit-btn::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
+  content: ''; position: absolute; top: 0; left: -100%;
   width: 100%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
   transition: left 0.5s;
 }
-
 .submit-btn:hover::before { left: 100%; }
-.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(201, 164, 92, 0.4); }
-
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(201,164,92,0.4); }
 .message { display: none; padding: 15px; margin-top: 20px; border-radius: 8px; text-align: center; font-size: 14px; }
-.message.success { display: block; background: rgba(139, 195, 74, 0.2); border: 1px solid #8bc34a; color: #8bc34a; }
-.message.error   { display: block; background: rgba(244, 67, 54, 0.2);  border: 1px solid #f44336; color: #f44336; }
-
+.message.success { display: block; background: rgba(139,195,74,0.2); border: 1px solid #8bc34a; color: #8bc34a; }
+.message.error   { display: block; background: rgba(244,67,54,0.2);  border: 1px solid #f44336; color: #f44336; }
 @media (max-width: 1000px) {
   .character-layout { flex-direction: column; }
   .preview-panel { width: 100%; position: static; }
@@ -265,8 +131,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   </div>
 
   <div class="character-layout">
-
-    <!-- LEFT: Customization -->
     <div class="customization-panel">
 
       <div class="section-title">Race</div>
@@ -315,11 +179,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       </div>
 
       <div class="section-title">Hair Color</div>
-      <!--
-        data-color must match your filename suffix exactly.
-        Path built: sprites/hair/<style>/<style>_<color>.png
-        e.g. sprites/hair/short/short_black.png
-      -->
       <div class="color-swatches" id="hairColorSelector">
         <div class="color-swatch" data-color="black"  style="background:#000000;"></div>
         <div class="color-swatch" data-color="brown"  style="background:#8B4513;"></div>
@@ -358,7 +217,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 
       <div class="character-sprite-container">
         <div class="sprite-placeholder" id="spritePlaceholder">&#129497;</div>
-
         <div class="character-sprite" id="characterSprite">
           <div class="sprite-layer" id="spriteBody">
             <img src="sprites/body/male.png" id="bodyImg" alt="Body" class="sprite-img"
@@ -369,7 +227,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
                  onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteHair">
-            <!-- Default: short black -->
             <img src="sprites/hair/short/short_black.png" id="hairImg" alt="Hair" class="sprite-img"
                  onerror="this.setAttribute('data-broken','true');">
           </div>
@@ -389,7 +246,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
       <div class="message" id="message"></div>
     </div>
-
   </div>
 </div>
 
@@ -406,19 +262,16 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     particlesContainer.appendChild(p);
   }
 
-  // ===== CHARACTER STATE =====
-  // hairColor stores the filename color suffix: 'black', 'brown', 'blonde', etc.
+  // ===== STATE =====
+  let isEditMode = false;
+
   const character = {
-    race:      'human',
-    class:     'fighter',
-    sex:       'male',
-    hairStyle: 'short',
-    hairColor: 'black',
-    skinTone:  '#DEB887',
-    outfit:    'rogue'
+    race: 'human', class: 'fighter', sex: 'male',
+    hairStyle: 'short', hairColor: 'black',
+    skinTone: '#DEB887', outfit: 'rogue'
   };
 
-  // ===== STANDARD SELECTORS (race, class, sex, skinTone, outfit) =====
+  // ===== SELECTORS =====
   function setupSelector(containerId, property) {
     const container = document.getElementById(containerId);
     const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn');
@@ -438,7 +291,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   setupSelector('skinToneSelector','skinTone');
   setupSelector('outfitSelector',  'outfit');
 
-  // ===== HAIR STYLE SELECTOR =====
   document.getElementById('hairStyleSelector').querySelectorAll('.selector-card').forEach(item => {
     item.addEventListener('click', () => {
       document.getElementById('hairStyleSelector').querySelectorAll('.selector-card')
@@ -449,8 +301,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     });
   });
 
-  // ===== HAIR COLOR SELECTOR =====
-  // Uses data-color (the filename suffix) instead of data-value
   document.getElementById('hairColorSelector').querySelectorAll('.color-swatch').forEach(item => {
     item.addEventListener('click', () => {
       document.getElementById('hairColorSelector').querySelectorAll('.color-swatch')
@@ -469,11 +319,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 
   // ===== SPRITE UPDATE =====
   function updateSprite() {
-    updateBody();
-    updateRaceFeatures();
-    updateHair();
-    updateOutfit();
-    updatePreviewText();
+    updateBody(); updateRaceFeatures(); updateHair(); updateOutfit(); updatePreviewText();
   }
 
   function updateBody() {
@@ -485,40 +331,22 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   function updateRaceFeatures() {
     const img = document.getElementById('raceImg');
     const raceMap = {
-      elf:        'sprites/race/elf.png',
-      dwarf:      'sprites/race/dwarf.png',
-      tiefling:   'sprites/race/tiefling.png',
-      dragonborn: 'sprites/race/dragonborn.png',
+      elf: 'sprites/race/elf.png', dwarf: 'sprites/race/dwarf.png',
+      tiefling: 'sprites/race/tiefling.png', dragonborn: 'sprites/race/dragonborn.png',
       'half-orc': 'sprites/race/half-orc.png'
     };
     if (raceMap[character.race]) {
-      img.removeAttribute('data-broken');
-      img.src = raceMap[character.race];
-      img.style.display = 'block';
-    } else {
-      img.style.display = 'none';
-    }
+      img.removeAttribute('data-broken'); img.src = raceMap[character.race]; img.style.display = 'block';
+    } else { img.style.display = 'none'; }
   }
 
   function updateHair() {
     const img = document.getElementById('hairImg');
-
-    if (character.hairStyle === 'bald') {
-      img.style.display = 'none';
-      return;
-    }
-
+    if (character.hairStyle === 'bald') { img.style.display = 'none'; return; }
     img.removeAttribute('data-broken');
     img.style.display = 'block';
-
-    // BUILD PATH: sprites/hair/<style>/<style>_<color>.png
-    // Examples:
-    //   sprites/hair/short/short_black.png
-    //   sprites/hair/long/long_blonde.png
-    //   sprites/hair/mohawk/mohawk_pink.png
+    // Path: sprites/hair/<style>/<style>_<color>.png
     img.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
-
-    // Per-style position & size overrides
     const overrides = {
       short:    { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
       mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
@@ -527,18 +355,13 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
     };
     const s = overrides[character.hairStyle] || { height: '110px', marginLeft: '0px', bottom: '210px' };
-    img.style.height     = s.height;
-    img.style.left       = '50%';
-    img.style.marginLeft = s.marginLeft;
-    img.style.bottom     = s.bottom;
+    img.style.height = s.height; img.style.left = '50%'; img.style.marginLeft = s.marginLeft; img.style.bottom = s.bottom;
   }
 
   function updateOutfit() {
     const outfitMap = {
-      rogue:        'sprites/outfit/rogue.png',
-      casual:       'sprites/outfit/casual.png',
-      leather:      'sprites/outfit/leather.png',
-      plate:        'sprites/outfit/plate.png',
+      rogue: 'sprites/outfit/rogue.png', casual: 'sprites/outfit/casual.png',
+      leather: 'sprites/outfit/leather.png', plate: 'sprites/outfit/plate.png',
       'mage-robes': 'sprites/outfit/mage_robes.png'
     };
     const img = document.getElementById('outfitImg');
@@ -552,9 +375,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     document.querySelector('#previewClass span').textContent  = cap(character.class);
     document.querySelector('#previewSex span').textContent    = cap(character.sex);
     document.querySelector('#previewHair span').textContent   =
-      character.hairStyle === 'bald'
-        ? 'Bald'
-        : cap(character.hairStyle) + ' / ' + cap(character.hairColor);
+      character.hairStyle === 'bald' ? 'Bald' : cap(character.hairStyle) + ' / ' + cap(character.hairColor);
     document.querySelector('#previewOutfit span').textContent = cap(character.outfit);
   }
 
@@ -567,19 +388,25 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       return;
     }
     localStorage.setItem('dnd_character_' + user, JSON.stringify(character));
-    showMessage('Character saved! Entering the realm...', 'success');
-    setTimeout(() => window.location.href = 'mode-select.html', 1500);
+
+    if (isEditMode) {
+      // Came from dashboard — go back there
+      showMessage('Character updated!', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 1200);
+    } else {
+      // Fresh creation — go to mode select
+      showMessage('Character created! Entering the realm...', 'success');
+      setTimeout(() => window.location.href = 'mode-select.html', 1500);
+    }
   }
 
   function showMessage(text, type) {
     const msg = document.getElementById('message');
-    msg.textContent = text;
-    msg.className   = 'message ' + type;
+    msg.textContent = text; msg.className = 'message ' + type;
   }
 
-  // ===== APPLY SAVED SELECTIONS TO UI =====
+  // ===== APPLY SAVED UI SELECTIONS =====
   function applySelections() {
-    // Standard data-value selectors
     [
       { id: 'raceSelector',     prop: 'race',     sel: '.selector-card' },
       { id: 'classSelector',    prop: 'class',    sel: '.selector-card' },
@@ -591,11 +418,8 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       const el = document.querySelector(`#${id} ${sel}[data-value="${character[prop]}"]`);
       if (el) el.classList.add('selected');
     });
-
-    // Hair color uses data-color, not data-value
-    const hairColorEl = document.querySelector(
-      `#hairColorSelector .color-swatch[data-color="${character.hairColor}"]`
-    );
+    // Hair color uses data-color
+    const hairColorEl = document.querySelector(`#hairColorSelector .color-swatch[data-color="${character.hairColor}"]`);
     if (hairColorEl) hairColorEl.classList.add('selected');
   }
 
@@ -605,25 +429,23 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     if (!user) { window.location.href = 'index.html'; return; }
 
     const params = new URLSearchParams(window.location.search);
-    const isEdit = params.get('edit') === 'true';
+    isEditMode = params.get('edit') === 'true';
 
     const saved = localStorage.getItem('dnd_character_' + user);
     if (saved) {
       const savedChar = JSON.parse(saved);
-      delete savedChar.background;
-      delete savedChar.accessories;
+      delete savedChar.background; delete savedChar.accessories;
       Object.assign(character, savedChar);
     }
 
-    if (isEdit) {
+    if (isEditMode) {
       document.getElementById('submitBtn').textContent = 'Save Changes';
-      document.getElementById('pageTitle').textContent = '&#9876; Edit Your Character';
+      document.getElementById('pageTitle').textContent = '⚔ Edit Your Character';
     }
 
     applySelections();
     updateSprite();
   };
 </script>
-
 </body>
 </html>
