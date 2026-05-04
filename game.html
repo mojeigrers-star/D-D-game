@@ -177,6 +177,51 @@
         .next-btn { margin-left: auto; background: rgba(201,164,92,0.08); border-color: #8b7355; color: #c9a45c; }
         .next-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; }
 
+        /* ===== HUD SIDE BUTTONS ===== */
+        .hud-side-btn {
+            background: rgba(139,115,85,0.1); border: 1px solid #5a4a3a;
+            border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
+            font-size: 12px; letter-spacing: 1px; padding: 8px 14px;
+            cursor: pointer; transition: all 0.3s; white-space: nowrap;
+        }
+        .hud-side-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.1); }
+        .hud-side-btn.danger:hover { border-color: #c0392b; color: #e74c3c; background: rgba(192,57,43,0.1); }
+
+        /* ===== SETTINGS OVERLAY ===== */
+        .settings-overlay {
+            display: none; position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
+        }
+        .settings-overlay.active { display: flex; }
+        .settings-panel {
+            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
+            border: 3px solid #c9a45c; border-radius: 15px; padding: 40px;
+            width: min(500px, 92vw); position: relative;
+            box-shadow: 0 0 50px rgba(201,164,92,0.3);
+        }
+        .settings-panel h2 {
+            font-family: 'Uncial Antiqua', cursive; color: #c9a45c;
+            text-align: center; font-size: 30px; margin-bottom: 28px;
+            text-shadow: 0 0 20px rgba(201,164,92,0.5);
+        }
+        .close-settings {
+            position: absolute; top: 14px; right: 18px;
+            background: none; border: none; color: #8b7355; font-size: 26px;
+            cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif;
+        }
+        .close-settings:hover { color: #c9a45c; }
+        .slider-group { margin-bottom: 24px; }
+        .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .slider-label span { color: #c9a45c; font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 1px; }
+        .slider-value { color: #8b7355; font-size: 12px; min-width: 32px; text-align: right; font-family: 'Cinzel', serif; }
+        .slider-container { position: relative; height: 28px; display: flex; align-items: center; }
+        .slider-track { width: 100%; height: 6px; background: rgba(61,47,31,0.8); border-radius: 3px; position: relative; cursor: pointer; }
+        .slider-fill { height: 100%; background: linear-gradient(90deg, #c9a45c, #8b7355); border-radius: 3px; position: absolute; top: 0; left: 0; pointer-events: none; }
+        .slider-thumb { width: 18px; height: 18px; background: #c9a45c; border: 2px solid #1a0a2e; border-radius: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); cursor: grab; z-index: 10; transition: box-shadow 0.2s; }
+        .slider-thumb:hover { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
+        .slider-thumb.dragging { cursor: grabbing; box-shadow: 0 0 15px rgba(201,164,92,0.8); }
+        .settings-hint { text-align: center; color: #5a4a3a; font-size: 11px; margin-top: 18px; letter-spacing: 1px; font-family: 'Cinzel', serif; }
+
         /* ===== INVENTORY OVERLAY ===== */
         .inv-overlay {
             display: none; position: fixed; inset: 0; z-index: 400;
@@ -320,6 +365,52 @@
     </div>
 </div>
 
+<!-- ===== SETTINGS OVERLAY ===== -->
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+        <button class="close-settings" onclick="closeSettings()">&times;</button>
+        <h2>&#9881; Settings</h2>
+
+        <div class="slider-group">
+            <div class="slider-label"><span>&#127925; Music</span><span class="slider-value" id="musicValue">70</span></div>
+            <div class="slider-container" tabindex="0" data-slider="music">
+                <div class="slider-track"><div class="slider-fill" style="width:70%"></div></div>
+                <div class="slider-thumb" style="left:70%"></div>
+            </div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>&#128264; Master Volume</span><span class="slider-value" id="masterValue">80</span></div>
+            <div class="slider-container" tabindex="0" data-slider="master">
+                <div class="slider-track"><div class="slider-fill" style="width:80%"></div></div>
+                <div class="slider-thumb" style="left:80%"></div>
+            </div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>&#9876; Enemies</span><span class="slider-value" id="enemiesValue">50</span></div>
+            <div class="slider-container" tabindex="0" data-slider="enemies">
+                <div class="slider-track"><div class="slider-fill" style="width:50%"></div></div>
+                <div class="slider-thumb" style="left:50%"></div>
+            </div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>&#129309; Friends</span><span class="slider-value" id="friendsValue">60</span></div>
+            <div class="slider-container" tabindex="0" data-slider="friends">
+                <div class="slider-track"><div class="slider-fill" style="width:60%"></div></div>
+                <div class="slider-thumb" style="left:60%"></div>
+            </div>
+        </div>
+        <div class="slider-group">
+            <div class="slider-label"><span>&#127752; Ambient</span><span class="slider-value" id="ambientValue">75</span></div>
+            <div class="slider-container" tabindex="0" data-slider="ambient">
+                <div class="slider-track"><div class="slider-fill" style="width:75%"></div></div>
+                <div class="slider-thumb" style="left:75%"></div>
+            </div>
+        </div>
+
+        <p class="settings-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+    </div>
+</div>
+
 <!-- ===== LOCATION TOOLTIP ===== -->
 <div class="map-tooltip" id="mapTooltip">
     <div id="ttName">Location</div>
@@ -329,7 +420,7 @@
 <!-- ===== TOP HUD ===== -->
 <div class="top-hud">
     <div class="hud-section">
-        <button class="inv-hud-btn" onclick="openInventory()">&#127894; Inventory</button>
+        <button class="hud-side-btn" onclick="openSettings()">&#9881; Settings</button>
         <div class="char-pill">
             <span id="hudCharName">Hero</span>
             <span class="level" id="hudCharSub"> &mdash; Lv.1 Human Fighter</span>
@@ -357,6 +448,8 @@
             <div class="quick-stat"><div class="quick-stat-val" id="statAC">10</div><div class="quick-stat-name">&#128737; AC</div></div>
             <div class="quick-stat"><div class="quick-stat-val" id="statSpd">30</div><div class="quick-stat-name">&#128640; Speed</div></div>
         </div>
+        <button class="hud-side-btn" onclick="openInventory()">&#127894; Inventory</button>
+        <button class="hud-side-btn danger" onclick="leaveRealm()">&#9664; Leave</button>
     </div>
 </div>
 
@@ -952,6 +1045,79 @@ window.onload = function() {
     // Start narrative after short delay
     setTimeout(() => loadScene(0), 800);
 };
+
+// ===== SETTINGS =====
+const sliders = {
+    music:   { value: 70 }, master:  { value: 80 },
+    enemies: { value: 50 }, friends: { value: 60 }, ambient: { value: 75 }
+};
+let activeSlider = null, isDragging = false;
+
+function openSettings() {
+    loadSliderValues();
+    document.getElementById('settingsOverlay').classList.add('active');
+    document.addEventListener('keydown', handleSettingsEsc);
+}
+function closeSettings() {
+    document.getElementById('settingsOverlay').classList.remove('active');
+    document.removeEventListener('keydown', handleSettingsEsc);
+}
+function handleSettingsEsc(e) { if (e.key === 'Escape') closeSettings(); }
+
+function loadSliderValues() {
+    const saved = localStorage.getItem('dnd_sliders');
+    if (saved) {
+        const vals = JSON.parse(saved);
+        Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } });
+    } else {
+        Object.keys(sliders).forEach(k => updateSliderUI(k));
+    }
+}
+function saveSliderValues() {
+    const vals = {};
+    Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; });
+    localStorage.setItem('dnd_sliders', JSON.stringify(vals));
+}
+function updateSliderUI(name) {
+    const container = document.querySelector(`#settingsOverlay [data-slider="${name}"]`);
+    if (!container) return;
+    const pct = sliders[name].value;
+    container.querySelector('.slider-fill').style.width = pct + '%';
+    container.querySelector('.slider-thumb').style.left = pct + '%';
+    const el = document.getElementById(name + 'Value');
+    if (el) el.textContent = pct;
+}
+function updateFromMouse(e, name, container) {
+    const rect = container.getBoundingClientRect();
+    const pct  = Math.round(Math.max(0, Math.min(e.clientX - rect.left, rect.width)) / rect.width * 100);
+    sliders[name].value = pct;
+    updateSliderUI(name); saveSliderValues();
+}
+function initSliders() {
+    document.querySelectorAll('#settingsOverlay .slider-container').forEach(container => {
+        const name = container.dataset.slider;
+        container.addEventListener('mousedown', e => { isDragging = true; activeSlider = name; updateFromMouse(e, name, container); });
+        container.addEventListener('click', e => updateFromMouse(e, name, container));
+        container.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                sliders[name].value = Math.max(0, Math.min(100, sliders[name].value + (e.key === 'ArrowLeft' ? -1 : 1)));
+                updateSliderUI(name); saveSliderValues();
+            }
+        });
+    });
+    document.addEventListener('mousemove', e => {
+        if (!isDragging || !activeSlider) return;
+        const container = document.querySelector(`#settingsOverlay [data-slider="${activeSlider}"]`);
+        if (container) updateFromMouse(e, activeSlider, container);
+    });
+    document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
+}
+
+// ===== LEAVE REALM =====
+function leaveRealm() {
+    window.location.href = 'mode-select.html';
+}
 </script>
 </body>
 </html>
