@@ -495,10 +495,12 @@
     </div>
 </div>
 
+<!-- Shared character utilities (sprite paths, loadCharacter, etc.) -->
+<script src="character-utils.js"></script>
+ 
 <script>
 // ===== GUARD =====
 const user = localStorage.getItem('dnd_user');
-if (!user) window.location.href = 'index.html';
 
 // ===== PARTICLES =====
 const pc = document.getElementById('particles');
@@ -513,15 +515,17 @@ for (let i = 0; i < 50; i++) {
 }
 
 // ===== PLAYER DATA =====
-const charRaw   = localStorage.getItem('dnd_character_' + user);
+// loadCharacter() comes from character-utils.js — normalises hex hair colours automatically
 const statsRaw  = localStorage.getItem('dnd_stats_' + user);
-const character = charRaw  ? JSON.parse(charRaw)  : { race:'human', class:'fighter', sex:'male' };
+const character = loadCharacter(user) || { race:'human', class:'fighter', sex:'male' };
 const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
-
-function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
-
+ 
+// charUtilsCap comes from character-utils.js
+const cap = charUtilsCap;
+ 
 document.getElementById('hudCharName').textContent = user;
 document.getElementById('hudCharSub').textContent  = ` — Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
+
 document.getElementById('statGold').textContent    = stats.gold;
 document.getElementById('xpText').textContent      = `${stats.xp} / ${stats.xpMax}`;
 document.getElementById('xpBar').style.width       = (stats.xp / stats.xpMax * 100) + '%';
