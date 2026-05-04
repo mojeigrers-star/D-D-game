@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="styles.css">
 <style>
 
-/* ===== FALLBACK BACKGROUND ===== */
 body {
   background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
   min-height: 100vh;
@@ -22,16 +21,9 @@ body {
   background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
 }
 
-/* ===== CHARACTER PAGE ===== */
-.character-page {
-  min-height: 100vh;
-  padding: 30px;
-}
+.character-page { min-height: 100vh; padding: 30px; }
 
-.character-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
+.character-header { text-align: center; margin-bottom: 30px; }
 
 .character-header h1 {
   font-family: 'Uncial Antiqua', cursive;
@@ -89,7 +81,6 @@ body {
   border-bottom: 1px solid #3d2f1f;
   padding-bottom: 10px;
 }
-
 .section-title:first-child { margin-top: 0; }
 
 .selector-grid {
@@ -110,21 +101,19 @@ body {
 }
 
 .selector-card:hover { border-color: #8b7355; transform: translateY(-2px); }
-
 .selector-card.selected {
   border-color: #c9a45c;
   background: rgba(201, 164, 92, 0.1);
   box-shadow: 0 0 15px rgba(201, 164, 92, 0.3);
 }
 
-.selector-card .icon { font-size: 32px; margin-bottom: 8px; }
+.selector-card .icon  { font-size: 32px; margin-bottom: 8px; }
 .selector-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
 
 .color-swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
 
 .color-swatch {
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   border: 3px solid #3d2f1f;
   cursor: pointer;
@@ -156,23 +145,19 @@ body {
 
 /* ===== SPRITE SYSTEM ===== */
 .character-sprite-container {
-  width: 300px;
-  height: 400px;
+  width: 300px; height: 400px;
   position: relative;
   margin: 20px auto;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
-  overflow: hidden; /* prevents broken images from expanding the box */
+  overflow: hidden;
 }
 
-/* Silhouette shown when no body sprite loads */
 .sprite-placeholder {
   position: absolute;
-  bottom: 50px;
-  left: 50%;
+  bottom: 50px; left: 50%;
   transform: translateX(-50%);
-  width: 120px;
-  height: 280px;
+  width: 120px; height: 280px;
   background: rgba(201, 164, 92, 0.08);
   border-radius: 60px 60px 30px 30px;
   border: 2px dashed rgba(201, 164, 92, 0.2);
@@ -184,18 +169,13 @@ body {
   pointer-events: none;
 }
 
-/* Hide broken img elements automatically */
-img.sprite-img[data-broken="true"] {
-  display: none !important;
-}
+img.sprite-img[data-broken="true"] { display: none !important; }
 
 .character-sprite-container::after {
   content: '';
   position: absolute;
-  bottom: 50px;
-  left: 80px;
-  width: 120px;
-  height: 10px;
+  bottom: 50px; left: 80px;
+  width: 120px; height: 10px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 50%;
   filter: blur(4px);
@@ -205,13 +185,11 @@ img.sprite-img[data-broken="true"] {
 
 .sprite-layer {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   top: 0; left: 0;
   transition: all 0.3s ease;
 }
 
-/* Base for all sprite images */
 .sprite-img {
   position: absolute;
   left: 50%;
@@ -221,35 +199,15 @@ img.sprite-img[data-broken="true"] {
   pointer-events: none;
 }
 
-/* Body — full character */
-#bodyImg {
-  height: 280px;
-  bottom: 30px;
-}
-
-/* Race features — same frame as body */
-#raceImg {
-  height: 280px;
-  bottom: 30px;
-}
-
-/* Outfit — bigger and lower */
-#outfitImg {
-  height: 240px;
-  bottom: 10px;
-}
-
-/* Hair — small, anchored to the top of the head
-   Tweak bottom to move up/down, height to scale */
-#hairImg {
-  height: 110px;
-  bottom: 210px;
-}
+#bodyImg   { height: 280px; bottom: 30px; }
+#raceImg   { height: 280px; bottom: 30px; }
+#outfitImg { height: 240px; bottom: 10px; }
+#hairImg   { height: 110px; bottom: 210px; }
 
 #spriteBody         { z-index: 2; }
-#spriteRaceFeatures  { z-index: 5; }
-#spriteOutfit        { z-index: 3; }
-#spriteHair          { z-index: 4; }
+#spriteRaceFeatures { z-index: 5; }
+#spriteOutfit       { z-index: 3; }
+#spriteHair         { z-index: 4; }
 
 .preview-info { color: #c9a45c; font-size: 14px; margin: 10px 0; letter-spacing: 1px; }
 .preview-info span { color: #8b7355; }
@@ -313,64 +271,69 @@ img.sprite-img[data-broken="true"] {
 
       <div class="section-title">Race</div>
       <div class="selector-grid" id="raceSelector">
-        <div class="selector-card" data-value="human"><div class="icon">&#129489;</div><div class="label">Human</div></div>
-        <div class="selector-card" data-value="elf"><div class="icon">&#129525;</div><div class="label">Elf</div></div>
-        <div class="selector-card" data-value="dwarf"><div class="icon">&#129489;</div><div class="label">Dwarf</div></div>
-        <div class="selector-card" data-value="halfling"><div class="icon">&#129489;</div><div class="label">Halfling</div></div>
+        <div class="selector-card" data-value="human">     <div class="icon">&#129489;</div><div class="label">Human</div></div>
+        <div class="selector-card" data-value="elf">       <div class="icon">&#129525;</div><div class="label">Elf</div></div>
+        <div class="selector-card" data-value="dwarf">     <div class="icon">&#129489;</div><div class="label">Dwarf</div></div>
+        <div class="selector-card" data-value="halfling">  <div class="icon">&#129489;</div><div class="label">Halfling</div></div>
         <div class="selector-card" data-value="dragonborn"><div class="icon">&#128009;</div><div class="label">Dragonborn</div></div>
-        <div class="selector-card" data-value="tiefling"><div class="icon">&#128127;</div><div class="label">Tiefling</div></div>
-        <div class="selector-card" data-value="gnome"><div class="icon">&#129489;</div><div class="label">Gnome</div></div>
-        <div class="selector-card" data-value="half-elf"><div class="icon">&#129525;</div><div class="label">Half-Elf</div></div>
-        <div class="selector-card" data-value="half-orc"><div class="icon">&#128058;</div><div class="label">Half-Orc</div></div>
+        <div class="selector-card" data-value="tiefling">  <div class="icon">&#128127;</div><div class="label">Tiefling</div></div>
+        <div class="selector-card" data-value="gnome">     <div class="icon">&#129489;</div><div class="label">Gnome</div></div>
+        <div class="selector-card" data-value="half-elf">  <div class="icon">&#129525;</div><div class="label">Half-Elf</div></div>
+        <div class="selector-card" data-value="half-orc">  <div class="icon">&#128058;</div><div class="label">Half-Orc</div></div>
       </div>
 
       <div class="section-title">Class</div>
       <div class="selector-grid" id="classSelector">
-        <div class="selector-card" data-value="fighter"><div class="icon">&#9876;</div><div class="label">Fighter</div></div>
-        <div class="selector-card" data-value="wizard"><div class="icon">&#128302;</div><div class="label">Wizard</div></div>
-        <div class="selector-card" data-value="rogue"><div class="icon">&#128640;</div><div class="label">Rogue</div></div>
-        <div class="selector-card" data-value="cleric"><div class="icon">&#10014;</div><div class="label">Cleric</div></div>
-        <div class="selector-card" data-value="ranger"><div class="icon">&#127993;</div><div class="label">Ranger</div></div>
+        <div class="selector-card" data-value="fighter">  <div class="icon">&#9876;</div>  <div class="label">Fighter</div></div>
+        <div class="selector-card" data-value="wizard">   <div class="icon">&#128302;</div><div class="label">Wizard</div></div>
+        <div class="selector-card" data-value="rogue">    <div class="icon">&#128640;</div><div class="label">Rogue</div></div>
+        <div class="selector-card" data-value="cleric">   <div class="icon">&#10014;</div> <div class="label">Cleric</div></div>
+        <div class="selector-card" data-value="ranger">   <div class="icon">&#127993;</div><div class="label">Ranger</div></div>
         <div class="selector-card" data-value="barbarian"><div class="icon">&#128170;</div><div class="label">Barbarian</div></div>
-        <div class="selector-card" data-value="bard"><div class="icon">&#127926;</div><div class="label">Bard</div></div>
-        <div class="selector-card" data-value="druid"><div class="icon">&#127811;</div><div class="label">Druid</div></div>
-        <div class="selector-card" data-value="monk"><div class="icon">&#9876;</div><div class="label">Monk</div></div>
-        <div class="selector-card" data-value="paladin"><div class="icon">&#128737;</div><div class="label">Paladin</div></div>
-        <div class="selector-card" data-value="warlock"><div class="icon">&#128128;</div><div class="label">Warlock</div></div>
-        <div class="selector-card" data-value="sorcerer"><div class="icon">&#10024;</div><div class="label">Sorcerer</div></div>
+        <div class="selector-card" data-value="bard">     <div class="icon">&#127926;</div><div class="label">Bard</div></div>
+        <div class="selector-card" data-value="druid">    <div class="icon">&#127811;</div><div class="label">Druid</div></div>
+        <div class="selector-card" data-value="monk">     <div class="icon">&#9876;</div>  <div class="label">Monk</div></div>
+        <div class="selector-card" data-value="paladin">  <div class="icon">&#128737;</div><div class="label">Paladin</div></div>
+        <div class="selector-card" data-value="warlock">  <div class="icon">&#128128;</div><div class="label">Warlock</div></div>
+        <div class="selector-card" data-value="sorcerer"> <div class="icon">&#10024;</div> <div class="label">Sorcerer</div></div>
       </div>
 
       <div class="section-title">Sex</div>
       <div class="toggle-group" id="sexSelector">
-        <div class="toggle-btn" data-value="male"><span class="icon">&#9794;</span>Male</div>
+        <div class="toggle-btn" data-value="male">  <span class="icon">&#9794;</span>Male</div>
         <div class="toggle-btn" data-value="female"><span class="icon">&#9792;</span>Female</div>
       </div>
 
       <div class="section-title">Hair Style</div>
       <div class="selector-grid" id="hairStyleSelector">
-        <div class="selector-card" data-value="short"><div class="icon">&#128084;</div><div class="label">Short</div></div>
-        <div class="selector-card" data-value="long"><div class="icon">&#128085;</div><div class="label">Long</div></div>
+        <div class="selector-card" data-value="short">   <div class="icon">&#128084;</div><div class="label">Short</div></div>
+        <div class="selector-card" data-value="long">    <div class="icon">&#128085;</div><div class="label">Long</div></div>
         <div class="selector-card" data-value="ponytail"><div class="icon">&#128085;</div><div class="label">Ponytail</div></div>
-        <div class="selector-card" data-value="bald"><div class="icon">&#128488;</div><div class="label">Bald</div></div>
-        <div class="selector-card" data-value="mohawk"><div class="icon">&#128083;</div><div class="label">Mohawk</div></div>
-        <div class="selector-card" data-value="braided"><div class="icon">&#128085;</div><div class="label">Braided</div></div>
+        <div class="selector-card" data-value="bald">    <div class="icon">&#128488;</div><div class="label">Bald</div></div>
+        <div class="selector-card" data-value="mohawk">  <div class="icon">&#128083;</div><div class="label">Mohawk</div></div>
+        <div class="selector-card" data-value="braided"> <div class="icon">&#128085;</div><div class="label">Braided</div></div>
       </div>
 
       <div class="section-title">Hair Color</div>
+      <!--
+        data-color must match your filename suffix exactly.
+        Path built: sprites/hair/<style>/<style>_<color>.png
+        e.g. sprites/hair/short/short_black.png
+      -->
       <div class="color-swatches" id="hairColorSelector">
-        <div class="color-swatch" data-value="#000000" style="background:#000000;"></div>
-        <div class="color-swatch" data-value="#8B4513" style="background:#8B4513;"></div>
-        <div class="color-swatch" data-value="#DAA520" style="background:#DAA520;"></div>
-        <div class="color-swatch" data-value="#FF0000" style="background:#FF0000;"></div>
-        <div class="color-swatch" data-value="#FFFFFF" style="background:#FFFFFF;"></div>
-        <div class="color-swatch" data-value="#0000FF" style="background:#0000FF;"></div>
-        <div class="color-swatch" data-value="#008000" style="background:#008000;"></div>
-        <div class="color-swatch" data-value="#FF69B4" style="background:#FF69B4;"></div>
+        <div class="color-swatch" data-color="black"  style="background:#000000;"></div>
+        <div class="color-swatch" data-color="brown"  style="background:#8B4513;"></div>
+        <div class="color-swatch" data-color="blonde" style="background:#DAA520;"></div>
+        <div class="color-swatch" data-color="red"    style="background:#CC2200;"></div>
+        <div class="color-swatch" data-color="white"  style="background:#FFFFFF; border-color:#5a4a3a;"></div>
+        <div class="color-swatch" data-color="blue"   style="background:#1155CC;"></div>
+        <div class="color-swatch" data-color="green"  style="background:#2E7D32;"></div>
+        <div class="color-swatch" data-color="pink"   style="background:#FF69B4;"></div>
       </div>
 
       <div class="section-title">Skin Tone</div>
       <div class="color-swatches" id="skinToneSelector">
-        <div class="color-swatch" data-value="#FFE4C4" style="background:#FFE4C4;"></div>
+        <div class="color-swatch" data-value="#FFE4C4" style="background:#FFE4C4; border-color:#5a4a3a;"></div>
         <div class="color-swatch" data-value="#DEB887" style="background:#DEB887;"></div>
         <div class="color-swatch" data-value="#D2B48C" style="background:#D2B48C;"></div>
         <div class="color-swatch" data-value="#F4A460" style="background:#F4A460;"></div>
@@ -380,10 +343,10 @@ img.sprite-img[data-broken="true"] {
 
       <div class="section-title">Outfit</div>
       <div class="selector-grid" id="outfitSelector">
-        <div class="selector-card" data-value="rogue"><div class="icon">&#128608;</div><div class="label">Rogue</div></div>
-        <div class="selector-card" data-value="casual"><div class="icon">&#128090;</div><div class="label">Casual</div></div>
-        <div class="selector-card" data-value="leather"><div class="icon">&#128007;</div><div class="label">Leather</div></div>
-        <div class="selector-card" data-value="plate"><div class="icon">&#129517;</div><div class="label">Plate</div></div>
+        <div class="selector-card" data-value="rogue">     <div class="icon">&#128608;</div><div class="label">Rogue</div></div>
+        <div class="selector-card" data-value="casual">    <div class="icon">&#128090;</div><div class="label">Casual</div></div>
+        <div class="selector-card" data-value="leather">   <div class="icon">&#128007;</div><div class="label">Leather</div></div>
+        <div class="selector-card" data-value="plate">     <div class="icon">&#129517;</div><div class="label">Plate</div></div>
         <div class="selector-card" data-value="mage-robes"><div class="icon">&#128302;</div><div class="label">Mage Robes</div></div>
       </div>
 
@@ -394,8 +357,7 @@ img.sprite-img[data-broken="true"] {
       <h2 style="font-family:'Uncial Antiqua',cursive;color:#c9a45c;font-size:28px;margin-bottom:20px;">Character Preview</h2>
 
       <div class="character-sprite-container">
-        <!-- Fallback silhouette shown when sprites are missing -->
-        <div class="sprite-placeholder" id="spritePlaceholder">🧙</div>
+        <div class="sprite-placeholder" id="spritePlaceholder">&#129497;</div>
 
         <div class="character-sprite" id="characterSprite">
           <div class="sprite-layer" id="spriteBody">
@@ -407,7 +369,8 @@ img.sprite-img[data-broken="true"] {
                  onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteHair">
-            <img src="sprites/hair/short.png" id="hairImg" alt="Hair" class="sprite-img"
+            <!-- Default: short black -->
+            <img src="sprites/hair/short/short_black.png" id="hairImg" alt="Hair" class="sprite-img"
                  onerror="this.setAttribute('data-broken','true');">
           </div>
           <div class="sprite-layer" id="spriteOutfit">
@@ -420,8 +383,8 @@ img.sprite-img[data-broken="true"] {
       <div class="preview-info" id="previewRace">Race: <span>Human</span></div>
       <div class="preview-info" id="previewClass">Class: <span>Fighter</span></div>
       <div class="preview-info" id="previewSex">Sex: <span>Male</span></div>
-      <div class="preview-info" id="previewHair">Hair: <span>Short</span></div>
-      <div class="preview-info" id="previewOutfit">Outfit: <span>Robes</span></div>
+      <div class="preview-info" id="previewHair">Hair: <span>Short / Black</span></div>
+      <div class="preview-info" id="previewOutfit">Outfit: <span>Rogue</span></div>
 
       <button class="submit-btn" id="submitBtn" onclick="saveCharacter()">Create Character</button>
       <div class="message" id="message"></div>
@@ -434,27 +397,28 @@ img.sprite-img[data-broken="true"] {
   // ===== PARTICLES =====
   const particlesContainer = document.getElementById('particles');
   for (let i = 0; i < 50; i++) {
-    const particle = document.createElement('div');
-    particle.classList.add('particle');
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.top = Math.random() * 100 + '%';
-    particle.style.animationDelay = Math.random() * 8 + 's';
-    particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
-    particlesContainer.appendChild(particle);
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top  = Math.random() * 100 + '%';
+    p.style.animationDelay    = Math.random() * 8 + 's';
+    p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    particlesContainer.appendChild(p);
   }
 
   // ===== CHARACTER STATE =====
+  // hairColor stores the filename color suffix: 'black', 'brown', 'blonde', etc.
   const character = {
-    race: 'human',
-    class: 'fighter',
-    sex: 'male',
+    race:      'human',
+    class:     'fighter',
+    sex:       'male',
     hairStyle: 'short',
-    hairColor: '#8B4513',
-    skinTone: '#DEB887',
-    outfit: 'rogue'
+    hairColor: 'black',
+    skinTone:  '#DEB887',
+    outfit:    'rogue'
   };
 
-  // ===== SELECTOR SETUP =====
+  // ===== STANDARD SELECTORS (race, class, sex, skinTone, outfit) =====
   function setupSelector(containerId, property) {
     const container = document.getElementById(containerId);
     const items = container.querySelectorAll('.selector-card, .color-swatch, .toggle-btn');
@@ -468,18 +432,39 @@ img.sprite-img[data-broken="true"] {
     });
   }
 
-  setupSelector('raceSelector',      'race');
-  setupSelector('classSelector',     'class');
-  setupSelector('sexSelector',       'sex');
-  setupSelector('hairStyleSelector', 'hairStyle');
-  setupSelector('hairColorSelector', 'hairColor');
-  setupSelector('skinToneSelector',  'skinTone');
-  setupSelector('outfitSelector',    'outfit');
+  setupSelector('raceSelector',    'race');
+  setupSelector('classSelector',   'class');
+  setupSelector('sexSelector',     'sex');
+  setupSelector('skinToneSelector','skinTone');
+  setupSelector('outfitSelector',  'outfit');
 
-  // ===== PLACEHOLDER: show wizard icon when body fails to load =====
+  // ===== HAIR STYLE SELECTOR =====
+  document.getElementById('hairStyleSelector').querySelectorAll('.selector-card').forEach(item => {
+    item.addEventListener('click', () => {
+      document.getElementById('hairStyleSelector').querySelectorAll('.selector-card')
+        .forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      character.hairStyle = item.dataset.value;
+      updateSprite();
+    });
+  });
+
+  // ===== HAIR COLOR SELECTOR =====
+  // Uses data-color (the filename suffix) instead of data-value
+  document.getElementById('hairColorSelector').querySelectorAll('.color-swatch').forEach(item => {
+    item.addEventListener('click', () => {
+      document.getElementById('hairColorSelector').querySelectorAll('.color-swatch')
+        .forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      character.hairColor = item.dataset.color;
+      updateSprite();
+    });
+  });
+
+  // ===== PLACEHOLDER =====
   function checkPlaceholder() {
-    const bodyBroken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
-    document.getElementById('spritePlaceholder').style.display = bodyBroken ? 'flex' : 'none';
+    const broken = document.getElementById('bodyImg').getAttribute('data-broken') === 'true';
+    document.getElementById('spritePlaceholder').style.display = broken ? 'flex' : 'none';
   }
 
   // ===== SPRITE UPDATE =====
@@ -492,76 +477,84 @@ img.sprite-img[data-broken="true"] {
   }
 
   function updateBody() {
-    const bodyImg = document.getElementById('bodyImg');
-    bodyImg.removeAttribute('data-broken');
-    bodyImg.src = `sprites/body/${character.sex}.png`;
-    document.getElementById('spriteBody').style.setProperty('--skin-tone', character.skinTone);
+    const img = document.getElementById('bodyImg');
+    img.removeAttribute('data-broken');
+    img.src = `sprites/body/${character.sex}.png`;
   }
 
   function updateRaceFeatures() {
-    const raceImg = document.getElementById('raceImg');
-    const raceImages = {
-      'elf':        'sprites/race/elf.png',
-      'dwarf':      'sprites/race/dwarf.png',
-      'tiefling':   'sprites/race/tiefling.png',
-      'dragonborn': 'sprites/race/dragonborn.png',
-      'half-orc':   'sprites/race/half-orc.png'
+    const img = document.getElementById('raceImg');
+    const raceMap = {
+      elf:        'sprites/race/elf.png',
+      dwarf:      'sprites/race/dwarf.png',
+      tiefling:   'sprites/race/tiefling.png',
+      dragonborn: 'sprites/race/dragonborn.png',
+      'half-orc': 'sprites/race/half-orc.png'
     };
-    if (raceImages[character.race]) {
-      raceImg.removeAttribute('data-broken');
-      raceImg.src = raceImages[character.race];
-      raceImg.style.display = 'block';
+    if (raceMap[character.race]) {
+      img.removeAttribute('data-broken');
+      img.src = raceMap[character.race];
+      img.style.display = 'block';
     } else {
-      raceImg.style.display = 'none';
+      img.style.display = 'none';
     }
   }
 
   function updateHair() {
-    const hairImg = document.getElementById('hairImg');
-    if (character.hairStyle === 'bald') {
-      hairImg.style.display = 'none';
-    } else {
-      hairImg.removeAttribute('data-broken');
-      hairImg.style.display = 'block';
-      hairImg.src = `sprites/hair/${character.hairStyle}.png`;
+    const img = document.getElementById('hairImg');
 
-      // Per-style position & size overrides
-      const overrides = {
-        'short':   { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
-        'mohawk':  { height: '110px', marginLeft: '-6px',  bottom: '210px' },
-        'braided': { height: '110px', marginLeft: '-10px', bottom: '195px' },
-        'ponytail':{ height: '110px', marginLeft: '0px',   bottom: '202px' },
-        'long':    { height: '110px', marginLeft: '0px',   bottom: '205px' },
-      };
-      const defaults = { height: '110px', marginLeft: '0px', bottom: '210px' };
-      const style = overrides[character.hairStyle] || defaults;
-      hairImg.style.height      = style.height;
-      hairImg.style.left        = '50%';
-      hairImg.style.marginLeft  = style.marginLeft;
-      hairImg.style.bottom      = style.bottom;
+    if (character.hairStyle === 'bald') {
+      img.style.display = 'none';
+      return;
     }
-    document.getElementById('spriteHair').style.setProperty('--hair-color', character.hairColor);
+
+    img.removeAttribute('data-broken');
+    img.style.display = 'block';
+
+    // BUILD PATH: sprites/hair/<style>/<style>_<color>.png
+    // Examples:
+    //   sprites/hair/short/short_black.png
+    //   sprites/hair/long/long_blonde.png
+    //   sprites/hair/mohawk/mohawk_pink.png
+    img.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
+
+    // Per-style position & size overrides
+    const overrides = {
+      short:    { height: '90px',  marginLeft: '-6px',  bottom: '230px' },
+      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
+      braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
+      ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
+      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
+    };
+    const s = overrides[character.hairStyle] || { height: '110px', marginLeft: '0px', bottom: '210px' };
+    img.style.height     = s.height;
+    img.style.left       = '50%';
+    img.style.marginLeft = s.marginLeft;
+    img.style.bottom     = s.bottom;
   }
 
   function updateOutfit() {
     const outfitMap = {
-      'rogue':      'sprites/outfit/rogue.png',
-      'casual':     'sprites/outfit/casual.png',
-      'leather':    'sprites/outfit/leather.png',
-      'plate':      'sprites/outfit/plate.png',
+      rogue:        'sprites/outfit/rogue.png',
+      casual:       'sprites/outfit/casual.png',
+      leather:      'sprites/outfit/leather.png',
+      plate:        'sprites/outfit/plate.png',
       'mage-robes': 'sprites/outfit/mage_robes.png'
     };
-    const outfitImg = document.getElementById('outfitImg');
-    outfitImg.removeAttribute('data-broken');
-    outfitImg.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
+    const img = document.getElementById('outfitImg');
+    img.removeAttribute('data-broken');
+    img.src = outfitMap[character.outfit] || `sprites/outfit/${character.outfit}.png`;
   }
 
   function updatePreviewText() {
-    const cap = str => str.charAt(0).toUpperCase() + str.slice(1);
+    const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
     document.querySelector('#previewRace span').textContent   = cap(character.race);
     document.querySelector('#previewClass span').textContent  = cap(character.class);
     document.querySelector('#previewSex span').textContent    = cap(character.sex);
-    document.querySelector('#previewHair span').textContent   = cap(character.hairStyle);
+    document.querySelector('#previewHair span').textContent   =
+      character.hairStyle === 'bald'
+        ? 'Bald'
+        : cap(character.hairStyle) + ' / ' + cap(character.hairColor);
     document.querySelector('#previewOutfit span').textContent = cap(character.outfit);
   }
 
@@ -570,54 +563,53 @@ img.sprite-img[data-broken="true"] {
     const user = localStorage.getItem('dnd_user');
     if (!user) {
       showMessage('No user found. Please sign in again.', 'error');
-      setTimeout(() => window.location.href = 'signin.html', 2000);
+      setTimeout(() => window.location.href = 'index.html', 2000);
       return;
     }
     localStorage.setItem('dnd_character_' + user, JSON.stringify(character));
-    showMessage('Character saved successfully!', 'success');
-    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+    showMessage('Character saved! Entering the realm...', 'success');
+    setTimeout(() => window.location.href = 'mode-select.html', 1500);
   }
 
   function showMessage(text, type) {
     const msg = document.getElementById('message');
     msg.textContent = text;
-    msg.className = 'message ' + type;
+    msg.className   = 'message ' + type;
   }
 
-  // ===== APPLY SELECTIONS TO UI =====
+  // ===== APPLY SAVED SELECTIONS TO UI =====
   function applySelections() {
-    const selectors = [
-      { id: 'raceSelector',      prop: 'race',      type: '.selector-card' },
-      { id: 'classSelector',     prop: 'class',     type: '.selector-card' },
-      { id: 'sexSelector',       prop: 'sex',       type: '.toggle-btn'    },
-      { id: 'hairStyleSelector', prop: 'hairStyle', type: '.selector-card' },
-      { id: 'hairColorSelector', prop: 'hairColor', type: '.color-swatch'  },
-      { id: 'skinToneSelector',  prop: 'skinTone',  type: '.color-swatch'  },
-      { id: 'outfitSelector',    prop: 'outfit',    type: '.selector-card' },
-    ];
-
-    selectors.forEach(({ id, prop, type }) => {
-      const el = document.querySelector(`#${id} ${type}[data-value="${character[prop]}"]`);
+    // Standard data-value selectors
+    [
+      { id: 'raceSelector',     prop: 'race',     sel: '.selector-card' },
+      { id: 'classSelector',    prop: 'class',    sel: '.selector-card' },
+      { id: 'sexSelector',      prop: 'sex',      sel: '.toggle-btn'    },
+      { id: 'hairStyleSelector',prop: 'hairStyle',sel: '.selector-card' },
+      { id: 'skinToneSelector', prop: 'skinTone', sel: '.color-swatch'  },
+      { id: 'outfitSelector',   prop: 'outfit',   sel: '.selector-card' },
+    ].forEach(({ id, prop, sel }) => {
+      const el = document.querySelector(`#${id} ${sel}[data-value="${character[prop]}"]`);
       if (el) el.classList.add('selected');
     });
+
+    // Hair color uses data-color, not data-value
+    const hairColorEl = document.querySelector(
+      `#hairColorSelector .color-swatch[data-color="${character.hairColor}"]`
+    );
+    if (hairColorEl) hairColorEl.classList.add('selected');
   }
 
   // ===== ON LOAD =====
-  window.onload = function () {
+  window.onload = function() {
     const user = localStorage.getItem('dnd_user');
-    if (!user) {
-      window.location.href = 'signin.html';
-      return;
-    }
+    if (!user) { window.location.href = 'index.html'; return; }
 
-    // Check if we're in edit mode via URL param
     const params = new URLSearchParams(window.location.search);
     const isEdit = params.get('edit') === 'true';
 
     const saved = localStorage.getItem('dnd_character_' + user);
     if (saved) {
       const savedChar = JSON.parse(saved);
-      // Strip out any old/legacy fields
       delete savedChar.background;
       delete savedChar.accessories;
       Object.assign(character, savedChar);
@@ -625,7 +617,7 @@ img.sprite-img[data-broken="true"] {
 
     if (isEdit) {
       document.getElementById('submitBtn').textContent = 'Save Changes';
-      document.getElementById('pageTitle').textContent = '⚔ Edit Your Character';
+      document.getElementById('pageTitle').textContent = '&#9876; Edit Your Character';
     }
 
     applySelections();
