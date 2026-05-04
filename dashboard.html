@@ -347,6 +347,7 @@
                 hairImg.style.display = 'none';
             } else {
                 const style = c.hairStyle || 'short';
+                const sex   = c.sex || 'male';
 
                 // Map legacy hex values saved by old character.html to color names
                 const hexToName = {
@@ -356,7 +357,6 @@
                     '#2e7d32': 'green',  '#ff69b4': 'pink'
                 };
                 let color = c.hairColor || 'black';
-                // If stored as a hex, convert to name
                 if (color.startsWith('#')) {
                     color = hexToName[color.toLowerCase()] || 'black';
                 }
@@ -365,14 +365,31 @@
                 hairImg.src = `sprites/hair/${style}/${style}_${color}.png`;
                 hairImg.style.display = 'block';
 
+                // ===== PER-SEX HAIR OFFSETS =====
+                // Adjust these values to position hair correctly for each sex and style.
+                // height    = size of the hair sprite
+                // marginLeft = horizontal nudge (positive = right, negative = left)
+                // bottom    = how high up the hair sits on the character
                 const offsets = {
-                    short:    { height: '42px',  marginLeft: '8px',   bottom: '128px' },
-                    mohawk:   { height: '46px',  marginLeft: '8px',   bottom: '118px' },
-                    braided:  { height: '46px',  marginLeft: '4px',   bottom: '108px' },
-                    ponytail: { height: '46px',  marginLeft: '12px',  bottom: '114px' },
-                    long:     { height: '46px',  marginLeft: '12px',  bottom: '116px' }
+                    male: {
+                        short:    { height: '50px',  marginLeft: '-2px',  bottom: '185px' },
+                        mohawk:   { height: '46px',  marginLeft: '8px',   bottom: '118px' },
+                        braided:  { height: '46px',  marginLeft: '4px',   bottom: '108px' },
+                        ponytail: { height: '46px',  marginLeft: '12px',  bottom: '114px' },
+                        long:     { height: '46px',  marginLeft: '12px',  bottom: '116px' },
+                    },
+                    female: {
+                        short:    { height: '50px',  marginLeft: '-2px',  bottom: '185px' },
+                        mohawk:   { height: '46px',  marginLeft: '8px',   bottom: '118px' },
+                        braided:  { height: '46px',  marginLeft: '4px',   bottom: '108px' },
+                        ponytail: { height: '46px',  marginLeft: '12px',  bottom: '114px' },
+                        long:     { height: '46px',  marginLeft: '12px',  bottom: '116px' },
+                    }
                 };
-                const o = offsets[style] || { height: '42px', marginLeft: '8px', bottom: '120px' };
+
+                const fallback = { height: '42px', marginLeft: '8px', bottom: '120px' };
+                const o = (offsets[sex] || offsets.male)[style] || fallback;
+
                 hairImg.style.height     = o.height;
                 hairImg.style.marginLeft = o.marginLeft;
                 hairImg.style.bottom     = o.bottom;

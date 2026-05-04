@@ -106,7 +106,6 @@ body {
   width: 64px; height: 64px; object-fit: contain;
   image-rendering: pixelated;
   margin: 0 auto 8px auto; display: block;
-  /* fallback bg so broken images don't collapse the card */
   background: rgba(201,164,92,0.05); border-radius: 6px;
 }
 .hair-style-card .label { color: #c9a45c; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
@@ -192,11 +191,9 @@ img.sprite-img[data-broken="true"] { display: none !important; }
 <div class="bg-video"></div>
 <div class="particles" id="particles"></div>
 
-<!-- Settings button -->
 <button class="top-btn options-btn" onclick="openOptions()">&#9881; Settings</button>
 <button class="top-btn logout-btn" onclick="logout()">Leave Realm</button>
 
-<!-- Settings Overlay -->
 <div class="options-overlay" id="optionsOverlay">
   <div class="options-panel">
     <button class="close-options" onclick="closeOptions()">&times;</button>
@@ -286,7 +283,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
         <div class="toggle-btn" data-value="female"><span class="icon">&#9792;</span>Female</div>
       </div>
 
-      <!-- HAIR COLOR first so it's set before style cards render -->
       <div class="section-title">Hair Color</div>
       <div class="color-swatches" id="hairColorSelector">
         <div class="color-swatch" data-value="black"  data-color-name="black"  style="background:#1a1a1a;"></div>
@@ -299,41 +295,32 @@ img.sprite-img[data-broken="true"] { display: none !important; }
         <div class="color-swatch" data-value="pink"   data-color-name="pink"   style="background:#E91E8C;"></div>
       </div>
 
-      <!-- HAIR STYLE — cards show PNGs that reflect the selected color -->
       <div class="section-title">Hair Style</div>
       <div class="hair-style-grid" id="hairStyleSelector">
-
         <div class="hair-style-card" data-value="short">
           <img class="hair-preview" id="hair-preview-short" src="sprites/hair/short/short_black.png" alt="Short">
           <div class="label">Short</div>
         </div>
-
         <div class="hair-style-card" data-value="long">
           <img class="hair-preview" id="hair-preview-long" src="sprites/hair/long/long_black.png" alt="Long">
           <div class="label">Long</div>
         </div>
-
         <div class="hair-style-card" data-value="ponytail">
           <img class="hair-preview" id="hair-preview-ponytail" src="sprites/hair/ponytail/ponytail_black.png" alt="Ponytail">
           <div class="label">Ponytail</div>
         </div>
-
         <div class="hair-style-card" data-value="mohawk">
           <img class="hair-preview" id="hair-preview-mohawk" src="sprites/hair/mohawk/mohawk_black.png" alt="Mohawk">
           <div class="label">Mohawk</div>
         </div>
-
         <div class="hair-style-card" data-value="braided">
           <img class="hair-preview" id="hair-preview-braided" src="sprites/hair/braided/braided_black.png" alt="Braided">
           <div class="label">Braided</div>
         </div>
-
-        <!-- Bald has no color so no img needed -->
         <div class="hair-style-card" data-value="bald">
           <span class="bald-icon">&#128488;</span>
           <div class="label">Bald</div>
         </div>
-
       </div>
 
       <div class="section-title">Skin Tone</div>
@@ -416,15 +403,36 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     skinTone: '#DEB887', outfit: 'rogue'
   };
 
-  // All hair styles that have colored PNGs (bald excluded)
   const HAIR_STYLES_WITH_COLOR = ['short', 'long', 'ponytail', 'mohawk', 'braided'];
 
-  // Map hex swatch values → color name used in filenames
   const HEX_TO_COLOR_NAME = {
     '#1a1a1a': 'black', '#8b4513': 'brown', '#daa520': 'blonde',
     '#cc2200': 'red',   '#f0ece4': 'white', '#1155cc': 'blue',
     '#2e7d32': 'green', '#e91e8c': 'pink'
   };
+
+  // ===== PER-SEX HAIR OFFSETS =====
+  // Adjust these values to position hair correctly for each sex and style.
+  // height    = size of the hair sprite
+  // marginLeft = horizontal nudge (positive = right, negative = left)
+  // bottom    = how high up the hair sits on the character
+  const HAIR_OFFSETS = {
+    male: {
+      short:    { height: '75px',  marginLeft: '2px',   bottom: '230px' },
+      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
+      braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
+      ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
+      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
+    },
+    female: {
+      short:    { height: '75px',  marginLeft: '2px',   bottom: '230px' },
+      mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
+      braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
+      ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
+      long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
+    }
+  };
+  const HAIR_OFFSET_FALLBACK = { height: '110px', marginLeft: '0px', bottom: '210px' };
 
   // ===== UPDATE ALL HAIR STYLE CARD PREVIEWS =====
   function updateHairStylePreviews(colorName) {
@@ -454,11 +462,8 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   setupSelector('sexSelector',     'sex');
   setupSelector('skinToneSelector','skinTone');
   setupSelector('outfitSelector',  'outfit');
-
-  // Hair style — uses hair-style-card class
   setupSelector('hairStyleSelector', 'hairStyle');
 
-  // Hair color — triggers preview image update on ALL style cards
   setupSelector('hairColorSelector', 'hairColor', (val, item) => {
     const colorName = item.dataset.colorName || HEX_TO_COLOR_NAME[val.toLowerCase()] || 'black';
     character.hairColor = colorName;
@@ -511,15 +516,7 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       hairImg.style.display = 'block';
       hairImg.src = `sprites/hair/${character.hairStyle}/${character.hairStyle}_${character.hairColor}.png`;
 
-      const overrides = {
-        short:    { height: '75px',  marginLeft: '2px',   bottom: '230px' },
-        mohawk:   { height: '110px', marginLeft: '-6px',  bottom: '210px' },
-        braided:  { height: '110px', marginLeft: '-10px', bottom: '195px' },
-        ponytail: { height: '110px', marginLeft: '0px',   bottom: '202px' },
-        long:     { height: '110px', marginLeft: '0px',   bottom: '205px' },
-      };
-      const defaults = { height: '110px', marginLeft: '0px', bottom: '210px' };
-      const s = overrides[character.hairStyle] || defaults;
+      const s = (HAIR_OFFSETS[character.sex] || HAIR_OFFSETS.male)[character.hairStyle] || HAIR_OFFSET_FALLBACK;
       hairImg.style.height     = s.height;
       hairImg.style.left       = '50%';
       hairImg.style.marginLeft = s.marginLeft;
@@ -578,7 +575,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       { id: 'outfitSelector',    prop: 'outfit',    sel: '.selector-card'  },
     ];
     map.forEach(({ id, prop, sel }) => {
-      // For hairColor, match on data-color-name; for others match data-value
       const attr = (prop === 'hairColor') ? 'data-color-name' : 'data-value';
       const el = document.querySelector(`#${id} ${sel}[${attr}="${character[prop]}"]`);
       if (el) el.classList.add('selected');
@@ -649,7 +645,6 @@ img.sprite-img[data-broken="true"] { display: none !important; }
       delete savedChar.background;
       delete savedChar.accessories;
 
-      // Normalise legacy hex hairColor to name
       if (savedChar.hairColor && savedChar.hairColor.startsWith('#')) {
         savedChar.hairColor = HEX_TO_COLOR_NAME[savedChar.hairColor.toLowerCase()] || 'black';
       }
