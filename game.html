@@ -464,7 +464,7 @@
 <!-- ===== MINIMAP ===== -->
 <div class="minimap">
     <div class="minimap-title">&#9741; Map</div>
-    <canvas id="minimapCanvas" width="110" height="80"></canvas>
+    <canvas id="minimapCanvas" width="130" height="95"></canvas>
 </div>
 
 <!-- ===== TERRAIN LEGEND ===== -->
@@ -636,10 +636,14 @@ function skipIntro() {
     setTimeout(() => o.remove(), 1500);
 }
 
-// ===== MAP GENERATION =====
-const MAP_W = 160, MAP_H = 110;
-let mapData = null;       // { heightMap, moisture, locations, seed }
-let currentTerrain = '';  // terrain name under cursor
+// ===== MAP DIMENSIONS =====
+// Increase these to make the map larger (more detail, bigger island).
+// The minimap always covers the full map regardless of these values.
+const MAP_W = 240;
+const MAP_H = 165;
+
+let mapData = null;
+let currentTerrain = '';
 
 function mulberry32(a) {
     return function() {
@@ -676,6 +680,9 @@ function smoothNoise(w, h, rng, scale, octaves) {
     return result;
 }
 
+// ===== TERRAIN THRESHOLDS =====
+// Mountains start at 0.58 (was 0.70) and snow at 0.75 (was 0.85)
+// giving noticeably more mountain and snow coverage across the island.
 function getTerrainColor(h, m) {
     if (h < 0.0)  return { r:22,  g:48,  b:100, name:'Deep Sea'     };
     if (h < 0.08) return { r:38,  g:82,  b:150, name:'Shallow Water' };
@@ -686,8 +693,8 @@ function getTerrainColor(h, m) {
     if (h < 0.55) return m > 0.52
         ? { r:28, g:70,  b:24,  name:'Dense Forest' }
         : { r:50, g:100, b:38,  name:'Grassland'    };
-    if (h < 0.70) return { r:115, g:100, b:82, name:'Hills'      };
-    if (h < 0.85) return { r:145, g:130, b:112, name:'Mountains' };
+    if (h < 0.58) return { r:115, g:100, b:82,  name:'Hills'      };
+    if (h < 0.75) return { r:145, g:130, b:112, name:'Mountains'  };
     return { r:210, g:205, b:200, name:'Snow Peak' };
 }
 
@@ -696,8 +703,8 @@ function generateMap(seed) {
     const noise    = smoothNoise(MAP_W, MAP_H, rng, 3.5, 5);
     const moisture = smoothNoise(MAP_W, MAP_H, rng, 2.8, 4);
 
-    const cx = MAP_W / 2 + (rng() - 0.5) * 16;
-    const cy = MAP_H / 2 + (rng() - 0.5) * 10;
+    const cx = MAP_W / 2 + (rng() - 0.5) * 20;
+    const cy = MAP_H / 2 + (rng() - 0.5) * 14;
     const rx = MAP_W * (0.28 + rng() * 0.12);
     const ry = MAP_H * (0.30 + rng() * 0.10);
 
@@ -710,7 +717,6 @@ function generateMap(seed) {
         })
     );
 
-    // ===== LOCATION TYPES =====
     const locationTypes = [
         { icon: '⚔', name: 'Ancient Dungeon',  color: '#c0392b',
           narratives: [
@@ -756,17 +762,16 @@ function generateMap(seed) {
         },
     ];
 
-    // Place locations on valid land tiles
     const locations = [];
-    const numLocs = 4 + Math.floor(rng() * 4);
+    const numLocs = 5 + Math.floor(rng() * 5); // slightly more locations on the bigger map
     for (let i = 0; i < numLocs; i++) {
         let placed = false, attempts = 0;
-        while (!placed && attempts++ < 80) {
+        while (!placed && attempts++ < 100) {
             const lx = Math.floor(MAP_W * 0.1 + rng() * MAP_W * 0.8);
             const ly = Math.floor(MAP_H * 0.1 + rng() * MAP_H * 0.8);
             const h  = heightMap[ly][lx];
             if (h > 0.13 && h < 0.88) {
-                const tooClose = locations.some(l => Math.hypot(l.x - lx, l.y - ly) < 18);
+                const tooClose = locations.some(l => Math.hypot(l.x - lx, l.y - ly) < 22);
                 if (!tooClose) {
                     const type = locationTypes[Math.floor(rng() * locationTypes.length)];
                     locations.push({ x: lx, y: ly, ...type });
@@ -794,7 +799,6 @@ function renderMap() {
 
     const { heightMap, moisture, locations } = mapData;
 
-    // Draw terrain tiles
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             const h = heightMap[y][x];
@@ -817,20 +821,18 @@ function renderMap() {
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw location markers
+    // Location markers
     locations.forEach(loc => {
         const px = (loc.x + 0.5) * scaleX;
         const py = (loc.y + 0.5) * scaleY;
         const r  = Math.max(10, Math.min(scaleX * 2.5, 18));
 
-        // Glow ring
         ctx.beginPath();
         ctx.arc(px, py, r + 4, 0, Math.PI * 2);
         ctx.strokeStyle = loc.color + '55';
         ctx.lineWidth = 4;
         ctx.stroke();
 
-        // Marker circle
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(0,0,0,0.72)';
@@ -839,14 +841,12 @@ function renderMap() {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Icon
         ctx.font = `${Math.round(r * 1.1)}px sans-serif`;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle    = '#fff';
         ctx.fillText(loc.icon, px, py);
 
-        // Name label
         ctx.font         = `bold ${Math.max(9, Math.round(scaleX * 0.9))}px 'Cinzel', serif`;
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'top';
@@ -857,16 +857,16 @@ function renderMap() {
         ctx.shadowBlur   = 0;
     });
 
-    // Render minimap
     renderMinimap();
 }
 
 function renderMinimap() {
-    const mc  = document.getElementById('minimapCanvas');
+    const mc   = document.getElementById('minimapCanvas');
     const mCtx = mc.getContext('2d');
     const mW = mc.width, mH = mc.height;
     const { heightMap, moisture, locations } = mapData;
 
+    // Scale covers the full MAP_W x MAP_H regardless of map size
     const sX = mW / MAP_W, sY = mH / MAP_H;
 
     for (let y = 0; y < MAP_H; y++) {
@@ -903,7 +903,6 @@ document.getElementById('mapCanvas').addEventListener('mousemove', function(e) {
     const tileX   = Math.floor(mx / scaleX);
     const tileY   = Math.floor(my / scaleY);
 
-    // Check hover over location
     let hoveredLoc = null;
     mapData.locations.forEach(loc => {
         const px   = (loc.x + 0.5) * scaleX;
@@ -923,7 +922,6 @@ document.getElementById('mapCanvas').addEventListener('mousemove', function(e) {
     } else {
         canvas.style.cursor = 'crosshair';
         tooltip.style.display = 'none';
-        // Update terrain name for doAction
         if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
             const h = mapData.heightMap[tileY][tileX];
             const m = mapData.moisture[tileY][tileX];
@@ -945,7 +943,6 @@ document.getElementById('mapCanvas').addEventListener('click', function(e) {
     const scaleX = canvas.width  / MAP_W;
     const scaleY = canvas.height / MAP_H;
 
-    // Check click on location
     let clicked = null;
     mapData.locations.forEach(loc => {
         const px   = (loc.x + 0.5) * scaleX;
@@ -962,7 +959,6 @@ document.getElementById('mapCanvas').addEventListener('click', function(e) {
         return;
     }
 
-    // Click on terrain — generic terrain narrative
     const tileX = Math.floor(mx / scaleX);
     const tileY = Math.floor(my / scaleY);
     if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
@@ -1010,13 +1006,6 @@ window.addEventListener('resize', () => {
     resizeTimer = setTimeout(() => { if (mapData) renderMap(); }, 150);
 });
 
-// ===== INTRO =====
-function skipIntro() {
-    const o = document.getElementById('introOverlay');
-    o.classList.add('fade-out');
-    setTimeout(() => o.remove(), 1500);
-}
-
 // ===== INIT =====
 window.onload = function() {
     const sub = sessionStorage.getItem('dnd_sub');
@@ -1028,13 +1017,11 @@ window.onload = function() {
         document.getElementById('introSub').textContent   = 'Adventure with companions...';
     }
 
-    // Fade out intro
     setTimeout(() => {
         const o = document.getElementById('introOverlay');
         if (o) { o.classList.add('fade-out'); setTimeout(() => o && o.remove(), 1500); }
     }, 3500);
 
-    // Load or generate island — persistent per user
     const savedSeed = localStorage.getItem('dnd_map_seed_' + user);
     const seed = savedSeed ? parseInt(savedSeed) : Math.floor(Math.random() * 999999);
     if (!savedSeed) localStorage.setItem('dnd_map_seed_' + user, seed);
@@ -1042,8 +1029,9 @@ window.onload = function() {
     mapData = generateMap(seed);
     renderMap();
 
-    // Start narrative after short delay
     setTimeout(() => loadScene(0), 800);
+
+    initSliders();
 };
 
 // ===== SETTINGS =====
