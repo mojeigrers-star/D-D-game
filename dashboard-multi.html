@@ -312,8 +312,8 @@
                     Waiting for adventurers to connect...
                 </div>
 
-                <button class="ready-btn" id="readyBtn" onclick="readyUp()">
-                    &#9876; Ready for Adventure!
+                <button class="ready-btn" id="readyBtn" onclick="readyUp()" disabled>
+                    &#9876; Connecting to Realm...
                 </button>
 
                 <div class="all-ready-banner" id="allReadyBanner">
@@ -360,8 +360,16 @@
 
             socket.on('rejoined', (room) => {
                 currentPlayers = room.players;
+                readySet = new Set(room.readyPlayers || []);
                 document.getElementById('roomCodeDisplay').textContent = room.code;
                 renderReadyPlayers();
+ 
+            // NOW it's safe to click Ready — server has this socket stamped
+            const btn = document.getElementById('readyBtn');
+                if (!iAmReady) {
+                    btn.disabled = false;
+                    btn.textContent = '⚔ Ready for Adventure!';
+                }
             });
 
             socket.on('player-list-updated', (room) => {
@@ -412,7 +420,9 @@
         function readyUp() {
             if (iAmReady || !socket) return;
             iAmReady = true;
-            socket.emit('player-ready');
+            // Pass username + code in payload — server uses these as fallback
+            // if socket.data isn't stamped yet (race condition on page load)
+            socket.emit('player-ready', { username: user, code: roomData.code });
             const btn = document.getElementById('readyBtn');
             btn.textContent = '⏳ Waiting for companions...';
             btn.disabled = true;

@@ -180,11 +180,20 @@ io.on('connection', (socket) => {
     });
 
     // --- READY UP: player signals they're ready in the dashboard ---
-    socket.on('player-ready', () => {
-        const code = socket.data.roomCode;
-        const username = socket.data.username;
+    // Accept username + code in payload as fallback in case socket.data
+    // isn't set yet (e.g. player clicked Ready before rejoin-room round-trip).
+    socket.on('player-ready', ({ username: payloadUser, code: payloadCode } = {}) => {
+        const code = socket.data.roomCode || payloadCode;
+        const username = socket.data.username || payloadUser;
         const room = rooms[code];
         if (!room || !username) return;
+
+        // Ensure socket.data is stamped for future events
+        if (!socket.data.roomCode) {
+            socket.data.roomCode = code;
+            socket.data.username = username;
+            socket.join(code);
+        }
 
         if (!room.readyPlayers) room.readyPlayers = new Set();
         room.readyPlayers.add(username);
