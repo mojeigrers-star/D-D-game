@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gathering - Multiplayer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%); min-height: 100vh; }
+        .bg-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%); }
+
+        .top-btn { position: fixed; top: 20px; padding: 10px 20px; background: rgba(139,115,85,0.15); border: 1px solid #8b7355; border-radius: 6px; color: #8b7355; cursor: pointer; font-family: 'Cinzel', serif; font-size: 13px; transition: all 0.3s; z-index: 100; letter-spacing: 1px; }
+        .top-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; color: #c9a45c; }
+        .options-btn { left: 20px; }
+        .logout-btn  { right: 20px; }
+        .mode-badge-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; padding: 8px 18px; border-radius: 20px; background: rgba(50,100,200,0.15); border: 1px solid rgba(50,100,200,0.4); color: #8baeee; text-transform: uppercase; }
+
+        .options-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.82); z-index: 1000; justify-content: center; align-items: center; }
+        .options-overlay.active { display: flex; }
+        .options-panel { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98)); border: 3px solid #c9a45c; border-radius: 15px; padding: 40px; width: 500px; max-width: 90%; box-shadow: 0 0 50px rgba(201,164,92,0.4); position: relative; }
+        .options-panel h2 { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; text-align: center; font-size: 34px; margin-bottom: 32px; text-shadow: 0 0 20px rgba(201,164,92,0.5); }
+        .close-options { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #8b7355; font-size: 28px; cursor: pointer; font-family: 'Cinzel', serif; transition: color 0.3s; }
+        .close-options:hover { color: #c9a45c; }
+        .slider-group { margin-bottom: 28px; }
+        .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; }
+        .slider-label span { color: #c9a45c; font-size: 15px; letter-spacing: 1px; }
+        .slider-value { color: #8b7355; font-size: 13px; min-width: 36px; text-align: right; }
+        .slider-container { position: relative; height: 28px; display: flex; align-items: center; }
+        .slider-track { width: 100%; height: 6px; background: rgba(61,47,31,0.8); border-radius: 3px; position: relative; cursor: pointer; }
+        .slider-fill { height: 100%; background: linear-gradient(90deg, #c9a45c, #8b7355); border-radius: 3px; position: absolute; top: 0; left: 0; pointer-events: none; }
+        .slider-thumb { width: 20px; height: 20px; background: #c9a45c; border: 2px solid #1a0a2e; border-radius: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); cursor: grab; transition: box-shadow 0.2s; z-index: 10; }
+        .slider-thumb:hover { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
+        .options-hint { text-align: center; color: #5a4a3a; font-size: 11px; margin-top: 22px; letter-spacing: 1px; }
+
+        .dashboard-wrapper { display: flex; gap: 22px; padding: 75px 25px 0 25px; max-width: 1400px; margin: 0 auto; min-height: 100vh; align-items: flex-start; }
+
+        .panel { background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95)); border: 2px solid #c9a45c; border-radius: 15px; padding: 22px; }
+        .panel-title { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 20px; text-align: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #3d2f1f; text-shadow: 0 0 15px rgba(201,164,92,0.4); }
+
+        .left-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px; }
+        .character-name { text-align: center; color: #c9a45c; font-family: 'Cinzel', serif; font-size: 17px; margin-bottom: 4px; }
+        .character-subtitle { text-align: center; color: #8b7355; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+
+        .sprite-container { width: 200px; height: 280px; position: relative; margin: 0 auto; background: rgba(0,0,0,0.2); border: 1px solid #3d2f1f; border-radius: 10px; overflow: hidden; }
+        .sprite-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 72px; opacity: 0.12; pointer-events: none; }
+        .sprite-layer { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+        .sprite-img { position: absolute; left: 50%; transform: translateX(-50%); width: auto; image-rendering: pixelated; pointer-events: none; }
+        img.sprite-img[data-broken="true"] { display: none !important; }
+        #db-bodyImg   { height: 210px; bottom: 18px; }
+        #db-raceImg   { height: 210px; bottom: 18px; }
+        #db-outfitImg { height: 180px; bottom: 8px; }
+        #db-hairImg   { height: 80px;  bottom: 168px; }
+        #db-spriteBody         { z-index: 2; }
+        #db-spriteRaceFeatures { z-index: 5; }
+        #db-spriteOutfit       { z-index: 3; }
+        #db-spriteHair         { z-index: 4; }
+
+        .edit-character-btn { width: 100%; margin-top: 14px; padding: 10px; background: rgba(201,164,92,0.08); border: 1px solid #c9a45c; border-radius: 8px; color: #c9a45c; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 2px; cursor: pointer; transition: all 0.3s; }
+        .edit-character-btn:hover { background: rgba(201,164,92,0.2); box-shadow: 0 0 15px rgba(201,164,92,0.3); }
+
+        .level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .level-badge { background: linear-gradient(135deg, #c9a45c, #8b7355); color: #1a0a2e; font-family: 'Uncial Antiqua', cursive; font-size: 12px; padding: 5px 14px; border-radius: 20px; font-weight: bold; }
+        .xp-total { color: #8b7355; font-size: 11px; letter-spacing: 1px; }
+        .stat-bar-group { margin-bottom: 12px; }
+        .stat-bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .stat-bar-name { color: #c9a45c; font-size: 12px; letter-spacing: 1px; }
+        .stat-bar-val  { color: #8b7355; font-size: 11px; }
+        .stat-bar-track { width: 100%; height: 9px; background: rgba(61,47,31,0.6); border-radius: 5px; overflow: hidden; }
+        .stat-bar-fill  { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+        .bar-xp    { background: linear-gradient(90deg, #c9a45c, #e8c97a); }
+        .bar-hp    { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+        .bar-str   { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+        .bar-dex   { background: linear-gradient(90deg, #27ae60, #2ecc71); }
+        .bar-intel { background: linear-gradient(90deg, #2980b9, #3498db); }
+        .bar-wis   { background: linear-gradient(90deg, #16a085, #1abc9c); }
+        .bar-cha   { background: linear-gradient(90deg, #c0392b, #e91e8c); }
+
+        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 18px; }
+        .inventory-stats { display: flex; gap: 12px; margin-bottom: 18px; }
+        .inv-stat { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f; border-radius: 8px; padding: 12px; text-align: center; }
+        .inv-stat-value { color: #c9a45c; font-family: 'Uncial Antiqua', cursive; font-size: 22px; }
+        .inv-stat-label { color: #8b7355; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+        .inventory-section-label { color: #8b7355; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin: 16px 0 10px 0; }
+        .equip-slots { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+        .equip-slot { flex: 1; min-width: 65px; aspect-ratio: 1; background: rgba(0,0,0,0.4); border: 2px dashed #3d2f1f; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 20px; gap: 4px; }
+        .equip-slot-label { color: #5a4a3a; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+        .equip-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.05); }
+        .inventory-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+        .inv-slot { aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; font-size: 24px; }
+        .inv-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.04); }
+
+        /* ===== READY-UP SECTION ===== */
+        .ready-section {
+            background: linear-gradient(145deg, rgba(26,10,46,0.95), rgba(13,27,42,0.95));
+            border: 2px solid #c9a45c; border-radius: 15px; padding: 28px;
+        }
+        .ready-section-title {
+            font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 22px;
+            text-align: center; margin-bottom: 20px; padding-bottom: 12px;
+            border-bottom: 1px solid #3d2f1f; text-shadow: 0 0 15px rgba(201,164,92,0.4);
+        }
+
+        /* Room code display */
+        .room-code-mini {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 20px; background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f;
+            border-radius: 8px; padding: 10px 16px;
+        }
+        .room-code-mini .label { color: #5a4a3a; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
+        .room-code-mini .code  { color: #c9a45c; font-family: 'Uncial Antiqua', cursive; font-size: 24px; letter-spacing: 6px; }
+
+        /* Players ready grid */
+        .players-ready-grid {
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px;
+            min-height: 60px;
+        }
+
+        .player-ready-row {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f;
+            border-radius: 8px; padding: 12px 16px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .player-ready-row.is-ready {
+            border-color: #4caf50; background: rgba(76,175,80,0.08);
+        }
+        .player-ready-row.is-me {
+            border-color: #c9a45c; background: rgba(201,164,92,0.05);
+        }
+        .player-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, rgba(201,164,92,0.2), rgba(139,115,85,0.2));
+            border: 1px solid #3d2f1f; display: flex; align-items: center;
+            justify-content: center; font-size: 16px; font-family: 'Cinzel', serif;
+            color: #c9a45c; flex-shrink: 0;
+        }
+        .player-ready-name { flex: 1; color: #c9a45c; font-size: 14px; letter-spacing: 1px; }
+        .player-ready-name .you-tag { color: #8b7355; font-size: 10px; margin-left: 6px; }
+        .ready-indicator {
+            font-size: 18px;
+            transition: all 0.3s;
+        }
+        .ready-indicator.ready   { color: #4caf50; }
+        .ready-indicator.waiting { color: #5a4a3a; animation: pulse-dot 2s ease-in-out infinite; }
+
+        @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Ready status text */
+        .ready-status-text {
+            text-align: center; color: #8b7355; font-size: 13px;
+            letter-spacing: 1px; margin-bottom: 18px;
+            font-style: italic;
+        }
+
+        /* Ready button */
+        .ready-btn {
+            width: 100%; padding: 18px;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            border: 2px solid #4caf50; border-radius: 10px;
+            color: #e8f5e9; font-family: 'Cinzel', serif; font-size: 18px;
+            font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+            cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+            box-shadow: 0 0 20px rgba(76,175,80,0.3);
+            animation: ready-pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes ready-pulse {
+            0%,100% { box-shadow: 0 0 20px rgba(76,175,80,0.3); }
+            50%      { box-shadow: 0 0 40px rgba(76,175,80,0.6); }
+        }
+        .ready-btn::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s; }
+        .ready-btn:hover::before { left:100%; }
+        .ready-btn:hover { transform: translateY(-2px); }
+        .ready-btn:disabled {
+            background: rgba(61,47,31,0.5); border-color: #3d2f1f;
+            color: #5a4a3a; cursor: not-allowed; transform: none;
+            box-shadow: none; animation: none;
+        }
+        .ready-btn:disabled::before { display: none; }
+
+        /* All ready flash */
+        .all-ready-banner {
+            display: none; text-align: center; padding: 14px;
+            background: rgba(76,175,80,0.15); border: 1px solid #4caf50;
+            border-radius: 8px; color: #4caf50; font-size: 14px;
+            letter-spacing: 2px; margin-top: 14px;
+            animation: flash 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes flash { from{opacity:0.6} to{opacity:1} }
+
+        /* Connection status */
+        .conn-status {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 11px; letter-spacing: 1px; color: #5a4a3a;
+            margin-bottom: 14px; justify-content: center;
+        }
+        .conn-dot { width: 7px; height: 7px; border-radius: 50%; background: #5a4a3a; }
+        .conn-dot.connected { background: #4caf50; animation: pulse-dot 2s infinite; }
+
+        @media (max-width: 900px) {
+            .dashboard-wrapper { flex-direction: column; }
+            .left-panel { width: 100%; }
+            .inventory-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-video"></div>
+    <div class="particles" id="particles"></div>
+
+    <button class="top-btn options-btn" onclick="openOptions()">&#9881; Settings</button>
+    <div class="mode-badge-bar" id="modeBadge">&#127963; Realm Online</div>
+    <button class="top-btn logout-btn" onclick="logout()">Leave Realm</button>
+
+    <div class="options-overlay" id="optionsOverlay">
+        <div class="options-panel">
+            <button class="close-options" onclick="closeOptions()">&times;</button>
+            <h2>&#9881; Settings</h2>
+            <div class="slider-group"><div class="slider-label"><span>&#127925; Music</span><span class="slider-value" id="musicValue">70</span></div><div class="slider-container" tabindex="0" data-slider="music"><div class="slider-track"><div class="slider-fill" style="width:70%"></div></div><div class="slider-thumb" style="left:70%"></div></div></div>
+            <div class="slider-group"><div class="slider-label"><span>&#128264; Master Volume</span><span class="slider-value" id="masterValue">80</span></div><div class="slider-container" tabindex="0" data-slider="master"><div class="slider-track"><div class="slider-fill" style="width:80%"></div></div><div class="slider-thumb" style="left:80%"></div></div></div>
+            <div class="slider-group"><div class="slider-label"><span>&#9876; Enemies</span><span class="slider-value" id="enemiesValue">50</span></div><div class="slider-container" tabindex="0" data-slider="enemies"><div class="slider-track"><div class="slider-fill" style="width:50%"></div></div><div class="slider-thumb" style="left:50%"></div></div></div>
+            <div class="slider-group"><div class="slider-label"><span>&#129309; Friends</span><span class="slider-value" id="friendsValue">60</span></div><div class="slider-container" tabindex="0" data-slider="friends"><div class="slider-track"><div class="slider-fill" style="width:60%"></div></div><div class="slider-thumb" style="left:60%"></div></div></div>
+            <div class="slider-group"><div class="slider-label"><span>&#127752; Ambient</span><span class="slider-value" id="ambientValue">75</span></div><div class="slider-container" tabindex="0" data-slider="ambient"><div class="slider-track"><div class="slider-fill" style="width:75%"></div></div><div class="slider-thumb" style="left:75%"></div></div></div>
+            <p class="options-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+        </div>
+    </div>
+
+    <div class="dashboard-wrapper">
+        <!-- LEFT: Character -->
+        <div class="left-panel">
+            <div class="panel">
+                <div class="panel-title">&#9876; Your Character</div>
+                <div class="character-name"     id="charName">Adventurer</div>
+                <div class="character-subtitle" id="charSubtitle">Human Fighter</div>
+                <div class="sprite-container">
+                    <div class="sprite-placeholder">&#129497;</div>
+                    <div class="sprite-layer" id="db-spriteBody">
+                        <img src="sprites/body/male.png" id="db-bodyImg" class="sprite-img" onerror="this.setAttribute('data-broken','true');">
+                    </div>
+                    <div class="sprite-layer" id="db-spriteRaceFeatures">
+                        <img src="" id="db-raceImg" class="sprite-img" style="display:none;" onerror="this.setAttribute('data-broken','true');">
+                    </div>
+                    <div class="sprite-layer" id="db-spriteOutfit">
+                        <img src="sprites/outfit/rogue.png" id="db-outfitImg" class="sprite-img" onerror="this.setAttribute('data-broken','true');">
+                    </div>
+                    <div class="sprite-layer" id="db-spriteHair">
+                        <img src="" id="db-hairImg" class="sprite-img" style="display:none;">
+                    </div>
+                </div>
+                <button class="edit-character-btn" onclick="editCharacter()">&#9998; Edit Character</button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">&#11088; Level &amp; Stats</div>
+                <div class="level-header">
+                    <div class="level-badge" id="levelBadge">Level 1</div>
+                    <div class="xp-total"   id="xpTotal">0 / 100 XP</div>
+                </div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#11088; Experience</span><span class="stat-bar-val" id="xpVal">0 / 100</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-xp" id="xpBar" style="width:0%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#9878; STR</span><span class="stat-bar-val" id="strVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-str" id="strBar" style="width:50%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#128640; DEX</span><span class="stat-bar-val" id="dexVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-dex" id="dexBar" style="width:50%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#10084; CON</span><span class="stat-bar-val" id="conVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="conBar" style="width:50%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#128302; INT</span><span class="stat-bar-val" id="intVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-intel" id="intBar" style="width:50%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#128065; WIS</span><span class="stat-bar-val" id="wisVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-wis" id="wisBar" style="width:50%"></div></div></div>
+                <div class="stat-bar-group"><div class="stat-bar-label"><span class="stat-bar-name">&#127931; CHA</span><span class="stat-bar-val" id="chaVal">10 / 20</span></div><div class="stat-bar-track"><div class="stat-bar-fill bar-cha" id="chaBar" style="width:50%"></div></div></div>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right-panel">
+            <!-- Inventory panel -->
+            <div class="panel">
+                <div class="panel-title">&#127894; Inventory</div>
+                <div class="inventory-stats">
+                    <div class="inv-stat"><div class="inv-stat-value" id="statGold">0</div><div class="inv-stat-label">&#127881; Gold</div></div>
+                    <div class="inv-stat"><div class="inv-stat-value" id="statItems">0</div><div class="inv-stat-label">&#127894; Items</div></div>
+                    <div class="inv-stat"><div class="inv-stat-value">24</div><div class="inv-stat-label">&#128465; Capacity</div></div>
+                </div>
+                <div class="inventory-section-label">&#9876; Equipped</div>
+                <div class="equip-slots">
+                    <div class="equip-slot"><span>&#128081;</span><span class="equip-slot-label">Head</span></div>
+                    <div class="equip-slot"><span>&#128093;</span><span class="equip-slot-label">Chest</span></div>
+                    <div class="equip-slot"><span>&#9876;</span>  <span class="equip-slot-label">Weapon</span></div>
+                    <div class="equip-slot"><span>&#128737;</span><span class="equip-slot-label">Shield</span></div>
+                    <div class="equip-slot"><span>&#128098;</span><span class="equip-slot-label">Boots</span></div>
+                    <div class="equip-slot"><span>&#128141;</span><span class="equip-slot-label">Ring</span></div>
+                </div>
+                <div class="inventory-section-label">&#127894; Bag</div>
+                <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
+
+            <!-- ===== READY-UP PANEL ===== -->
+            <div class="ready-section">
+                <div class="ready-section-title">&#9876; Adventurers Assembled</div>
+
+                <div class="conn-status">
+                    <div class="conn-dot" id="connDot"></div>
+                    <span id="connText">Connecting to realm...</span>
+                </div>
+
+                <div class="room-code-mini">
+                    <span class="label">Realm Code</span>
+                    <span class="code" id="roomCodeDisplay">????</span>
+                </div>
+
+                <div class="players-ready-grid" id="playersReadyGrid">
+                    <!-- Populated by socket events -->
+                </div>
+
+                <div class="ready-status-text" id="readyStatusText">
+                    Waiting for adventurers to connect...
+                </div>
+
+                <button class="ready-btn" id="readyBtn" onclick="readyUp()">
+                    &#9876; Ready for Adventure!
+                </button>
+
+                <div class="all-ready-banner" id="allReadyBanner">
+                    &#9830; All adventurers are ready — entering the realm! &#9830;
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="character-utils.js"></script>
+    <script>
+        const pc = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div'); p.classList.add('particle');
+            p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 8 + 's'; p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            pc.appendChild(p);
+        }
+
+        const user     = localStorage.getItem('dnd_user');
+        const roomData = (() => { try { return JSON.parse(sessionStorage.getItem('dnd_room') || '{}'); } catch(e) { return {}; } })();
+
+        // ===== SOCKET =====
+        let socket = null;
+        let iAmReady = false;
+        let currentPlayers = [];
+        let readySet = new Set();
+
+        function connectSocket() {
+            socket = io({ transports: ['websocket', 'polling'] });
+
+            socket.on('connect', () => {
+                document.getElementById('connDot').classList.add('connected');
+                document.getElementById('connText').textContent = 'Connected to realm';
+                if (roomData.code) {
+                    socket.emit('rejoin-room', { username: user, code: roomData.code });
+                }
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('connDot').classList.remove('connected');
+                document.getElementById('connText').textContent = 'Connection lost — reconnecting...';
+            });
+
+            socket.on('rejoined', (room) => {
+                currentPlayers = room.players;
+                document.getElementById('roomCodeDisplay').textContent = room.code;
+                renderReadyPlayers();
+            });
+
+            socket.on('player-list-updated', (room) => {
+                currentPlayers = room.players;
+                renderReadyPlayers();
+            });
+
+            socket.on('ready-update', ({ readyCount, totalCount, readyPlayers }) => {
+                readySet = new Set(readyPlayers);
+                renderReadyPlayers();
+                document.getElementById('readyStatusText').textContent =
+                    `${readyCount} of ${totalCount} adventurer${totalCount !== 1 ? 's' : ''} ready`;
+            });
+
+            socket.on('all-ready', () => {
+                document.getElementById('allReadyBanner').style.display = 'block';
+                document.getElementById('readyBtn').disabled = true;
+                setTimeout(() => window.location.href = 'game-multi.html', 2000);
+            });
+
+            socket.on('kicked', () => {
+                alert('You have been removed from the realm.');
+                window.location.href = 'mode-select.html';
+            });
+        }
+
+        function renderReadyPlayers() {
+            const grid = document.getElementById('playersReadyGrid');
+            grid.innerHTML = '';
+            currentPlayers.forEach(name => {
+                const isReady = readySet.has(name);
+                const isMe    = name === user;
+                const row = document.createElement('div');
+                row.className = 'player-ready-row' + (isReady ? ' is-ready' : '') + (isMe ? ' is-me' : '');
+                row.innerHTML = `
+                    <div class="player-avatar">${name.charAt(0).toUpperCase()}</div>
+                    <div class="player-ready-name">
+                        ${name}${isMe ? '<span class="you-tag">(you)</span>' : ''}
+                    </div>
+                    <div class="ready-indicator ${isReady ? 'ready' : 'waiting'}">
+                        ${isReady ? '&#10003;' : '&#8987;'}
+                    </div>
+                `;
+                grid.appendChild(row);
+            });
+        }
+
+        function readyUp() {
+            if (iAmReady || !socket) return;
+            iAmReady = true;
+            socket.emit('player-ready');
+            const btn = document.getElementById('readyBtn');
+            btn.textContent = '⏳ Waiting for companions...';
+            btn.disabled = true;
+        }
+
+        // ===== CHARACTER & STATS =====
+        function loadCharacterSprite() {
+            if (!user) return;
+            const c = loadCharacter(user);
+            if (!c) return;
+            document.getElementById('charSubtitle').textContent = charUtilsCap(c.race) + ' ' + charUtilsCap(c.class);
+            applyCharacterSprites(c, { body:'db-bodyImg', race:'db-raceImg', hair:'db-hairImg', outfit:'db-outfitImg' }, 'small');
+        }
+
+        function loadStats(u) {
+            const key = 'dnd_stats_' + u;
+            const saved = localStorage.getItem(key);
+            const s = saved ? JSON.parse(saved) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
+            if (!saved) localStorage.setItem(key, JSON.stringify(s));
+            document.getElementById('levelBadge').textContent = 'Level ' + s.level;
+            document.getElementById('xpTotal').textContent    = s.xp + ' / ' + s.xpMax + ' XP';
+            document.getElementById('xpVal').textContent      = s.xp + ' / ' + s.xpMax;
+            document.getElementById('strVal').textContent     = s.str + ' / 20';
+            document.getElementById('dexVal').textContent     = s.dex + ' / 20';
+            document.getElementById('conVal').textContent     = s.con + ' / 20';
+            document.getElementById('intVal').textContent     = s.int + ' / 20';
+            document.getElementById('wisVal').textContent     = s.wis + ' / 20';
+            document.getElementById('chaVal').textContent     = s.cha + ' / 20';
+            document.getElementById('statGold').textContent   = s.gold;
+            document.getElementById('xpBar').style.width  = (s.xp / s.xpMax * 100) + '%';
+            document.getElementById('strBar').style.width = (s.str / 20 * 100) + '%';
+            document.getElementById('dexBar').style.width = (s.dex / 20 * 100) + '%';
+            document.getElementById('conBar').style.width = (s.con / 20 * 100) + '%';
+            document.getElementById('intBar').style.width = (s.int / 20 * 100) + '%';
+            document.getElementById('wisBar').style.width = (s.wis / 20 * 100) + '%';
+            document.getElementById('chaBar').style.width = (s.cha / 20 * 100) + '%';
+        }
+
+        function buildInventory() {
+            const saved = localStorage.getItem('dnd_inventory_' + user);
+            const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
+            while (items.length < 24) items.push(null);
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            let count = 0;
+            for (let i = 0; i < 24; i++) {
+                const slot = document.createElement('div'); slot.className = 'inv-slot';
+                const item = items[i];
+                if (item) { count++; slot.classList.add('occupied'); slot.innerHTML = item.icon; }
+                grid.appendChild(slot);
+            }
+            document.getElementById('statItems').textContent = count;
+        }
+
+        window.onload = function () {
+            if (!user) { window.location.href = 'index.html'; return; }
+            document.getElementById('charName').textContent = user;
+            loadCharacterSprite();
+            loadStats(user);
+            buildInventory();
+            loadSliderValues();
+            connectSocket();
+            // If no room data somehow, show fallback
+            if (roomData.code) {
+                document.getElementById('roomCodeDisplay').textContent = roomData.code;
+            }
+        };
+
+        function logout() { localStorage.removeItem('dnd_user'); sessionStorage.clear(); window.location.href = 'index.html'; }
+        function editCharacter() { window.location.href = 'character-multi.html?edit=true'; }
+
+        // ===== SETTINGS =====
+        function openOptions()  { document.getElementById('optionsOverlay').classList.add('active');    document.addEventListener('keydown', handleEsc); }
+        function closeOptions() { document.getElementById('optionsOverlay').classList.remove('active'); document.removeEventListener('keydown', handleEsc); }
+        function handleEsc(e)   { if (e.key === 'Escape') closeOptions(); }
+        const sliders = { music:{value:70}, master:{value:80}, enemies:{value:50}, friends:{value:60}, ambient:{value:75} };
+        let activeSlider = null, isDragging = false;
+        function loadSliderValues() { const saved = localStorage.getItem('dnd_sliders'); if (saved) { const vals = JSON.parse(saved); Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } }); } }
+        function saveSliderValues() { const vals = {}; Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; }); localStorage.setItem('dnd_sliders', JSON.stringify(vals)); }
+        function updateSliderUI(name) { const c = document.querySelector(`[data-slider="${name}"]`); if (!c) return; const pct = sliders[name].value; c.querySelector('.slider-fill').style.width = pct+'%'; c.querySelector('.slider-thumb').style.left = pct+'%'; document.getElementById(name+'Value').textContent = pct; }
+        function updateFromMouse(e,name,c) { const rect=c.getBoundingClientRect(); const pct=Math.round(Math.max(0,Math.min(e.clientX-rect.left,rect.width))/rect.width*100); sliders[name].value=pct; updateSliderUI(name); saveSliderValues(); }
+        document.querySelectorAll('.slider-container').forEach(c => {
+            const name=c.dataset.slider; sliders[name].element=c;
+            c.addEventListener('mousedown',e=>{isDragging=true;activeSlider=name;updateFromMouse(e,name,c);});
+            c.addEventListener('click',e=>updateFromMouse(e,name,c));
+            c.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();sliders[name].value=Math.max(0,Math.min(100,sliders[name].value+(e.key==='ArrowLeft'?-1:1)));updateSliderUI(name);saveSliderValues();}});
+        });
+        document.addEventListener('mousemove',e=>{if(!isDragging||!activeSlider)return;updateFromMouse(e,activeSlider,sliders[activeSlider].element);});
+        document.addEventListener('mouseup',()=>{isDragging=false;activeSlider=null;});
+    </script>
+</body>
+</html>
