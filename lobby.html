@@ -605,7 +605,7 @@ function connectSocket() {
         // Store room info for the game page
         sessionStorage.setItem('dnd_room', JSON.stringify(room));
         showNotif('The quest begins! Entering the realm...');
-        setTimeout(() => window.location.href = 'character.html', 1800);
+    setTimeout(() => window.location.href = 'character-multi.html', 1800);
     });
 
     socket.on('lobby-chat', ({ username: who, message, ts }) => {

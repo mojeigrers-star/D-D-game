@@ -69,7 +69,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ===== ROOMS (in-memory) =====
-// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers }
+// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers, readyPlayers: Set }
 
 const rooms = {};
 
@@ -99,7 +99,6 @@ io.on('connection', (socket) => {
 
     // --- HOST: create a new room ---
     socket.on('host-room', ({ username, maxPlayers = 4 }) => {
-        // Generate unique code
         let code;
         do { code = generateCode(); } while (rooms[code]);
 
@@ -107,7 +106,8 @@ io.on('connection', (socket) => {
             host: username,
             players: [{ username, socketId: socket.id }],
             started: false,
-            maxPlayers
+            maxPlayers,
+            readyPlayers: new Set()
         };
 
         socket.join(code);
@@ -136,12 +136,78 @@ io.on('connection', (socket) => {
         socket.data.roomCode = code;
         socket.data.username = username;
 
-        // Tell the new joiner they succeeded
         socket.emit('room-joined', safeRoomInfo(code));
-
-        // Tell everyone in the room (including host) the roster updated
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
         console.log(`${username} joined room ${code}`);
+    });
+
+    // --- REJOIN: reconnect after page navigation (dashboard → game) ---
+    socket.on('rejoin-room', ({ username, code }) => {
+        const room = rooms[code];
+        if (!room) return;
+
+        // Update socket ID for this player (they navigated to a new page)
+        const existing = room.players.find(p => p.username === username);
+        if (existing) {
+            existing.socketId = socket.id;
+        } else {
+            // Player wasn't in the list (e.g. late joiner after start) — add them
+            room.players.push({ username, socketId: socket.id });
+        }
+
+        socket.join(code);
+        socket.data.roomCode = code;
+        socket.data.username = username;
+
+        // Send current state back to the rejoining player
+        const readyList = Array.from(room.readyPlayers || []);
+        socket.emit('rejoined', {
+            ...safeRoomInfo(code),
+            readyPlayers: readyList
+        });
+
+        // Broadcast updated player list to everyone
+        io.to(code).emit('player-list-updated', safeRoomInfo(code));
+
+        // Also send ready state to the rejoining player
+        socket.emit('ready-update', {
+            readyCount: room.readyPlayers.size,
+            totalCount: room.players.length,
+            readyPlayers: readyList
+        });
+
+        console.log(`${username} rejoined room ${code}`);
+    });
+
+    // --- READY UP: player signals they're ready in the dashboard ---
+    socket.on('player-ready', () => {
+        const code = socket.data.roomCode;
+        const username = socket.data.username;
+        const room = rooms[code];
+        if (!room || !username) return;
+
+        if (!room.readyPlayers) room.readyPlayers = new Set();
+        room.readyPlayers.add(username);
+
+        const readyList = Array.from(room.readyPlayers);
+        const readyCount = room.readyPlayers.size;
+        const totalCount = room.players.length;
+
+        // Broadcast ready state to everyone in the room
+        io.to(code).emit('ready-update', {
+            readyCount,
+            totalCount,
+            readyPlayers: readyList
+        });
+
+        console.log(`${username} is ready in room ${code} (${readyCount}/${totalCount})`);
+
+        // If everyone is ready, send all-ready event and transition to game
+        if (readyCount >= totalCount && totalCount >= 1) {
+            room.started = true;
+            io.to(code).emit('all-ready');
+            console.log(`Room ${code} — all players ready, entering game`);
+        }
     });
 
     // --- HOST: kick a player ---
@@ -154,33 +220,43 @@ io.on('connection', (socket) => {
         if (!target) return;
 
         room.players = room.players.filter(p => p.username !== targetUsername);
+        if (room.readyPlayers) room.readyPlayers.delete(targetUsername);
 
-        // Tell kicked player
         io.to(target.socketId).emit('kicked', { reason: 'The Host has removed you from the realm.' });
-
-        // Update everyone else
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
     });
 
-    // --- HOST: start the game ---
+    // --- HOST: start the game (lobby → character creation) ---
     socket.on('start-game', () => {
         const code = socket.data.roomCode;
         const room = rooms[code];
         if (!room || room.host !== socket.data.username) return;
         if (room.players.length < 1) return;
 
-        room.started = true;
+        // Reset ready state for the new phase (dashboard ready-up)
+        room.readyPlayers = new Set();
+
         io.to(code).emit('game-started', safeRoomInfo(code));
         console.log(`Room ${code} game started`);
     });
 
-    // --- Chat message inside lobby ---
+    // --- Lobby chat ---
     socket.on('lobby-chat', ({ message }) => {
         const code = socket.data.roomCode;
         if (!code || !rooms[code]) return;
         const username = socket.data.username;
         const safe = String(message).slice(0, 200).replace(/</g, '&lt;');
         io.to(code).emit('lobby-chat', { username, message: safe, ts: Date.now() });
+    });
+
+    // --- In-game party chat ---
+    socket.on('party-chat', ({ message }) => {
+        const code = socket.data.roomCode;
+        if (!code || !rooms[code]) return;
+        const username = socket.data.username;
+        const safe = String(message).slice(0, 200).replace(/</g, '&lt;');
+        // Echo to everyone except sender (sender adds it locally)
+        socket.to(code).emit('party-chat', { username, message: safe, ts: Date.now() });
     });
 
     // --- Disconnect ---
@@ -191,13 +267,12 @@ io.on('connection', (socket) => {
 
         const room = rooms[code];
         room.players = room.players.filter(p => p.socketId !== socket.id);
+        if (room.readyPlayers) room.readyPlayers.delete(username);
 
         if (room.players.length === 0) {
-            // Empty room — clean up
             delete rooms[code];
             console.log(`Room ${code} deleted (empty)`);
         } else if (room.host === username) {
-            // Host left — promote next player
             room.host = room.players[0].username;
             io.to(code).emit('host-changed', { newHost: room.host });
             io.to(code).emit('player-list-updated', safeRoomInfo(code));
