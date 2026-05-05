@@ -141,22 +141,15 @@ io.on('connection', (socket) => {
         console.log(`${username} joined room ${code}`);
     });
 
-    // --- REJOIN: reconnect after page navigation (dashboard → game) ---
+    // --- REJOIN: reconnect after page navigation ---
     socket.on('rejoin-room', ({ username, code }) => {
-        console.log('rejoin-room received:', username, code);
-        console.log('rooms available:', Object.keys(rooms));
         const room = rooms[code];
-        console.log('room found:', room ? 'yes' : 'no');
         if (!room) return;
-        // ... rest of handler
-        
 
-        // Update socket ID for this player (they navigated to a new page)
         const existing = room.players.find(p => p.username === username);
         if (existing) {
             existing.socketId = socket.id;
         } else {
-            // Player wasn't in the list (e.g. late joiner after start) — add them
             room.players.push({ username, socketId: socket.id });
         }
 
@@ -164,17 +157,14 @@ io.on('connection', (socket) => {
         socket.data.roomCode = code;
         socket.data.username = username;
 
-        // Send current state back to the rejoining player
         const readyList = Array.from(room.readyPlayers || []);
         socket.emit('rejoined', {
             ...safeRoomInfo(code),
             readyPlayers: readyList
         });
 
-        // Broadcast updated player list to everyone
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
 
-        // Also send ready state to the rejoining player
         socket.emit('ready-update', {
             readyCount: room.readyPlayers.size,
             totalCount: room.players.length,
@@ -184,16 +174,13 @@ io.on('connection', (socket) => {
         console.log(`${username} rejoined room ${code}`);
     });
 
-    // --- READY UP: player signals they're ready in the dashboard ---
-    // Accept username + code in payload as fallback in case socket.data
-    // isn't set yet (e.g. player clicked Ready before rejoin-room round-trip).
+    // --- READY UP ---
     socket.on('player-ready', ({ username: payloadUser, code: payloadCode } = {}) => {
         const code = socket.data.roomCode || payloadCode;
         const username = socket.data.username || payloadUser;
         const room = rooms[code];
         if (!room || !username) return;
 
-        // Ensure socket.data is stamped for future events
         if (!socket.data.roomCode) {
             socket.data.roomCode = code;
             socket.data.username = username;
@@ -207,7 +194,6 @@ io.on('connection', (socket) => {
         const readyCount = room.readyPlayers.size;
         const totalCount = room.players.length;
 
-        // Broadcast ready state to everyone in the room
         io.to(code).emit('ready-update', {
             readyCount,
             totalCount,
@@ -216,7 +202,6 @@ io.on('connection', (socket) => {
 
         console.log(`${username} is ready in room ${code} (${readyCount}/${totalCount})`);
 
-        // If everyone is ready, send all-ready event and transition to game
         if (readyCount >= totalCount && totalCount >= 1) {
             room.started = true;
             io.to(code).emit('all-ready');
@@ -240,14 +225,14 @@ io.on('connection', (socket) => {
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
     });
 
-    // --- HOST: start the game (lobby → character creation) ---
+    // --- HOST: start the game ---
     socket.on('start-game', () => {
         const code = socket.data.roomCode;
         const room = rooms[code];
         if (!room || room.host !== socket.data.username) return;
         if (room.players.length < 1) return;
 
-        room.started = true; // ✅ set this FIRST before emitting
+        room.started = true;
         room.readyPlayers = new Set();
 
         io.to(code).emit('game-started', safeRoomInfo(code));
@@ -269,7 +254,6 @@ io.on('connection', (socket) => {
         if (!code || !rooms[code]) return;
         const username = socket.data.username;
         const safe = String(message).slice(0, 200).replace(/</g, '&lt;');
-        // Echo to everyone except sender (sender adds it locally)
         socket.to(code).emit('party-chat', { username, message: safe, ts: Date.now() });
     });
 
