@@ -8,312 +8,6 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         body { background: #0a0508; min-height: 100vh; overflow: hidden; }
-
-        /* ===== GAME BACKGROUND ===== */
-        .game-bg {
-            position: fixed; inset: 0; z-index: -1;
-            background: linear-gradient(160deg, #0a0508 0%, #12080f 40%, #080d18 100%);
-        }
-
-        .fog-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        .fog-layer::before {
-            content: ''; position: absolute; bottom: 0; left: -50%;
-            width: 200%; height: 25%;
-            background: radial-gradient(ellipse at center, rgba(201,164,92,0.06) 0%, transparent 70%);
-            animation: fog-drift 20s ease-in-out infinite alternate;
-        }
-        .fog-layer::after {
-            content: ''; position: absolute; top: 0; left: -30%;
-            width: 160%; height: 20%;
-            background: radial-gradient(ellipse at center, rgba(100,60,160,0.05) 0%, transparent 70%);
-            animation: fog-drift 28s ease-in-out infinite alternate-reverse;
-        }
-        @keyframes fog-drift {
-            0%   { transform: translateX(0)   scaleY(1);    }
-            100% { transform: translateX(15%) scaleY(1.15); }
-        }
-
-        /* ===== TOP HUD ===== */
-        .top-hud {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 20px;
-            background: linear-gradient(180deg, rgba(10,5,8,0.97) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(201,164,92,0.15);
-        }
-
-        .hud-section { display: flex; align-items: center; gap: 12px; }
-
-        .hud-bar-group { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
-        .hud-bar-label {
-            display: flex; justify-content: space-between;
-            font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; color: #8b7355;
-        }
-        .hud-bar-track {
-            height: 8px; background: rgba(61,47,31,0.5); border-radius: 4px;
-            overflow: hidden; border: 1px solid rgba(61,47,31,0.8);
-        }
-        .hud-bar-fill   { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-        .bar-hp-fill    { background: linear-gradient(90deg, #8b1a1a, #e74c3c); }
-        .bar-mana-fill  { background: linear-gradient(90deg, #1a3a8b, #3498db); }
-        .bar-xp-fill    { background: linear-gradient(90deg, #7a5a10, #c9a45c); }
-
-        .char-pill {
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(201,164,92,0.3);
-            border-radius: 8px; padding: 6px 14px; font-family: 'Cinzel', serif;
-            font-size: 12px; color: #c9a45c; letter-spacing: 1px; white-space: nowrap;
-        }
-        .char-pill .level { color: #8b7355; font-size: 10px; }
-
-        .inv-hud-btn {
-            background: rgba(139,115,85,0.1); border: 1px solid #5a4a3a;
-            border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
-            font-size: 12px; letter-spacing: 1px; padding: 8px 16px;
-            cursor: pointer; transition: all 0.3s;
-        }
-        .inv-hud-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.1); }
-
-        .quick-stats { display: flex; gap: 8px; flex-wrap: wrap; }
-        .quick-stat {
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(61,47,31,0.8);
-            border-radius: 6px; padding: 5px 10px; text-align: center; min-width: 48px;
-        }
-        .quick-stat-val  { color: #c9a45c; font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; }
-        .quick-stat-name { color: #5a4a3a; font-size: 8px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
-
-        /* ===== MAP AREA ===== */
-        .game-area {
-            position: fixed; inset: 0; top: 68px; bottom: 220px;
-            display: flex; align-items: stretch; justify-content: center;
-            overflow: hidden;
-        }
-
-        #mapCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-            image-rendering: pixelated;
-        }
-
-        /* New island button */
-        .new-island-btn {
-            position: fixed; top: 80px; left: 20px; z-index: 110;
-            background: rgba(0,0,0,0.7); border: 1px solid rgba(201,164,92,0.3);
-            border-radius: 6px; padding: 6px 14px; font-family: 'Cinzel', serif;
-            font-size: 11px; color: #8b7355; letter-spacing: 1px; cursor: pointer;
-            transition: all 0.3s; pointer-events: all;
-        }
-        .new-island-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.08); }
-
-        /* ===== LOCATION TOOLTIP ===== */
-        .map-tooltip {
-            position: fixed; z-index: 200; pointer-events: none;
-            background: rgba(10,5,8,0.95); border: 1px solid #c9a45c;
-            border-radius: 8px; padding: 8px 14px;
-            font-family: 'Cinzel', serif; font-size: 12px; color: #c9a45c;
-            letter-spacing: 1px; display: none; white-space: nowrap;
-        }
-        .map-tooltip .tt-sub { color: #8b7355; font-size: 10px; margin-top: 2px; }
-
-        /* ===== MINIMAP ===== */
-        .minimap {
-            position: fixed; top: 80px; right: 20px; z-index: 110;
-            background: rgba(0,0,0,0.8); border: 1px solid rgba(201,164,92,0.25);
-            border-radius: 8px; padding: 8px;
-        }
-        .minimap-title { font-family: 'Cinzel', serif; font-size: 8px; color: #5a4a3a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; text-align: center; }
-        #minimapCanvas { display: block; border-radius: 4px; }
-
-        /* ===== LEGEND ===== */
-        .map-legend {
-            position: fixed; bottom: 228px; right: 20px; z-index: 110;
-            background: rgba(0,0,0,0.75); border: 1px solid rgba(201,164,92,0.2);
-            border-radius: 6px; padding: 8px 10px;
-            font-family: 'Cinzel', serif; font-size: 9px; color: #8b7355;
-        }
-        .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-        .legend-row:last-child { margin-bottom: 0; }
-        .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-
-        /* ===== NARRATIVE BOX ===== */
-        .narrative-area {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 220px;
-            background: linear-gradient(180deg, transparent 0%, rgba(10,5,8,0.99) 12%);
-            border-top: 1px solid rgba(201,164,92,0.2);
-            display: flex; flex-direction: column; padding: 16px 24px 20px; z-index: 100;
-        }
-        .narrative-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .narrative-speaker {
-            font-family: 'Uncial Antiqua', cursive; font-size: 14px; color: #c9a45c;
-            letter-spacing: 2px; text-shadow: 0 0 10px rgba(201,164,92,0.4);
-        }
-        .narrative-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,164,92,0.3), transparent); }
-        .narrative-text {
-            font-family: 'Crimson Text', Georgia, serif; font-size: 17px;
-            color: #d4c4a0; line-height: 1.7; flex: 1; overflow: hidden;
-        }
-        .narrative-text .cursor {
-            display: inline-block; width: 2px; height: 1em; background: #c9a45c;
-            margin-left: 2px; vertical-align: text-bottom; animation: blink 1s step-end infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-        .action-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-        .action-btn {
-            padding: 9px 20px; background: rgba(0,0,0,0.5); border: 1px solid #3d2f1f;
-            border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
-            font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.25s;
-            position: relative; overflow: hidden;
-        }
-        .action-btn::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(201,164,92,0.1), transparent);
-            opacity: 0; transition: opacity 0.25s;
-        }
-        .action-btn:hover { border-color: #c9a45c; color: #c9a45c; transform: translateY(-1px); }
-        .action-btn:hover::before { opacity: 1; }
-        .action-btn:active { transform: translateY(0); }
-        .next-btn { margin-left: auto; background: rgba(201,164,92,0.08); border-color: #8b7355; color: #c9a45c; }
-        .next-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; }
-
-        /* ===== HUD SIDE BUTTONS ===== */
-        .hud-side-btn {
-            background: rgba(139,115,85,0.1); border: 1px solid #5a4a3a;
-            border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
-            font-size: 12px; letter-spacing: 1px; padding: 8px 14px;
-            cursor: pointer; transition: all 0.3s; white-space: nowrap;
-        }
-        .hud-side-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.1); }
-        .hud-side-btn.danger:hover { border-color: #c0392b; color: #e74c3c; background: rgba(192,57,43,0.1); }
-
-        /* ===== SETTINGS OVERLAY ===== */
-        .settings-overlay {
-            display: none; position: fixed; inset: 0; z-index: 500;
-            background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
-        }
-        .settings-overlay.active { display: flex; }
-        .settings-panel {
-            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
-            border: 3px solid #c9a45c; border-radius: 15px; padding: 40px;
-            width: min(500px, 92vw); position: relative;
-            box-shadow: 0 0 50px rgba(201,164,92,0.3);
-        }
-        .settings-panel h2 {
-            font-family: 'Uncial Antiqua', cursive; color: #c9a45c;
-            text-align: center; font-size: 30px; margin-bottom: 28px;
-            text-shadow: 0 0 20px rgba(201,164,92,0.5);
-        }
-        .close-settings {
-            position: absolute; top: 14px; right: 18px;
-            background: none; border: none; color: #8b7355; font-size: 26px;
-            cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif;
-        }
-        .close-settings:hover { color: #c9a45c; }
-        .slider-group { margin-bottom: 24px; }
-        .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .slider-label span { color: #c9a45c; font-family: 'Cinzel', serif; font-size: 14px; letter-spacing: 1px; }
-        .slider-value { color: #8b7355; font-size: 12px; min-width: 32px; text-align: right; font-family: 'Cinzel', serif; }
-        .slider-container { position: relative; height: 28px; display: flex; align-items: center; }
-        .slider-track { width: 100%; height: 6px; background: rgba(61,47,31,0.8); border-radius: 3px; position: relative; cursor: pointer; }
-        .slider-fill { height: 100%; background: linear-gradient(90deg, #c9a45c, #8b7355); border-radius: 3px; position: absolute; top: 0; left: 0; pointer-events: none; }
-        .slider-thumb { width: 18px; height: 18px; background: #c9a45c; border: 2px solid #1a0a2e; border-radius: 50%; position: absolute; top: 50%; transform: translate(-50%, -50%); cursor: grab; z-index: 10; transition: box-shadow 0.2s; }
-        .slider-thumb:hover { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
-        .slider-thumb.dragging { cursor: grabbing; box-shadow: 0 0 15px rgba(201,164,92,0.8); }
-        .settings-hint { text-align: center; color: #5a4a3a; font-size: 11px; margin-top: 18px; letter-spacing: 1px; font-family: 'Cinzel', serif; }
-
-        /* ===== INVENTORY OVERLAY ===== */
-        .inv-overlay {
-            display: none; position: fixed; inset: 0; z-index: 400;
-            background: rgba(0,0,0,0.85); justify-content: center; align-items: center;
-        }
-        .inv-overlay.active { display: flex; }
-
-        .inv-panel {
-            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
-            border: 2px solid #c9a45c; border-radius: 15px; padding: 30px;
-            width: min(640px, 92vw); max-height: 80vh; overflow-y: auto; position: relative;
-        }
-        .inv-panel::-webkit-scrollbar { width: 6px; }
-        .inv-panel::-webkit-scrollbar-track { background: rgba(61,47,31,0.3); border-radius: 3px; }
-        .inv-panel::-webkit-scrollbar-thumb { background: #c9a45c; border-radius: 3px; }
-
-        .inv-panel-title {
-            font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 26px;
-            text-align: center; margin-bottom: 20px; padding-bottom: 14px;
-            border-bottom: 1px solid #3d2f1f; text-shadow: 0 0 15px rgba(201,164,92,0.4);
-        }
-        .close-inv {
-            position: absolute; top: 14px; right: 18px;
-            background: none; border: none; color: #8b7355; font-size: 26px;
-            cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif;
-        }
-        .close-inv:hover { color: #c9a45c; }
-
-        .inv-stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
-        .inv-stat-box {
-            flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f;
-            border-radius: 8px; padding: 10px; text-align: center;
-        }
-        .inv-stat-box-val   { color: #c9a45c; font-family: 'Uncial Antiqua', cursive; font-size: 20px; }
-        .inv-stat-box-label { color: #8b7355; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
-
-        .inv-section-label { color: #8b7355; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin: 16px 0 10px; }
-
-        .equip-slots { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-        .equip-slot {
-            flex: 1; min-width: 60px; aspect-ratio: 1; background: rgba(0,0,0,0.4);
-            border: 2px dashed #3d2f1f; border-radius: 8px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; font-size: 20px; gap: 4px;
-        }
-        .equip-slot-label { color: #5a4a3a; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
-        .equip-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.05); }
-
-        .inv-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-        .inv-slot {
-            aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f;
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; position: relative; font-size: 22px;
-        }
-        .inv-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.04); }
-        .inv-slot.occupied { border-color: #8b7355; }
-        .inv-slot.occupied:hover { border-color: #c9a45c; box-shadow: 0 0 10px rgba(201,164,92,0.25); transform: scale(1.05); }
-        .inv-slot .item-qty { position: absolute; bottom: 3px; right: 5px; color: #8b7355; font-size: 9px; font-family: 'Cinzel', serif; }
-        .inv-slot .item-tooltip {
-            display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
-            transform: translateX(-50%); background: rgba(13,13,26,0.98);
-            border: 1px solid #c9a45c; border-radius: 6px; padding: 7px 11px;
-            white-space: nowrap; color: #c9a45c; font-size: 11px; font-family: 'Cinzel', serif;
-            z-index: 50; pointer-events: none;
-        }
-        .inv-slot:hover .item-tooltip { display: block; }
-
-        /* ===== INTRO OVERLAY ===== */
-        .intro-overlay {
-            position: fixed; inset: 0; z-index: 500; background: #0a0508;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1.5s ease;
-        }
-        .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
-        .intro-title {
-            font-family: 'Uncial Antiqua', cursive; font-size: clamp(36px, 6vw, 72px);
-            color: #c9a45c; text-align: center; letter-spacing: 6px;
-            text-shadow: 0 0 40px rgba(201,164,92,0.6); opacity: 0; transform: translateY(20px);
-            animation: intro-appear 1.2s ease 0.5s forwards;
-        }
-        .intro-sub {
-            font-family: 'Crimson Text', serif; font-size: 18px; color: #8b7355;
-            letter-spacing: 4px; margin-top: 16px; font-style: italic; opacity: 0;
-            animation: intro-appear 1s ease 1.2s forwards;
-        }
-        .intro-skip {
-            position: absolute; bottom: 40px; font-family: 'Cinzel', serif; font-size: 12px;
-            color: #3d2f1f; letter-spacing: 2px; cursor: pointer; transition: color 0.3s;
-            opacity: 0; animation: intro-appear 0.8s ease 2s forwards;
-        }
-        .intro-skip:hover { color: #8b7355; }
-        @keyframes intro-appear { to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -515,12 +209,10 @@ for (let i = 0; i < 50; i++) {
 }
 
 // ===== PLAYER DATA =====
-// loadCharacter() comes from character-utils.js — normalises hex hair colours automatically
 const statsRaw  = localStorage.getItem('dnd_stats_' + user);
 const character = loadCharacter(user) || { race:'human', class:'fighter', sex:'male' };
 const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
  
-// charUtilsCap comes from character-utils.js
 const cap = charUtilsCap;
  
 document.getElementById('hudCharName').textContent = user;
@@ -640,9 +332,7 @@ function skipIntro() {
     setTimeout(() => o.remove(), 1500);
 }
 
-// ===== MAP DIMENSIONS =====
-// Increase these to make the map larger (more detail, bigger island).
-// The minimap always covers the full map regardless of these values.
+// ===== MAP =====
 const MAP_W = 240;
 const MAP_H = 165;
 
@@ -684,9 +374,6 @@ function smoothNoise(w, h, rng, scale, octaves) {
     return result;
 }
 
-// ===== TERRAIN THRESHOLDS =====
-// Mountains start at 0.58 (was 0.70) and snow at 0.75 (was 0.85)
-// giving noticeably more mountain and snow coverage across the island.
 function getTerrainColor(h, m) {
     if (h < 0.0)  return { r:22,  g:48,  b:100, name:'Deep Sea'     };
     if (h < 0.08) return { r:38,  g:82,  b:150, name:'Shallow Water' };
@@ -767,7 +454,7 @@ function generateMap(seed) {
     ];
 
     const locations = [];
-    const numLocs = 5 + Math.floor(rng() * 5); // slightly more locations on the bigger map
+    const numLocs = 5 + Math.floor(rng() * 5);
     for (let i = 0; i < numLocs; i++) {
         let placed = false, attempts = 0;
         while (!placed && attempts++ < 100) {
@@ -815,7 +502,6 @@ function renderMap() {
         }
     }
 
-    // Vignette
     const vig = ctx.createRadialGradient(
         canvas.width/2, canvas.height/2, Math.min(canvas.width, canvas.height) * 0.3,
         canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height) * 0.75
@@ -825,7 +511,6 @@ function renderMap() {
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Location markers
     locations.forEach(loc => {
         const px = (loc.x + 0.5) * scaleX;
         const py = (loc.y + 0.5) * scaleY;
@@ -870,7 +555,6 @@ function renderMinimap() {
     const mW = mc.width, mH = mc.height;
     const { heightMap, moisture, locations } = mapData;
 
-    // Scale covers the full MAP_W x MAP_H regardless of map size
     const sX = mW / MAP_W, sY = mH / MAP_H;
 
     for (let y = 0; y < MAP_H; y++) {
