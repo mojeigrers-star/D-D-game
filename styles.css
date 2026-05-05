@@ -73,7 +73,7 @@ body {
 .dnd-container::before {
     content: '';
     position: absolute;
-    top: -50%; left: -50%;
+    top: 0; left: 0;        /* changed from -50% -50% */
     width: 200%; height: 200%;
     background: repeating-linear-gradient(
         45deg,
@@ -87,8 +87,8 @@ body {
 }
 
 @keyframes shimmer {
-    0%   { transform: translateX(-50%) translateY(-50%); }
-    100% { transform: translateX(0%)   translateY(0%);   }
+    0%   { transform: translateX(0)     translateY(0); }
+    100% { transform: translateX(-50%)  translateY(-50%); }
 }
 
 /* ===== TITLE AREA ===== */
@@ -159,6 +159,18 @@ body {
 }
 
 .dnd-input::placeholder { color: #5a4a3a; }
+
+.dnd-input:-webkit-autofill,
+.dnd-input:-webkit-autofill:hover,
+.dnd-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(0,0,0,0.7) inset !important;
+    -webkit-text-fill-color: #c9a45c !important;
+    caret-color: #c9a45c;
+    border-color: #3d2f1f;
+    transition: background-color 5000s ease-in-out 0s;
+    font-family: 'Cinzel', serif !important;
+    font-size: 15px !important;
+}
 
 /* ===== BUTTON ===== */
 .dnd-btn {
