@@ -209,6 +209,12 @@ io.on('connection', (socket) => {
     });
 });
 
+const path = require('path');
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'signin.html'));
+});
+
 httpServer.listen(PORT, () => {
     console.log(`⚔  D&D Server running at http://localhost:${PORT}`);
 });
