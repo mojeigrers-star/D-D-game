@@ -10,7 +10,6 @@
     <style>
         body { background: #0a0508; min-height: 100vh; overflow: hidden; }
 
-        /* ===== GAME BACKGROUND ===== */
         .game-bg {
             position: fixed; inset: 0; z-index: -1;
             background: linear-gradient(160deg, #0a0508 0%, #12080f 40%, #080d18 100%);
@@ -34,7 +33,6 @@
             100% { transform: translateX(15%) scaleY(1.15); }
         }
 
-        /* ===== TOP HUD ===== */
         .top-hud {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
@@ -66,7 +64,6 @@
         }
         .char-pill .level { color: #8b7355; font-size: 10px; }
 
-        /* Multiplayer badge in HUD */
         .multi-hud-badge {
             background: rgba(50,100,200,0.15); border: 1px solid rgba(50,100,200,0.35);
             border-radius: 6px; padding: 5px 10px;
@@ -91,8 +88,6 @@
         .hud-side-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.1); }
         .hud-side-btn.danger:hover { border-color: #c0392b; color: #e74c3c; background: rgba(192,57,43,0.1); }
 
-        /* ===== MAP AREA ===== */
-        /* Right edge reserved for party panel toggle tab; panel width handled by JS class */
         .game-area {
             position: fixed; inset: 0;
             top: 68px; bottom: 220px; right: 0;
@@ -107,7 +102,6 @@
             cursor: crosshair; image-rendering: pixelated;
         }
 
-        /* New island button */
         .new-island-btn {
             position: fixed; top: 80px; left: 20px; z-index: 110;
             background: rgba(0,0,0,0.7); border: 1px solid rgba(201,164,92,0.3);
@@ -117,7 +111,6 @@
         }
         .new-island-btn:hover { border-color: #c9a45c; color: #c9a45c; background: rgba(201,164,92,0.08); }
 
-        /* ===== PARTY PANEL ===== */
         .party-panel {
             position: fixed; top: 68px; right: -280px; bottom: 220px;
             width: 280px; z-index: 120;
@@ -129,7 +122,6 @@
         }
         .party-panel.open { right: 0; }
 
-        /* Toggle tab */
         .party-toggle {
             position: fixed; top: 50%; right: 0;
             transform: translateY(-50%);
@@ -153,7 +145,6 @@
             letter-spacing: 2px; text-transform: uppercase;
         }
 
-        /* Panel header */
         .party-header {
             padding: 16px 18px 12px;
             border-bottom: 1px solid rgba(201,164,92,0.15);
@@ -169,7 +160,6 @@
             margin-top: 4px;
         }
 
-        /* Connection dot */
         .party-conn {
             display: flex; align-items: center; gap: 6px;
             padding: 8px 18px; font-size: 10px; color: #5a4a3a; letter-spacing: 1px;
@@ -179,26 +169,18 @@
         .conn-dot.connected { background: #4caf50; animation: blink-dot 2s infinite; }
         @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-        /* Players list */
-        .party-list {
-            flex: 1; overflow-y: auto; padding: 10px 12px;
-        }
+        .party-list { flex: 1; overflow-y: auto; padding: 10px 12px; }
         .party-list::-webkit-scrollbar { width: 4px; }
         .party-list::-webkit-scrollbar-track { background: transparent; }
         .party-list::-webkit-scrollbar-thumb { background: #3d2f1f; border-radius: 2px; }
 
         .party-member {
             display: flex; align-items: center; gap: 10px;
-            padding: 10px 10px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            margin-bottom: 6px;
+            padding: 10px 10px; border-radius: 8px;
+            border: 1px solid transparent; margin-bottom: 6px;
             transition: border-color 0.2s, background 0.2s;
         }
-        .party-member.is-me {
-            border-color: rgba(201,164,92,0.25);
-            background: rgba(201,164,92,0.04);
-        }
+        .party-member.is-me { border-color: rgba(201,164,92,0.25); background: rgba(201,164,92,0.04); }
         .party-member-avatar {
             width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
             background: linear-gradient(135deg, rgba(201,164,92,0.2), rgba(139,115,85,0.15));
@@ -207,59 +189,26 @@
             font-family: 'Cinzel', serif; font-size: 15px; color: #c9a45c;
         }
         .party-member-info { flex: 1; min-width: 0; }
-        .party-member-name {
-            color: #c9a45c; font-size: 12px; letter-spacing: 1px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .party-member-sub {
-            color: #5a4a3a; font-size: 10px; letter-spacing: 1px; margin-top: 2px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .party-member-you {
-            color: #8b7355; font-size: 9px; letter-spacing: 1px;
-            border: 1px solid rgba(139,115,85,0.3); border-radius: 3px;
-            padding: 1px 5px; flex-shrink: 0;
-        }
-        .party-member-status {
-            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-            background: #4caf50;
-        }
-        .party-member-status.away { background: #ff9800; }
-        .party-member-status.offline { background: #5a4a3a; }
+        .party-member-name { color: #c9a45c; font-size: 12px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .party-member-sub  { color: #5a4a3a; font-size: 10px; letter-spacing: 1px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .party-member-you  { color: #8b7355; font-size: 9px; letter-spacing: 1px; border: 1px solid rgba(139,115,85,0.3); border-radius: 3px; padding: 1px 5px; flex-shrink: 0; }
+        .party-member-status { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #4caf50; }
 
-        /* Party chat at bottom of panel */
         .party-chat { flex-shrink: 0; border-top: 1px solid rgba(61,47,31,0.4); }
-
-        .party-chat-msgs {
-            height: 120px; overflow-y: auto; padding: 8px 12px;
-            display: flex; flex-direction: column; gap: 4px;
-        }
+        .party-chat-msgs { height: 120px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
         .party-chat-msgs::-webkit-scrollbar { width: 3px; }
         .party-chat-msgs::-webkit-scrollbar-thumb { background: #3d2f1f; border-radius: 2px; }
-
         .pchat-msg { font-size: 11px; line-height: 1.5; }
         .pchat-msg .who { color: #c9a45c; }
         .pchat-msg .txt { color: #8b7355; }
         .pchat-msg.sys .txt { color: #3d2f1f; font-style: italic; }
-
-        .party-chat-row {
-            display: flex; gap: 0; border-top: 1px solid rgba(61,47,31,0.4);
-        }
-        .party-chat-input {
-            flex: 1; background: rgba(0,0,0,0.5); border: none;
-            color: #c9a45c; font-family: 'Cinzel', serif; font-size: 11px;
-            padding: 10px 12px; transition: background 0.2s;
-        }
+        .party-chat-row { display: flex; gap: 0; border-top: 1px solid rgba(61,47,31,0.4); }
+        .party-chat-input { flex: 1; background: rgba(0,0,0,0.5); border: none; color: #c9a45c; font-family: 'Cinzel', serif; font-size: 11px; padding: 10px 12px; transition: background 0.2s; }
         .party-chat-input:focus { outline: none; background: rgba(0,0,0,0.7); }
         .party-chat-input::placeholder { color: #3d2f1f; }
-        .party-chat-send {
-            background: rgba(201,164,92,0.08); border: none; border-left: 1px solid rgba(61,47,31,0.4);
-            color: #8b7355; font-family: 'Cinzel', serif; font-size: 12px;
-            padding: 10px 12px; cursor: pointer; transition: all 0.2s;
-        }
+        .party-chat-send { background: rgba(201,164,92,0.08); border: none; border-left: 1px solid rgba(61,47,31,0.4); color: #8b7355; font-family: 'Cinzel', serif; font-size: 12px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; }
         .party-chat-send:hover { background: rgba(201,164,92,0.15); color: #c9a45c; }
 
-        /* ===== LOCATION TOOLTIP ===== */
         .map-tooltip {
             position: fixed; z-index: 200; pointer-events: none;
             background: rgba(10,5,8,0.95); border: 1px solid #c9a45c;
@@ -269,7 +218,6 @@
         }
         .map-tooltip .tt-sub { color: #8b7355; font-size: 10px; margin-top: 2px; }
 
-        /* ===== MINIMAP ===== */
         .minimap {
             position: fixed; top: 80px; right: 20px; z-index: 110;
             background: rgba(0,0,0,0.8); border: 1px solid rgba(201,164,92,0.25);
@@ -280,7 +228,6 @@
         .minimap-title { font-family: 'Cinzel', serif; font-size: 8px; color: #5a4a3a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; text-align: center; }
         #minimapCanvas { display: block; border-radius: 4px; }
 
-        /* ===== LEGEND ===== */
         .map-legend {
             position: fixed; bottom: 228px; right: 20px; z-index: 110;
             background: rgba(0,0,0,0.75); border: 1px solid rgba(201,164,92,0.2);
@@ -293,7 +240,6 @@
         .legend-row:last-child { margin-bottom: 0; }
         .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
-        /* ===== NARRATIVE BOX ===== */
         .narrative-area {
             position: fixed; bottom: 0; left: 0; right: 0; height: 220px;
             background: linear-gradient(180deg, transparent 0%, rgba(10,5,8,0.99) 12%);
@@ -303,62 +249,28 @@
         }
         .narrative-area.party-open { right: 280px; }
         .narrative-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .narrative-speaker {
-            font-family: 'Uncial Antiqua', cursive; font-size: 14px; color: #c9a45c;
-            letter-spacing: 2px; text-shadow: 0 0 10px rgba(201,164,92,0.4);
-        }
+        .narrative-speaker { font-family: 'Uncial Antiqua', cursive; font-size: 14px; color: #c9a45c; letter-spacing: 2px; text-shadow: 0 0 10px rgba(201,164,92,0.4); }
         .narrative-divider { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(201,164,92,0.3), transparent); }
-        .narrative-text {
-            font-family: 'Crimson Text', Georgia, serif; font-size: 17px;
-            color: #d4c4a0; line-height: 1.7; flex: 1; overflow: hidden;
-        }
-        .narrative-text .cursor {
-            display: inline-block; width: 2px; height: 1em; background: #c9a45c;
-            margin-left: 2px; vertical-align: text-bottom; animation: blink 1s step-end infinite;
-        }
+        .narrative-text { font-family: 'Crimson Text', Georgia, serif; font-size: 17px; color: #d4c4a0; line-height: 1.7; flex: 1; overflow: hidden; }
+        .narrative-text .cursor { display: inline-block; width: 2px; height: 1em; background: #c9a45c; margin-left: 2px; vertical-align: text-bottom; animation: blink 1s step-end infinite; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .action-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-        .action-btn {
-            padding: 9px 20px; background: rgba(0,0,0,0.5); border: 1px solid #3d2f1f;
-            border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif;
-            font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.25s;
-            position: relative; overflow: hidden;
-        }
-        .action-btn::before {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(201,164,92,0.1), transparent);
-            opacity: 0; transition: opacity 0.25s;
-        }
+        .action-btn { padding: 9px 20px; background: rgba(0,0,0,0.5); border: 1px solid #3d2f1f; border-radius: 6px; color: #8b7355; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
+        .action-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(201,164,92,0.1), transparent); opacity: 0; transition: opacity 0.25s; }
         .action-btn:hover { border-color: #c9a45c; color: #c9a45c; transform: translateY(-1px); }
         .action-btn:hover::before { opacity: 1; }
         .next-btn { margin-left: auto; background: rgba(201,164,92,0.08); border-color: #8b7355; color: #c9a45c; }
         .next-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; }
 
-        /* ===== INVENTORY OVERLAY ===== */
-        .inv-overlay {
-            display: none; position: fixed; inset: 0; z-index: 400;
-            background: rgba(0,0,0,0.85); justify-content: center; align-items: center;
-        }
+        .inv-overlay { display: none; position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
         .inv-overlay.active { display: flex; }
-        .inv-panel {
-            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
-            border: 2px solid #c9a45c; border-radius: 15px; padding: 30px;
-            width: min(640px, 92vw); max-height: 80vh; overflow-y: auto; position: relative;
-        }
+        .inv-panel { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98)); border: 2px solid #c9a45c; border-radius: 15px; padding: 30px; width: min(640px, 92vw); max-height: 80vh; overflow-y: auto; position: relative; }
         .inv-panel::-webkit-scrollbar { width: 6px; }
         .inv-panel::-webkit-scrollbar-track { background: rgba(61,47,31,0.3); border-radius: 3px; }
         .inv-panel::-webkit-scrollbar-thumb { background: #c9a45c; border-radius: 3px; }
-        .inv-panel-title {
-            font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 26px;
-            text-align: center; margin-bottom: 20px; padding-bottom: 14px;
-            border-bottom: 1px solid #3d2f1f; text-shadow: 0 0 15px rgba(201,164,92,0.4);
-        }
-        .close-inv {
-            position: absolute; top: 14px; right: 18px;
-            background: none; border: none; color: #8b7355; font-size: 26px;
-            cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif;
-        }
+        .inv-panel-title { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; font-size: 26px; text-align: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #3d2f1f; text-shadow: 0 0 15px rgba(201,164,92,0.4); }
+        .close-inv { position: absolute; top: 14px; right: 18px; background: none; border: none; color: #8b7355; font-size: 26px; cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif; }
         .close-inv:hover { color: #c9a45c; }
         .inv-stats-row { display: flex; gap: 12px; margin-bottom: 20px; }
         .inv-stat-box { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f; border-radius: 8px; padding: 10px; text-align: center; }
@@ -366,55 +278,23 @@
         .inv-stat-box-label { color: #8b7355; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
         .inv-section-label  { color: #8b7355; font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin: 16px 0 10px; }
         .equip-slots { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
-        .equip-slot {
-            flex: 1; min-width: 60px; aspect-ratio: 1; background: rgba(0,0,0,0.4);
-            border: 2px dashed #3d2f1f; border-radius: 8px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; font-size: 20px; gap: 4px;
-        }
+        .equip-slot { flex: 1; min-width: 60px; aspect-ratio: 1; background: rgba(0,0,0,0.4); border: 2px dashed #3d2f1f; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 20px; gap: 4px; }
         .equip-slot-label { color: #5a4a3a; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
         .equip-slot:hover  { border-color: #8b7355; background: rgba(201,164,92,0.05); }
         .inv-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-        .inv-slot {
-            aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f;
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s; position: relative; font-size: 22px;
-        }
+        .inv-slot { aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #3d2f1f; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; font-size: 22px; }
         .inv-slot:hover { border-color: #8b7355; background: rgba(201,164,92,0.04); }
         .inv-slot.occupied { border-color: #8b7355; }
         .inv-slot.occupied:hover { border-color: #c9a45c; box-shadow: 0 0 10px rgba(201,164,92,0.25); transform: scale(1.05); }
         .inv-slot .item-qty { position: absolute; bottom: 3px; right: 5px; color: #8b7355; font-size: 9px; font-family: 'Cinzel', serif; }
-        .inv-slot .item-tooltip {
-            display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
-            transform: translateX(-50%); background: rgba(13,13,26,0.98);
-            border: 1px solid #c9a45c; border-radius: 6px; padding: 7px 11px;
-            white-space: nowrap; color: #c9a45c; font-size: 11px; font-family: 'Cinzel', serif;
-            z-index: 50; pointer-events: none;
-        }
+        .inv-slot .item-tooltip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: rgba(13,13,26,0.98); border: 1px solid #c9a45c; border-radius: 6px; padding: 7px 11px; white-space: nowrap; color: #c9a45c; font-size: 11px; font-family: 'Cinzel', serif; z-index: 50; pointer-events: none; }
         .inv-slot:hover .item-tooltip { display: block; }
 
-        /* ===== SETTINGS OVERLAY ===== */
-        .settings-overlay {
-            display: none; position: fixed; inset: 0; z-index: 500;
-            background: rgba(0,0,0,0.82); justify-content: center; align-items: center;
-        }
+        .settings-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.82); justify-content: center; align-items: center; }
         .settings-overlay.active { display: flex; }
-        .settings-panel {
-            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
-            border: 3px solid #c9a45c; border-radius: 15px; padding: 40px;
-            width: min(500px, 92vw); position: relative;
-            box-shadow: 0 0 50px rgba(201,164,92,0.3);
-        }
-        .settings-panel h2 {
-            font-family: 'Uncial Antiqua', cursive; color: #c9a45c;
-            text-align: center; font-size: 30px; margin-bottom: 28px;
-            text-shadow: 0 0 20px rgba(201,164,92,0.5);
-        }
-        .close-settings {
-            position: absolute; top: 14px; right: 18px;
-            background: none; border: none; color: #8b7355; font-size: 26px;
-            cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif;
-        }
+        .settings-panel { background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98)); border: 3px solid #c9a45c; border-radius: 15px; padding: 40px; width: min(500px, 92vw); position: relative; box-shadow: 0 0 50px rgba(201,164,92,0.3); }
+        .settings-panel h2 { font-family: 'Uncial Antiqua', cursive; color: #c9a45c; text-align: center; font-size: 30px; margin-bottom: 28px; text-shadow: 0 0 20px rgba(201,164,92,0.5); }
+        .close-settings { position: absolute; top: 14px; right: 18px; background: none; border: none; color: #8b7355; font-size: 26px; cursor: pointer; transition: color 0.3s; font-family: 'Cinzel', serif; }
         .close-settings:hover { color: #c9a45c; }
         .slider-group { margin-bottom: 24px; }
         .slider-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -427,29 +307,11 @@
         .slider-thumb:hover { box-shadow: 0 0 10px rgba(201,164,92,0.6); }
         .settings-hint { text-align: center; color: #5a4a3a; font-size: 11px; margin-top: 18px; letter-spacing: 1px; font-family: 'Cinzel', serif; }
 
-        /* ===== INTRO OVERLAY ===== */
-        .intro-overlay {
-            position: fixed; inset: 0; z-index: 600; background: #0a0508;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 1.5s ease;
-        }
+        .intro-overlay { position: fixed; inset: 0; z-index: 600; background: #0a0508; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1.5s ease; }
         .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
-        .intro-title {
-            font-family: 'Uncial Antiqua', cursive; font-size: clamp(36px, 6vw, 72px);
-            color: #c9a45c; text-align: center; letter-spacing: 6px;
-            text-shadow: 0 0 40px rgba(201,164,92,0.6); opacity: 0; transform: translateY(20px);
-            animation: intro-appear 1.2s ease 0.5s forwards;
-        }
-        .intro-sub {
-            font-family: 'Crimson Text', serif; font-size: 18px; color: #8b7355;
-            letter-spacing: 4px; margin-top: 16px; font-style: italic; opacity: 0;
-            animation: intro-appear 1s ease 1.2s forwards;
-        }
-        .intro-skip {
-            position: absolute; bottom: 40px; font-family: 'Cinzel', serif; font-size: 12px;
-            color: #3d2f1f; letter-spacing: 2px; cursor: pointer; transition: color 0.3s;
-            opacity: 0; animation: intro-appear 0.8s ease 2s forwards;
-        }
+        .intro-title { font-family: 'Uncial Antiqua', cursive; font-size: clamp(36px, 6vw, 72px); color: #c9a45c; text-align: center; letter-spacing: 6px; text-shadow: 0 0 40px rgba(201,164,92,0.6); opacity: 0; transform: translateY(20px); animation: intro-appear 1.2s ease 0.5s forwards; }
+        .intro-sub { font-family: 'Crimson Text', serif; font-size: 18px; color: #8b7355; letter-spacing: 4px; margin-top: 16px; font-style: italic; opacity: 0; animation: intro-appear 1s ease 1.2s forwards; }
+        .intro-skip { position: absolute; bottom: 40px; font-family: 'Cinzel', serif; font-size: 12px; color: #3d2f1f; letter-spacing: 2px; cursor: pointer; transition: color 0.3s; opacity: 0; animation: intro-appear 0.8s ease 2s forwards; }
         .intro-skip:hover { color: #8b7355; }
         @keyframes intro-appear { to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -460,14 +322,12 @@
 <div class="fog-layer"></div>
 <div class="particles" id="particles"></div>
 
-<!-- ===== INTRO ===== -->
 <div class="intro-overlay" id="introOverlay">
-    <div class="intro-title" id="introTitle">The Shared Realm</div>
-    <div class="intro-sub"   id="introSub">Adventure with companions...</div>
-    <div class="intro-skip"  onclick="skipIntro()">&#9654; Skip Intro</div>
+    <div class="intro-title">The Shared Realm</div>
+    <div class="intro-sub">Adventure with companions...</div>
+    <div class="intro-skip" onclick="skipIntro()">&#9654; Skip Intro</div>
 </div>
 
-<!-- ===== INVENTORY OVERLAY ===== -->
 <div class="inv-overlay" id="invOverlay">
     <div class="inv-panel">
         <button class="close-inv" onclick="closeInventory()">&times;</button>
@@ -481,7 +341,7 @@
         <div class="equip-slots">
             <div class="equip-slot"><span>&#128081;</span><span class="equip-slot-label">Head</span></div>
             <div class="equip-slot"><span>&#128093;</span><span class="equip-slot-label">Chest</span></div>
-            <div class="equip-slot"><span>&#9876;</span>  <span class="equip-slot-label">Weapon</span></div>
+            <div class="equip-slot"><span>&#9876;</span><span class="equip-slot-label">Weapon</span></div>
             <div class="equip-slot"><span>&#128737;</span><span class="equip-slot-label">Shield</span></div>
             <div class="equip-slot"><span>&#128098;</span><span class="equip-slot-label">Boots</span></div>
             <div class="equip-slot"><span>&#128141;</span><span class="equip-slot-label">Ring</span></div>
@@ -491,7 +351,6 @@
     </div>
 </div>
 
-<!-- ===== SETTINGS OVERLAY ===== -->
 <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
         <button class="close-settings" onclick="closeSettings()">&times;</button>
@@ -505,13 +364,11 @@
     </div>
 </div>
 
-<!-- ===== LOCATION TOOLTIP ===== -->
 <div class="map-tooltip" id="mapTooltip">
     <div id="ttName">Location</div>
     <div class="tt-sub" id="ttSub">Click to explore</div>
 </div>
 
-<!-- ===== TOP HUD ===== -->
 <div class="top-hud">
     <div class="hud-section">
         <button class="hud-side-btn" onclick="openSettings()">&#9881; Settings</button>
@@ -521,7 +378,6 @@
         </div>
         <div class="multi-hud-badge">&#127963; Multiplayer</div>
     </div>
-
     <div class="hud-section" style="flex-direction:column; gap:5px;">
         <div class="hud-bar-group">
             <div class="hud-bar-label"><span>&#10084; HP</span><span id="hpText">80 / 100</span></div>
@@ -536,7 +392,6 @@
             <div class="hud-bar-track"><div class="hud-bar-fill bar-xp-fill" id="xpBar" style="width:0%"></div></div>
         </div>
     </div>
-
     <div class="hud-section">
         <div class="quick-stats">
             <div class="quick-stat"><div class="quick-stat-val" id="statGold">0</div><div class="quick-stat-name">&#127881; Gold</div></div>
@@ -548,21 +403,18 @@
     </div>
 </div>
 
-<!-- ===== MAP CANVAS ===== -->
 <div class="game-area" id="gameArea">
     <canvas id="mapCanvas"></canvas>
 </div>
 
-<!-- ===== NEW ISLAND BUTTON ===== -->
-<button class="new-island-btn" onclick="generateNewIsland()">&#8635; New Island</button>
+<!-- Only shown to host via JS -->
+<button class="new-island-btn" id="newIslandBtn" onclick="generateNewIsland()">&#8635; New Island</button>
 
-<!-- ===== MINIMAP ===== -->
 <div class="minimap" id="minimapEl">
     <div class="minimap-title">&#9741; Map</div>
     <canvas id="minimapCanvas" width="130" height="95"></canvas>
 </div>
 
-<!-- ===== TERRAIN LEGEND ===== -->
 <div class="map-legend" id="legendEl">
     <div class="legend-row"><div class="legend-swatch" style="background:#1a3a6b"></div>Deep Sea</div>
     <div class="legend-row"><div class="legend-swatch" style="background:#2a5fa0"></div>Shallow Water</div>
@@ -574,7 +426,6 @@
     <div class="legend-row"><div class="legend-swatch" style="background:#d4d0cc"></div>Snow Peak</div>
 </div>
 
-<!-- ===== NARRATIVE BOX ===== -->
 <div class="narrative-area" id="narrativeArea">
     <div class="narrative-header">
         <div class="narrative-speaker" id="narrativeSpeaker">&#9830; The Dungeon Master</div>
@@ -590,40 +441,27 @@
     </div>
 </div>
 
-<!-- ===== PARTY PANEL ===== -->
 <div class="party-panel" id="partyPanel">
     <div class="party-header">
         <div class="party-header-title">&#9876; Party</div>
         <div class="party-header-sub" id="partyHeaderSub">Connecting...</div>
     </div>
-
     <div class="party-conn">
         <div class="conn-dot" id="partyConnDot"></div>
         <span id="partyConnText">Connecting to realm...</span>
     </div>
-
-    <div class="party-list" id="partyMemberList">
-        <!-- populated by socket -->
-    </div>
-
+    <div class="party-list" id="partyMemberList"></div>
     <div class="party-chat">
         <div class="party-chat-msgs" id="partyChatMsgs">
             <div class="pchat-msg sys"><span class="txt">&#9830; Party chat active</span></div>
         </div>
         <div class="party-chat-row">
-            <input
-                class="party-chat-input"
-                id="partyChatInput"
-                placeholder="Message party..."
-                maxlength="200"
-                onkeydown="if(event.key==='Enter') sendPartyChat();"
-            >
+            <input class="party-chat-input" id="partyChatInput" placeholder="Message party..." maxlength="200" onkeydown="if(event.key==='Enter') sendPartyChat();">
             <button class="party-chat-send" onclick="sendPartyChat()">&#9654;</button>
         </div>
     </div>
 </div>
 
-<!-- ===== PARTY TOGGLE TAB ===== -->
 <div class="party-toggle" id="partyToggle" onclick="toggleParty()">
     <span class="party-toggle-icon">&#9664;</span>
     <span class="party-toggle-label">Party</span>
@@ -636,6 +474,7 @@ const user = localStorage.getItem('dnd_user');
 if (!user) window.location.href = 'index.html';
 
 const roomData = (() => { try { return JSON.parse(sessionStorage.getItem('dnd_room') || '{}'); } catch(e) { return {}; } })();
+const isHost = roomData.host === user;
 
 // ===== PARTICLES =====
 const pc = document.getElementById('particles');
@@ -670,29 +509,21 @@ document.getElementById('manaText').textContent = `${mana} / ${mana}`;
 document.getElementById('statAC').textContent   = 10 + Math.floor((stats.dex - 10) / 2);
 document.getElementById('statSpd').textContent  = character.race === 'dwarf' ? 25 : 30;
 
+// Hide New Island button for non-hosts
+if (!isHost) document.getElementById('newIslandBtn').style.display = 'none';
+
 // ===== PARTY PANEL STATE =====
 let partyOpen = false;
 
 function toggleParty() {
     partyOpen = !partyOpen;
-    const panel   = document.getElementById('partyPanel');
-    const toggle  = document.getElementById('partyToggle');
-    const gameArea = document.getElementById('gameArea');
-    const minimap  = document.getElementById('minimapEl');
-    const legend   = document.getElementById('legendEl');
-    const narrative= document.getElementById('narrativeArea');
-
-    panel.classList.toggle('open', partyOpen);
-    toggle.classList.toggle('open', partyOpen);
-    gameArea.classList.toggle('party-open', partyOpen);
-    minimap.classList.toggle('party-open', partyOpen);
-    legend.classList.toggle('party-open', partyOpen);
-    narrative.classList.toggle('party-open', partyOpen);
-
-    if (mapData) {
-        // Re-render map after panel animation settles
-        setTimeout(() => renderMap(), 360);
-    }
+    document.getElementById('partyPanel').classList.toggle('open', partyOpen);
+    document.getElementById('partyToggle').classList.toggle('open', partyOpen);
+    document.getElementById('gameArea').classList.toggle('party-open', partyOpen);
+    document.getElementById('minimapEl').classList.toggle('party-open', partyOpen);
+    document.getElementById('legendEl').classList.toggle('party-open', partyOpen);
+    document.getElementById('narrativeArea').classList.toggle('party-open', partyOpen);
+    if (mapData) setTimeout(() => renderMap(), 360);
 }
 
 // ===== SOCKET / PARTY =====
@@ -708,6 +539,11 @@ function connectSocket() {
         if (roomData.code) {
             socket.emit('rejoin-room', { username: user, code: roomData.code });
         }
+        // Host broadcasts the current seed so everyone syncs
+        if (isHost && mapData) {
+            const seed = localStorage.getItem('dnd_map_seed_' + user);
+            if (seed) socket.emit('map-seed', { seed: parseInt(seed) });
+        }
     });
 
     socket.on('disconnect', () => {
@@ -718,12 +554,24 @@ function connectSocket() {
     socket.on('rejoined', (room) => {
         partyPlayers = room.players;
         renderPartyList(room);
+        // If server has a stored seed and we're not the host, use it
+        if (room.mapSeed && !isHost) {
+            mapData = generateMap(room.mapSeed);
+            renderMap();
+        }
     });
 
     socket.on('player-list-updated', (room) => {
         partyPlayers = room.players;
         renderPartyList(room);
         addPartySysMsg(`Party updated — ${room.players.length} adventurer${room.players.length !== 1 ? 's' : ''} present`);
+    });
+
+    // Receive new map seed from host
+    socket.on('map-seed', ({ seed }) => {
+        mapData = generateMap(seed);
+        renderMap();
+        typeText('The realm shifts around your party. A new island rises from the mists...', document.getElementById('narrativeText'));
     });
 
     socket.on('kicked', () => {
@@ -747,12 +595,7 @@ function renderPartyList(room) {
         const isMe = name === user;
         const row = document.createElement('div');
         row.className = 'party-member' + (isMe ? ' is-me' : '');
-
-        const char = isMe ? character : null;
-        const subtitle = char
-            ? `${cap(char.race)} ${cap(char.class)}`
-            : 'Adventurer';
-
+        const subtitle = isMe ? `${cap(character.race)} ${cap(character.class)}` : 'Adventurer';
         row.innerHTML = `
             <div class="party-member-avatar">${name.charAt(0).toUpperCase()}</div>
             <div class="party-member-info">
@@ -833,18 +676,9 @@ function buildInvGrid() {
 
 // ===== NARRATIVE =====
 const scenes = [
-    {
-        speaker: '&#9830; The Dungeon Master',
-        text: 'Before you stretches a vast island realm — ancient, mysterious, and alive with hidden dangers. Your party stands together at the shore. Mountains pierce the clouds to the north, dense forests whisper secrets in the east. Click any location marker on the map to begin your investigation, or choose an action below.'
-    },
-    {
-        speaker: '&#9830; The Dungeon Master',
-        text: 'The island holds many secrets. Ruins of a forgotten civilization dot the coastline, and deep within the forest, something stirs. Travelers speak of a dungeon beneath the central peak, sealed for a thousand years. What draws your party here?'
-    },
-    {
-        speaker: '&#9876; A Voice on the Wind',
-        text: '"So... more heroes wash ashore on the Shattered Isle. How many have come before you? How many remain?" The voice fades into the crash of distant waves. Something watches from the shadows of the treeline.'
-    }
+    { speaker: '&#9830; The Dungeon Master', text: 'Before you stretches a vast island realm — ancient, mysterious, and alive with hidden dangers. Your party stands together at the shore. Mountains pierce the clouds to the north, dense forests whisper secrets in the east. Click any location marker on the map to begin your investigation, or choose an action below.' },
+    { speaker: '&#9830; The Dungeon Master', text: 'The island holds many secrets. Ruins of a forgotten civilization dot the coastline, and deep within the forest, something stirs. Travelers speak of a dungeon beneath the central peak, sealed for a thousand years. What draws your party here?' },
+    { speaker: '&#9876; A Voice on the Wind', text: '"So... more heroes wash ashore on the Shattered Isle. How many have come before you? How many remain?" The voice fades into the crash of distant waves. Something watches from the shadows of the treeline.' }
 ];
 
 let currentScene = 0, typewriterTimer = null;
@@ -898,7 +732,7 @@ function skipIntro() {
     setTimeout(() => o.remove(), 1500);
 }
 
-// ===== MAP CONSTANTS =====
+// ===== MAP =====
 const MAP_W = 240;
 const MAP_H = 165;
 let mapData = null;
@@ -954,12 +788,10 @@ function generateMap(seed) {
     const rng = mulberry32(seed);
     const noise    = smoothNoise(MAP_W, MAP_H, rng, 3.5, 5);
     const moisture = smoothNoise(MAP_W, MAP_H, rng, 2.8, 4);
-
     const cx = MAP_W / 2 + (rng() - 0.5) * 20;
     const cy = MAP_H / 2 + (rng() - 0.5) * 14;
     const rx = MAP_W * (0.28 + rng() * 0.12);
     const ry = MAP_H * (0.30 + rng() * 0.10);
-
     const heightMap = Array.from({length: MAP_H}, (_, y) =>
         Array.from({length: MAP_W}, (_, x) => {
             const dx = (x - cx) / rx, dy = (y - cy) / ry;
@@ -968,7 +800,6 @@ function generateMap(seed) {
             return noise[y][x] * 0.6 + Math.max(0, 1 - dist + wobble) * 0.55 - 0.35;
         })
     );
-
     const locationTypes = [
         { icon:'⚔', name:'Ancient Dungeon', color:'#c0392b', narratives:[`The dungeon entrance yawns before your party like a wound in the earth. Carved runes flicker with sickly green light, warning those who can read them: "Abandon hope." Your companions exchange glances.`,`Cold air breathes from the dungeon's maw. Iron doors hang ajar, one twisted off its hinges. Something left in a hurry... or something got in. Your party readies weapons.`]},
         { icon:'🏰', name:'Ruined Castle', color:'#8b7355', narratives:[`A crumbled castle rises against the sky, its towers broken like snapped teeth. In the courtyard, a dry fountain bears the crest of a kingdom no one remembers. Your party spreads out to search.`,`The castle walls bear scars from some ancient siege. Through a shattered window, your ranger spots movement — shadow, or wind, or something worse. The party tightens formation.`]},
@@ -978,7 +809,6 @@ function generateMap(seed) {
         { icon:'🌿', name:'Sacred Grove', color:'#27ae60', narratives:[`Ancient trees form a perfect circle, their branches interlaced overhead. The air carries the scent of rain and something floral. The grove feels watched — but benevolently. Your party's wounds begin to close.`,`A spring wells up at the center of the grove. Multiple voices singing softly — your companions hear it without understanding the words. The grove responds to the harmony of a full party.`]},
         { icon:'⚓', name:'Hidden Port', color:'#2980b9', narratives:[`A natural cove shelters ships of dubious origin. A harbormaster of indeterminate loyalty eyes your party. "Haven't seen a group this size in years," they say. "Whatever you're hunting, it must be worth dying for."`,`The port smells of salt, pitch, and secrets. Your party's combined coin purse draws attention. A merchant appears with rare supplies — as if word of your arrival traveled ahead of you.`]},
     ];
-
     const locations = [];
     const numLocs = 5 + Math.floor(rng() * 5);
     for (let i = 0; i < numLocs; i++) {
@@ -997,11 +827,9 @@ function generateMap(seed) {
             }
         }
     }
-
     return { heightMap, moisture, locations, seed };
 }
 
-// ===== RENDER MAP =====
 function renderMap() {
     const canvas = document.getElementById('mapCanvas');
     const area   = document.getElementById('gameArea');
@@ -1038,22 +866,15 @@ function renderMap() {
         const px = (loc.x + 0.5) * scaleX;
         const py = (loc.y + 0.5) * scaleY;
         const r  = Math.max(10, Math.min(scaleX * 2.5, 18));
-
-        ctx.beginPath();
-        ctx.arc(px, py, r+4, 0, Math.PI*2);
-        ctx.strokeStyle = loc.color + '55';
-        ctx.lineWidth = 4; ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI*2);
+        ctx.beginPath(); ctx.arc(px, py, r+4, 0, Math.PI*2);
+        ctx.strokeStyle = loc.color + '55'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI*2);
         ctx.fillStyle = 'rgba(0,0,0,0.72)'; ctx.fill();
         ctx.strokeStyle = loc.color; ctx.lineWidth = 2; ctx.stroke();
-
         ctx.font = `${Math.round(r*1.1)}px sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = '#fff';
         ctx.fillText(loc.icon, px, py);
-
         ctx.font = `bold ${Math.max(9, Math.round(scaleX*0.9))}px 'Cinzel', serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'top';
         ctx.fillStyle = '#fff';
@@ -1071,7 +892,6 @@ function renderMinimap() {
     const mW = mc.width, mH = mc.height;
     const { heightMap, moisture, locations } = mapData;
     const sX = mW / MAP_W, sY = mH / MAP_H;
-
     for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
             const tc = getTerrainColor(heightMap[y][x], moisture[y][x]);
@@ -1079,7 +899,6 @@ function renderMinimap() {
             mCtx.fillRect(Math.floor(x*sX), Math.floor(y*sY), Math.ceil(sX)+1, Math.ceil(sY)+1);
         }
     }
-
     locations.forEach(loc => {
         const px = (loc.x+0.5)*sX, py = (loc.y+0.5)*sY;
         mCtx.beginPath(); mCtx.arc(px, py, 2.5, 0, Math.PI*2);
@@ -1088,20 +907,17 @@ function renderMinimap() {
     });
 }
 
-// ===== MOUSE INTERACTION =====
 document.getElementById('mapCanvas').addEventListener('mousemove', function(e) {
     if (!mapData) return;
     const canvas = this, rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
     const scaleX = canvas.width/MAP_W, scaleY = canvas.height/MAP_H;
     const tileX = Math.floor(mx/scaleX), tileY = Math.floor(my/scaleY);
-
     let hoveredLoc = null;
     mapData.locations.forEach(loc => {
         const px = (loc.x+0.5)*scaleX, py = (loc.y+0.5)*scaleY;
         if (Math.hypot(mx-px, my-py) < Math.max(12, scaleX*2.8)) hoveredLoc = loc;
     });
-
     const tooltip = document.getElementById('mapTooltip');
     if (hoveredLoc) {
         canvas.style.cursor = 'pointer';
@@ -1128,13 +944,11 @@ document.getElementById('mapCanvas').addEventListener('click', function(e) {
     const canvas = this, rect = canvas.getBoundingClientRect();
     const mx = e.clientX-rect.left, my = e.clientY-rect.top;
     const scaleX = canvas.width/MAP_W, scaleY = canvas.height/MAP_H;
-
     let clicked = null;
     mapData.locations.forEach(loc => {
         const px = (loc.x+0.5)*scaleX, py = (loc.y+0.5)*scaleY;
         if (Math.hypot(mx-px, my-py) < Math.max(14, scaleX*3)) clicked = loc;
     });
-
     if (clicked) {
         const narrative = clicked.narratives[Math.floor(Math.random()*clicked.narratives.length)];
         document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
@@ -1142,12 +956,9 @@ document.getElementById('mapCanvas').addEventListener('click', function(e) {
         document.getElementById('mapTooltip').style.display = 'none';
         return;
     }
-
     const tileX = Math.floor(mx/scaleX), tileY = Math.floor(my/scaleY);
     if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
-        const h = mapData.heightMap[tileY][tileX];
-        const m = mapData.moisture[tileY][tileX];
-        const tc = getTerrainColor(h, m);
+        const tc = getTerrainColor(mapData.heightMap[tileY][tileX], mapData.moisture[tileY][tileX]);
         const terrainNarratives = {
             'Beach':        'You walk along the tide-swept beach. The sand is dark and fine, littered with strange shells. Gulls cry overhead. Your party fans out along the shoreline, searching.',
             'Grassland':    'Open grassland rolls before your party. Wildflowers push through in bursts of color. Something rustles in the grass — your ranger signals caution.',
@@ -1166,11 +977,13 @@ document.getElementById('mapCanvas').addEventListener('click', function(e) {
     }
 });
 
-// ===== GENERATE ISLAND =====
+// ===== GENERATE ISLAND (host only) =====
 function generateNewIsland() {
+    if (!isHost) return;
     const seed = Math.floor(Math.random() * 999999);
-    if (user) localStorage.setItem('dnd_map_seed_' + user, seed);
+    localStorage.setItem('dnd_map_seed_' + user, seed);
     mapData = generateMap(seed);
+    if (socket) socket.emit('map-seed', { seed });
     requestAnimationFrame(() => {
         renderMap();
         document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
@@ -1189,31 +1002,16 @@ window.addEventListener('resize', () => {
 const sliders = { music:{value:70}, master:{value:80}, enemies:{value:50}, friends:{value:60}, ambient:{value:75} };
 let activeSlider = null, isDragging = false;
 
-function openSettings() {
-    loadSliderValues();
-    document.getElementById('settingsOverlay').classList.add('active');
-    document.addEventListener('keydown', handleSettingsEsc);
-}
-function closeSettings() {
-    document.getElementById('settingsOverlay').classList.remove('active');
-    document.removeEventListener('keydown', handleSettingsEsc);
-}
+function openSettings() { loadSliderValues(); document.getElementById('settingsOverlay').classList.add('active'); document.addEventListener('keydown', handleSettingsEsc); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('active'); document.removeEventListener('keydown', handleSettingsEsc); }
 function handleSettingsEsc(e) { if (e.key === 'Escape') closeSettings(); }
 
 function loadSliderValues() {
     const saved = localStorage.getItem('dnd_sliders');
-    if (saved) {
-        const vals = JSON.parse(saved);
-        Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } });
-    } else {
-        Object.keys(sliders).forEach(k => updateSliderUI(k));
-    }
+    if (saved) { const vals = JSON.parse(saved); Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } }); }
+    else { Object.keys(sliders).forEach(k => updateSliderUI(k)); }
 }
-function saveSliderValues() {
-    const vals = {};
-    Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; });
-    localStorage.setItem('dnd_sliders', JSON.stringify(vals));
-}
+function saveSliderValues() { const vals = {}; Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; }); localStorage.setItem('dnd_sliders', JSON.stringify(vals)); }
 function updateSliderUI(name) {
     const container = document.querySelector(`#settingsOverlay [data-slider="${name}"]`);
     if (!container) return;
@@ -1226,8 +1024,7 @@ function updateSliderUI(name) {
 function updateFromMouse(e, name, container) {
     const rect = container.getBoundingClientRect();
     const pct  = Math.round(Math.max(0, Math.min(e.clientX - rect.left, rect.width)) / rect.width * 100);
-    sliders[name].value = pct;
-    updateSliderUI(name); saveSliderValues();
+    sliders[name].value = pct; updateSliderUI(name); saveSliderValues();
 }
 function initSliders() {
     document.querySelectorAll('#settingsOverlay .slider-container').forEach(container => {
@@ -1262,16 +1059,15 @@ window.onload = function() {
         if (o) { o.classList.add('fade-out'); setTimeout(() => o && o.remove(), 1500); }
     }, 3500);
 
-    const savedSeed = localStorage.getItem('dnd_map_seed_' + user);
-    const seed = savedSeed ? parseInt(savedSeed) : Math.floor(Math.random() * 999999);
-    if (!savedSeed) localStorage.setItem('dnd_map_seed_' + user, seed);
-
+    // Generate initial map
+    const seed = Math.floor(Math.random() * 999999);
+    if (isHost) localStorage.setItem('dnd_map_seed_' + user, seed);
     mapData = generateMap(seed);
     renderMap();
 
     setTimeout(() => loadScene(0), 800);
     initSliders();
-    connectSocket();
+    connectSocket(); // host will broadcast seed on connect
 };
 </script>
 </body>

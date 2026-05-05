@@ -69,7 +69,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ===== ROOMS (in-memory) =====
-// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers, readyPlayers: Set }
+// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers, readyPlayers: Set, mapSeed: number }
 
 const rooms = {};
 
@@ -107,7 +107,8 @@ io.on('connection', (socket) => {
             players: [{ username, socketId: socket.id }],
             started: false,
             maxPlayers,
-            readyPlayers: new Set()
+            readyPlayers: new Set(),
+            mapSeed: null
         };
 
         socket.join(code);
@@ -160,7 +161,8 @@ io.on('connection', (socket) => {
         const readyList = Array.from(room.readyPlayers || []);
         socket.emit('rejoined', {
             ...safeRoomInfo(code),
-            readyPlayers: readyList
+            readyPlayers: readyList,
+            mapSeed: room.mapSeed || null
         });
 
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
@@ -237,6 +239,16 @@ io.on('connection', (socket) => {
 
         io.to(code).emit('game-started', safeRoomInfo(code));
         console.log(`Room ${code} game started`);
+    });
+
+    // --- HOST: broadcast map seed to all players ---
+    socket.on('map-seed', ({ seed }) => {
+        const code = socket.data.roomCode;
+        const room = rooms[code];
+        if (!room || room.host !== socket.data.username) return;
+        room.mapSeed = seed;
+        socket.to(code).emit('map-seed', { seed });
+        console.log(`Room ${code} map seed set: ${seed}`);
     });
 
     // --- Lobby chat ---
