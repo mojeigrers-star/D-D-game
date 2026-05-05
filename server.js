@@ -143,8 +143,13 @@ io.on('connection', (socket) => {
 
     // --- REJOIN: reconnect after page navigation (dashboard → game) ---
     socket.on('rejoin-room', ({ username, code }) => {
+        console.log('rejoin-room received:', username, code);
+        console.log('rooms available:', Object.keys(rooms));
         const room = rooms[code];
+        console.log('room found:', room ? 'yes' : 'no');
         if (!room) return;
+        // ... rest of handler
+        
 
         // Update socket ID for this player (they navigated to a new page)
         const existing = room.players.find(p => p.username === username);
@@ -242,7 +247,7 @@ io.on('connection', (socket) => {
         if (!room || room.host !== socket.data.username) return;
         if (room.players.length < 1) return;
 
-        // Reset ready state for the new phase (dashboard ready-up)
+        room.started = true; // ✅ set this FIRST before emitting
         room.readyPlayers = new Set();
 
         io.to(code).emit('game-started', safeRoomInfo(code));
@@ -275,6 +280,13 @@ io.on('connection', (socket) => {
         if (!code || !rooms[code]) return;
 
         const room = rooms[code];
+
+        // Don't remove players if the game has started — they're just navigating
+        if (room.started) {
+            console.log(`${username} disconnected but game started — keeping room ${code}`);
+            return;
+        }
+
         room.players = room.players.filter(p => p.socketId !== socket.id);
         if (room.readyPlayers) room.readyPlayers.delete(username);
 
@@ -285,7 +297,6 @@ io.on('connection', (socket) => {
             room.host = room.players[0].username;
             io.to(code).emit('host-changed', { newHost: room.host });
             io.to(code).emit('player-list-updated', safeRoomInfo(code));
-            console.log(`Room ${code} new host: ${room.host}`);
         } else {
             io.to(code).emit('player-list-updated', safeRoomInfo(code));
         }

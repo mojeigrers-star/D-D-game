@@ -343,6 +343,12 @@ img.sprite-img[data-broken="true"] { display: none !important; }
     const user = localStorage.getItem('dnd_user');
     if (!user) { showMessage('No user found. Please sign in again.', 'error'); setTimeout(() => window.location.href = 'index.html', 2000); return; }
     saveCharacter(user, character);
+
+    const roomData = sessionStorage.getItem('dnd_room');
+    if (roomData) {
+        localStorage.setItem('dnd_room_fallback', roomData);
+    }
+
     showMessage('Character saved! Preparing the realm...', 'success');
     setTimeout(() => window.location.href = 'dashboard-multi.html', 1500);
   }

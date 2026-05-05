@@ -334,7 +334,15 @@
         }
 
         const user     = localStorage.getItem('dnd_user');
-        const roomData = (() => { try { return JSON.parse(sessionStorage.getItem('dnd_room') || '{}'); } catch(e) { return {}; } })();
+        let roomData = (() => {
+            try {
+                const session = sessionStorage.getItem('dnd_room');
+                if (session) return JSON.parse(session);
+                const fallback = localStorage.getItem('dnd_room_fallback');
+                if (fallback) { sessionStorage.setItem('dnd_room', fallback); return JSON.parse(fallback); }
+                return {};
+            } catch(e) { return {}; }
+        })();
 
         // ===== SOCKET =====
         let socket = null;
@@ -348,11 +356,16 @@
             socket.on('connect', () => {
                 document.getElementById('connDot').classList.add('connected');
                 document.getElementById('connText').textContent = 'Connected to realm';
+                console.log('Socket connected, emitting rejoin with:', { username: user, code: roomData.code });
                 if (roomData.code) {
                     socket.emit('rejoin-room', { username: user, code: roomData.code });
                 }
             });
 
+            socket.on('rejoined', (room) => {
+                console.log('rejoined event received:', room);
+                // ... rest of your rejoined handler
+            });
             socket.on('disconnect', () => {
                 document.getElementById('connDot').classList.remove('connected');
                 document.getElementById('connText').textContent = 'Connection lost — reconnecting...';
