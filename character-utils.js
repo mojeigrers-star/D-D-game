@@ -75,14 +75,14 @@ const CHAR_UTILS_HAIR_OFFSETS = {
       mohawk:   { height: '80px', marginLeft: '-3px', bottom: '230px' },
       braided:  { height: '80px',  marginLeft: '0px',  bottom: '225px' },
       ponytail: { height: '100px', marginLeft: '3px',  bottom: '210px' },
-      long:     { height: '110px', marginLeft: '0px',  bottom: '205px' },
+      long:     { height: '150px', marginLeft: '-2px',  bottom: '185px' },
     },
     female: {
       short:    { height: '75px',  marginLeft: '-2px', bottom: '240px' },
       mohawk:   { height: '70px', marginLeft: '-3px', bottom: '238px' },
       braided:  { height: '70px',  marginLeft: '2px',  bottom: '230px' },
       ponytail: { height: '100px', marginLeft: '7px',  bottom: '210px' },
-      long:     { height: '110px', marginLeft: '0px',  bottom: '205px' },
+      long:     { height: '130px', marginLeft: '0px',  bottom: '197px' },
     },
   },
   small: {
@@ -91,14 +91,14 @@ const CHAR_UTILS_HAIR_OFFSETS = {
       mohawk:   { height: '60px', marginLeft: '-2px',  bottom: '170px' },
       braided:  { height: '60px', marginLeft: '0px',  bottom: '162px' },
       ponytail: { height: '70px', marginLeft: '1px',  bottom: '158px' },
-      long:     { height: '46px', marginLeft: '12px', bottom: '116px' },
+      long:     { height: '110px', marginLeft: '-2px', bottom: '135px' },
     },
     female: {
       short:    { height: '55px', marginLeft: '-2px', bottom: '175px' },
       mohawk:   { height: '55px', marginLeft: '-2px',  bottom: '172px' },
       braided:  { height: '55px', marginLeft: '2px',  bottom: '165px' },
       ponytail: { height: '70px', marginLeft: '5px',  bottom: '158px' },
-      long:     { height: '46px', marginLeft: '12px', bottom: '116px' },
+      long:     { height: '90px', marginLeft: '0px', bottom: '148px' },
     },
   },
 };
