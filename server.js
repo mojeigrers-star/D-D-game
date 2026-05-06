@@ -269,6 +269,32 @@ io.on('connection', (socket) => {
         socket.to(code).emit('party-chat', { username, message: safe, ts: Date.now() });
     });
 
+    // --- Intentional leave (leave button clicked) ---
+    socket.on('leave-room', () => {
+        const code = socket.data.roomCode;
+        const username = socket.data.username;
+        if (!code || !rooms[code]) return;
+
+        const room = rooms[code];
+        room.players = room.players.filter(p => p.username !== username);
+        if (room.readyPlayers) room.readyPlayers.delete(username);
+
+        if (room.players.length === 0) {
+            delete rooms[code];
+            console.log(`Room ${code} deleted (empty)`);
+        } else {
+            if (room.host === username) {
+                room.host = room.players[0].username;
+                io.to(code).emit('host-changed', { newHost: room.host });
+            }
+            io.to(code).emit('player-list-updated', safeRoomInfo(code));
+        }
+
+        socket.leave(code);
+        socket.data.roomCode = null;
+        console.log(`${username} intentionally left room ${code}`);
+    });
+
     // --- Disconnect ---
     socket.on('disconnect', () => {
         const code = socket.data.roomCode;
@@ -277,9 +303,37 @@ io.on('connection', (socket) => {
 
         const room = rooms[code];
 
-        // Don't remove players if the game has started — they're just navigating
+        // If game has started, mark the player as disconnected but keep them
+        // in the list with a short grace period — if they rejoin it cancels out.
+        // Either way, notify remaining players immediately.
         if (room.started) {
-            console.log(`${username} disconnected but game started — keeping room ${code}`);
+            // Mark socket as gone so rejoin can update it
+            const existing = room.players.find(p => p.username === username);
+            if (existing) existing.socketId = null;
+
+            // Tell everyone this player disconnected
+            io.to(code).emit('player-list-updated', safeRoomInfo(code));
+
+            // Give them 30 seconds to rejoin before removing them permanently
+            setTimeout(() => {
+                const r = rooms[code];
+                if (!r) return;
+                const p = r.players.find(p => p.username === username);
+                if (p && p.socketId === null) {
+                    // Still disconnected after grace period — remove them
+                    r.players = r.players.filter(p => p.username !== username);
+                    if (r.readyPlayers) r.readyPlayers.delete(username);
+                    if (r.players.length === 0) {
+                        delete rooms[code];
+                        console.log(`Room ${code} deleted (empty after grace period)`);
+                    } else {
+                        io.to(code).emit('player-list-updated', safeRoomInfo(code));
+                        console.log(`${username} permanently removed from room ${code} after grace period`);
+                    }
+                }
+            }, 30000);
+
+            console.log(`${username} disconnected from started room ${code} — grace period started`);
             return;
         }
 

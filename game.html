@@ -792,8 +792,23 @@ function initSliders() {
 
 // ===== LEAVE REALM =====
 function leaveRealm() {
+    // Disable the beforeunload warning so our own navigation works cleanly
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
     window.location.href = 'mode-select.html';
 }
+
+// ===== BACK BUTTON BLOCK =====
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', () => {
+    history.pushState(null, '', location.href);
+});
+
+// ===== LEAVE TAB WARNING =====
+function beforeUnloadHandler(e) {
+    e.preventDefault();
+    e.returnValue = '';
+}
+window.addEventListener('beforeunload', beforeUnloadHandler);
 </script>
 </body>
 </html>

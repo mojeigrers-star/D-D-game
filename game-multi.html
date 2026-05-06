@@ -380,9 +380,18 @@ function connectSocket() {
     });
 
     socket.on('player-list-updated', (room) => {
-        partyPlayers = room.players;
+        const newPlayers = room.players || [];
+
+        // Figure out who left or joined by comparing old list to new
+        if (partyPlayers.length > 0) {
+            const left = partyPlayers.filter(name => !newPlayers.includes(name));
+            left.forEach(name => addPartySysMsg(`${name} has left the realm.`));
+            const joined = newPlayers.filter(name => !partyPlayers.includes(name));
+            joined.forEach(name => addPartySysMsg(`${name} has joined the realm.`));
+        }
+
+        partyPlayers = newPlayers;
         renderPartyList(room);
-        addPartySysMsg(`Party updated — ${room.players.length} adventurer${room.players.length !== 1 ? 's' : ''} present`);
     });
 
     socket.on('map-seed', ({ seed }) => {
@@ -863,9 +872,26 @@ function initSliders() {
 }
 
 function leaveRealm() {
-    if (socket) socket.disconnect();
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
+    if (socket) {
+        socket.emit('leave-room');
+        socket.disconnect();
+    }
     window.location.href = 'mode-select.html';
 }
+
+// ===== BACK BUTTON BLOCK =====
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', () => {
+    history.pushState(null, '', location.href);
+});
+
+// ===== LEAVE TAB WARNING =====
+function beforeUnloadHandler(e) {
+    e.preventDefault();
+    e.returnValue = '';
+}
+window.addEventListener('beforeunload', beforeUnloadHandler);
 
 // ===== INIT =====
 window.onload = function() {
