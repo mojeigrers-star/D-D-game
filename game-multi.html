@@ -88,21 +88,37 @@
             display: flex; align-items: center; gap: 10px;
             padding: 10px; border-radius: 8px;
             border: 1px solid transparent; margin-bottom: 6px;
-            transition: border-color 0.2s, background 0.2s;
+            transition: border-color 0.3s, background 0.3s, opacity 0.3s;
         }
         .party-member.is-me { border-color: rgba(201,164,92,0.25); background: rgba(201,164,92,0.04); }
+        .party-member.offline {
+            opacity: 0.5;
+            border-color: rgba(90,32,32,0.3);
+            background: rgba(90,32,32,0.04);
+        }
         .party-member-avatar {
             width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
             background: linear-gradient(135deg, rgba(201,164,92,0.2), rgba(139,115,85,0.15));
             border: 1px solid rgba(61,47,31,0.8);
             display: flex; align-items: center; justify-content: center;
             font-family: 'Cinzel', serif; font-size: 15px; color: #c9a45c;
+            transition: filter 0.3s;
         }
+        .party-member.offline .party-member-avatar { filter: grayscale(0.7); }
         .party-member-info { flex: 1; min-width: 0; }
-        .party-member-name { color: #c9a45c; font-size: 12px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .party-member-name { color: #c9a45c; font-size: 12px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: color 0.3s; }
+        .party-member.offline .party-member-name { color: #5a4a3a; }
         .party-member-sub  { color: #5a4a3a; font-size: 10px; letter-spacing: 1px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .party-member.offline .party-member-sub { color: #3d2f1f; font-style: italic; }
         .party-member-you  { color: #8b7355; font-size: 9px; letter-spacing: 1px; border: 1px solid rgba(139,115,85,0.3); border-radius: 3px; padding: 1px 5px; flex-shrink: 0; }
-        .party-member-status { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #4caf50; }
+        .party-member-status {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+            background: #4caf50;
+            transition: background 0.3s;
+        }
+        .party-member-status.online  { background: #4caf50; }
+        .party-member-status.offline { background: #6a1a1a; box-shadow: 0 0 4px rgba(204,68,68,0.4); }
+        .party-member-status.grace   { background: #c9a45c; animation: blink-dot 1s infinite; }
 
         /* ===== PARTY CHAT ===== */
         .party-chat { flex-shrink: 0; border-top: 1px solid rgba(61,47,31,0.4); }
@@ -112,9 +128,11 @@
         .pchat-msg { font-size: 11px; line-height: 1.5; }
         .pchat-msg .who { color: #c9a45c; }
         .pchat-msg .txt { color: #8b7355; }
-        .pchat-msg.sys .txt { color: #3d2f1f; font-style: italic; }
-        .pchat-msg.left .txt { color: #c0392b; font-style: italic; }
-        .pchat-msg.joined .txt { color: #27ae60; font-style: italic; }
+        .pchat-msg.sys  .txt { color: #3d2f1f; font-style: italic; }
+        .pchat-msg.joined      .txt { color: #27ae60; font-style: italic; }
+        .pchat-msg.reconnected .txt { color: #2ecc71; font-style: italic; }
+        .pchat-msg.left        .txt { color: #c0392b; font-style: italic; }
+        .pchat-msg.disconnected .txt { color: #e67e22; font-style: italic; }
         .party-chat-row { display: flex; border-top: 1px solid rgba(61,47,31,0.4); }
         .party-chat-input {
             flex: 1; background: rgba(0,0,0,0.5); border: none; color: #c9a45c;
@@ -352,6 +370,14 @@ function toggleParty() {
 let socket = null;
 let partyPlayers = [];
 
+// Flag to prevent player-list-updated from firing change detection before
+// rejoined has seeded savedPartyMembers
+let partyInitialized = false;
+
+// savedPartyMembers: persists presence data across updates
+// { username: { online: bool, inRoom: bool } }
+let savedPartyMembers = {};
+
 function connectSocket() {
     socket = io({ transports: ['websocket', 'polling'] });
 
@@ -373,8 +399,25 @@ function connectSocket() {
     });
 
     socket.on('rejoined', (room) => {
-        partyPlayers = room.players;
+        const newPlayers    = room.players     || [];
+        const onlinePlayers = room.onlinePlayers || newPlayers;
+
+        // Seed savedPartyMembers from the rejoined roster
+        newPlayers.forEach(name => {
+            savedPartyMembers[name] = {
+                online: onlinePlayers.includes(name),
+                inRoom: true
+            };
+        });
+
+        partyPlayers = [...newPlayers];
+
+        // Mark as initialized BEFORE rendering so any queued player-list-updated
+        // that arrives after this point will correctly run change detection
+        partyInitialized = true;
+
         renderPartyList(room);
+
         if (room.mapSeed && !isHost) {
             mapData = generateMap(room.mapSeed);
             renderMap();
@@ -382,17 +425,58 @@ function connectSocket() {
     });
 
     socket.on('player-list-updated', (room) => {
-        const newPlayers = room.players || [];
+        // Ignore this event until rejoined has seeded savedPartyMembers —
+        // prevents all party members from falsely appearing as "returned to realm"
+        // on first load
+        if (!partyInitialized) return;
 
-        // Figure out who left or joined by comparing old list to new
-        if (partyPlayers.length > 0) {
-            const left = partyPlayers.filter(name => !newPlayers.includes(name));
-            left.forEach(name => addPartyEventMsg(`${name} has left the realm.`, 'left'));
-            const joined = newPlayers.filter(name => !partyPlayers.includes(name));
-            joined.forEach(name => addPartyEventMsg(`${name} has joined the realm.`, 'joined'));
-        }
+        const newPlayers    = room.players     || [];
+        const onlinePlayers = room.onlinePlayers || newPlayers;
 
-        partyPlayers = newPlayers;
+        // Players permanently removed (after grace period expired)
+        const permanently_left = Object.keys(savedPartyMembers).filter(
+            name => !newPlayers.includes(name) && savedPartyMembers[name].inRoom
+        );
+        permanently_left.forEach(name => {
+            addPartyEventMsg(`${name} has left the realm.`, 'left');
+            delete savedPartyMembers[name];
+        });
+
+        // Players newly joined
+        const joined = newPlayers.filter(name => !savedPartyMembers[name]);
+        joined.forEach(name => {
+            addPartyEventMsg(`${name} has joined the realm.`, 'joined');
+        });
+
+        // Players who went offline
+        const wentOffline = newPlayers.filter(name =>
+            !onlinePlayers.includes(name) &&
+            savedPartyMembers[name] &&
+            savedPartyMembers[name].online === true &&
+            name !== user
+        );
+        wentOffline.forEach(name => {
+            addPartyEventMsg(`${name} has disconnected. Awaiting their return...`, 'disconnected');
+        });
+
+        // Players who came back online
+        const cameOnline = onlinePlayers.filter(name =>
+            savedPartyMembers[name] &&
+            savedPartyMembers[name].online === false &&
+            name !== user
+        );
+        cameOnline.forEach(name => {
+            addPartyEventMsg(`${name} has returned to the realm.`, 'reconnected');
+        });
+
+        // Update saved state
+        newPlayers.forEach(name => {
+            if (!savedPartyMembers[name]) savedPartyMembers[name] = {};
+            savedPartyMembers[name].online = onlinePlayers.includes(name);
+            savedPartyMembers[name].inRoom = true;
+        });
+
+        partyPlayers = [...newPlayers];
         renderPartyList(room);
     });
 
@@ -412,18 +496,43 @@ function connectSocket() {
     });
 }
 
+// ===== RENDER PARTY LIST =====
 function renderPartyList(room) {
-    const list = document.getElementById('partyMemberList');
-    list.innerHTML = '';
-    const players = room.players || [];
-    document.getElementById('partyHeaderSub').textContent =
-        `${players.length} adventurer${players.length !== 1 ? 's' : ''} — Code: ${room.code || '????'}`;
+    const list          = document.getElementById('partyMemberList');
+    const onlinePlayers = room.onlinePlayers || room.players || [];
+    const allPlayers    = room.players || [];
 
-    players.forEach(name => {
-        const isMe = name === user;
+    // Deduplicated list: current room players + any still tracked in savedPartyMembers
+    const allKnown = [...new Set([
+        ...allPlayers,
+        ...Object.keys(savedPartyMembers).filter(n => savedPartyMembers[n].inRoom)
+    ])];
+
+    const onlineCount = onlinePlayers.length;
+    const totalCount  = allKnown.length;
+
+    document.getElementById('partyHeaderSub').textContent =
+        `${onlineCount}/${totalCount} online — Code: ${room.code || '????'}`;
+
+    list.innerHTML = '';
+
+    allKnown.forEach(name => {
+        const isMe     = name === user;
+        const isOnline = onlinePlayers.includes(name);
+        const inRoom   = allPlayers.includes(name);
+
         const row = document.createElement('div');
-        row.className = 'party-member' + (isMe ? ' is-me' : '');
-        const subtitle = isMe ? `${cap(character.race)} ${cap(character.class)}` : 'Adventurer';
+        const offlineClass = (!isOnline && inRoom) ? ' offline' : '';
+        row.className = 'party-member' + (isMe ? ' is-me' : '') + offlineClass;
+
+        const subtitle = isMe
+            ? `${cap(character.race)} ${cap(character.class)}`
+            : (isOnline ? 'Adventurer' : 'Disconnected...');
+
+        let statusClass = 'online';
+        if (!isOnline && inRoom)  statusClass = 'grace';
+        if (!isOnline && !inRoom) statusClass = 'offline';
+
         row.innerHTML = `
             <div class="party-member-avatar">${name.charAt(0).toUpperCase()}</div>
             <div class="party-member-info">
@@ -431,12 +540,12 @@ function renderPartyList(room) {
                 <div class="party-member-sub">${subtitle}</div>
             </div>
             ${isMe ? '<div class="party-member-you">you</div>' : ''}
-            <div class="party-member-status"></div>
+            <div class="party-member-status ${statusClass}"></div>
         `;
         list.appendChild(row);
     });
 
-    if (players.length === 0) {
+    if (allKnown.length === 0) {
         list.innerHTML = '<div style="color:#3d2f1f;font-size:11px;text-align:center;padding:20px;letter-spacing:1px;">No adventurers found</div>';
     }
 }
@@ -882,11 +991,21 @@ function initSliders() {
     document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
 }
 
+// ===== LEAVE REALM =====
+// BUG FIX: Previously called socket.disconnect() immediately after emit('leave-room'),
+// which fired the server's disconnect handler on top of leave-room — causing a double
+// removal that bypassed the grace period. Now we emit leave-room and call socket.off()
+// to strip listeners before navigation, letting the server's leave-room handler manage
+// the grace period so the player can rejoin the started game from the lobby.
 function leaveRealm() {
     window.removeEventListener('beforeunload', beforeUnloadHandler);
     if (socket) {
         socket.emit('leave-room');
-        socket.disconnect();
+        // Do NOT call socket.disconnect() here — the server's leave-room handler
+        // now manages the 30-second grace period for started games. Disconnecting
+        // immediately would also fire the disconnect handler and double-process
+        // the departure, skipping the grace period entirely.
+        socket.off(); // detach all listeners so no stale events fire after navigation
     }
     window.location.href = 'mode-select.html';
 }

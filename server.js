@@ -78,9 +78,6 @@ const rooms = {};
 
 // ===== SESSIONS (in-memory) =====
 // sessions[username] = { code, host }
-// Stored when a player successfully joins or hosts; cleared on intentional leave.
-// Allows "Rejoin Last Session" without a database.
-
 const sessions = {};
 
 function generateCode() {
@@ -90,6 +87,7 @@ function generateCode() {
     return code;
 }
 
+// Includes onlinePlayers (those with active socketId)
 function safeRoomInfo(code) {
     const r = rooms[code];
     if (!r) return null;
@@ -97,6 +95,7 @@ function safeRoomInfo(code) {
         code,
         host: r.host,
         players: r.players.map(p => p.username),
+        onlinePlayers: r.players.filter(p => p.socketId !== null).map(p => p.username),
         started: r.started,
         maxPlayers: r.maxPlayers
     };
@@ -128,31 +127,32 @@ io.on('connection', (socket) => {
         socket.data.roomCode = code;
         socket.data.username = username;
 
-        // Save session for the host
         sessions[username] = { code, host: username };
 
         socket.emit('room-created', safeRoomInfo(code));
         console.log(`Room ${code} created by ${username}`);
     });
 
-    // --- JOIN REQUEST: joiner asks host for entry (replaces instant join-room) ---
+    // --- JOIN REQUEST ---
     socket.on('join-room', ({ username, code }) => {
         const room = rooms[code];
 
         if (!room)
             return socket.emit('join-error', 'Room not found. Check the code and try again.');
 
-        // If the game has started, only allow back in if they have a saved session for this room
         if (room.started) {
+            // Check room.players AND sessions so rejoining after
+            // a grace-period purge (or server session loss) still works
             const session = sessions[username];
-            const wasInRoom = room.players.find(p => p.username === username)
-                           || (session && session.code === code);
+            const wasInRoom = room.players.find(p => p.username === username) ||
+                              (session && session.code === code);
+
             if (wasInRoom) {
-                // Treat this as a rejoin — promote directly without host approval
-                const existing = room.players.find(p => p.username === username);
+                let existing = room.players.find(p => p.username === username);
                 if (existing) {
                     existing.socketId = socket.id;
                 } else {
+                    // Re-add player if they were purged after grace period
                     room.players.push({ username, socketId: socket.id });
                 }
                 socket.join(code);
@@ -170,6 +170,7 @@ io.on('connection', (socket) => {
                 console.log(`${username} auto-rejoined started room ${code} via join-room`);
                 return;
             }
+
             return socket.emit('join-error', 'This realm has already begun its quest.');
         }
 
@@ -180,15 +181,12 @@ io.on('connection', (socket) => {
         if (room.banned && room.banned.has(username))
             return socket.emit('join-error', 'You are Banished from this Realm.');
 
-        // Queue a pending request
         room.pendingRequests[username] = socket.id;
         socket.data.pendingCode = code;
         socket.data.username = username;
 
-        // Tell the joiner to wait
         socket.emit('join-pending', { code });
 
-        // Tell the host someone is knocking
         const hostPlayer = room.players.find(p => p.username === room.host);
         if (hostPlayer && hostPlayer.socketId) {
             io.to(hostPlayer.socketId).emit('join-request', { username, code });
@@ -207,10 +205,8 @@ io.on('connection', (socket) => {
         if (!joinerSocketId) return;
 
         delete room.pendingRequests[username];
-        // Reset deny count on successful join
         if (room.denyCounts) room.denyCounts[username] = 0;
 
-        // Check capacity again (race condition guard)
         if (room.players.length >= room.maxPlayers) {
             io.to(joinerSocketId).emit('join-error', 'The realm filled while you were waiting.');
             return;
@@ -225,7 +221,6 @@ io.on('connection', (socket) => {
             joinerSocket.data.username = username;
         }
 
-        // Save session for the joiner
         sessions[username] = { code, host: room.host };
 
         io.to(joinerSocketId).emit('room-joined', safeRoomInfo(code));
@@ -250,7 +245,6 @@ io.on('connection', (socket) => {
         const count = room.denyCounts[username];
 
         if (count >= 3) {
-            // Banish after 3 consecutive denials
             if (!room.banned) room.banned = new Set();
             room.banned.add(username);
             io.to(joinerSocketId).emit('join-denied', {
@@ -285,7 +279,6 @@ io.on('connection', (socket) => {
         socket.data.roomCode = code;
         socket.data.username = username;
 
-        // Refresh session
         sessions[username] = { code, host: room.host };
 
         const readyList = Array.from(room.readyPlayers || []);
@@ -348,7 +341,6 @@ io.on('connection', (socket) => {
         room.players = room.players.filter(p => p.username !== targetUsername);
         if (room.readyPlayers) room.readyPlayers.delete(targetUsername);
 
-        // Clear their session so rejoin doesn't bring them back
         delete sessions[targetUsername];
 
         io.to(target.socketId).emit('kicked', { reason: 'The Host has removed you from the realm.' });
@@ -369,7 +361,7 @@ io.on('connection', (socket) => {
         console.log(`Room ${code} game started`);
     });
 
-    // --- HOST: broadcast map seed to all players ---
+    // --- HOST: broadcast map seed ---
     socket.on('map-seed', ({ seed }) => {
         const code = socket.data.roomCode;
         const room = rooms[code];
@@ -397,17 +389,53 @@ io.on('connection', (socket) => {
         socket.to(code).emit('party-chat', { username, message: safe, ts: Date.now() });
     });
 
-    // --- Intentional leave (leave button clicked) ---
+    // --- Intentional leave ---
     socket.on('leave-room', () => {
         const code = socket.data.roomCode;
         const username = socket.data.username;
         if (!code || !rooms[code]) return;
 
         const room = rooms[code];
+
+        // ===== BUG FIX: if the game has already started, treat a voluntary
+        // leave the same as a network disconnect — apply a 30-second grace
+        // period so the player can navigate back to the lobby and rejoin.
+        // Previously this handler always did a permanent removal, which
+        // deleted the session and made it impossible to rejoin a started game.
+        if (room.started) {
+            const existing = room.players.find(p => p.username === username);
+            if (existing) existing.socketId = null;
+
+            io.to(code).emit('player-list-updated', safeRoomInfo(code));
+            socket.leave(code);
+            socket.data.roomCode = null;
+            console.log(`${username} left started room ${code} — grace period started`);
+
+            setTimeout(() => {
+                const r = rooms[code];
+                if (!r) return;
+                const p = r.players.find(p => p.username === username);
+                if (p && p.socketId === null) {
+                    r.players = r.players.filter(p => p.username !== username);
+                    if (r.readyPlayers) r.readyPlayers.delete(username);
+                    delete sessions[username];
+                    if (r.players.length === 0) {
+                        delete rooms[code];
+                        console.log(`Room ${code} deleted (empty after leave grace period)`);
+                    } else {
+                        io.to(code).emit('player-list-updated', safeRoomInfo(code));
+                        console.log(`${username} permanently removed from room ${code} after leave grace period`);
+                    }
+                }
+            }, 30000);
+
+            return;
+        }
+        // ===== END BUG FIX =====
+
         room.players = room.players.filter(p => p.username !== username);
         if (room.readyPlayers) room.readyPlayers.delete(username);
 
-        // Clear session on intentional leave
         delete sessions[username];
 
         if (room.players.length === 0) {
@@ -431,7 +459,6 @@ io.on('connection', (socket) => {
         const code = socket.data.roomCode;
         const username = socket.data.username;
 
-        // Clean up any pending join request if the joiner disconnects while waiting
         if (socket.data.pendingCode && !code) {
             const pendingRoom = rooms[socket.data.pendingCode];
             if (pendingRoom && pendingRoom.pendingRequests[username]) {
@@ -447,8 +474,10 @@ io.on('connection', (socket) => {
 
         if (room.started) {
             const existing = room.players.find(p => p.username === username);
+            // Mark as offline (null socketId) but keep in player list during grace period
             if (existing) existing.socketId = null;
 
+            // Emit update so clients see the player as offline
             io.to(code).emit('player-list-updated', safeRoomInfo(code));
 
             setTimeout(() => {

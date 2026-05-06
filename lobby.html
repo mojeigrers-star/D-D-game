@@ -142,6 +142,7 @@
         .chat-msg .who  { color: #c9a45c; }
         .chat-msg .text { color: #8b7355; }
         .chat-msg.system .text { color: #5a4a3a; font-style: italic; }
+        /* ===== GREEN join messages ===== */
         .chat-msg.joined .text { color: #27ae60; font-style: italic; }
         .chat-msg.left   .text { color: #c0392b; font-style: italic; }
 
@@ -212,13 +213,13 @@
         .code-input:focus { outline: none; border-color: #c9a45c; box-shadow: 0 0 15px rgba(201,164,92,0.25); }
         .code-input::placeholder { color: #3d2f1f; letter-spacing: 4px; font-size: 24px; }
 
-        /* ===== JOIN REQUEST STACK (host-only, only visible when requests exist) ===== */
+        /* ===== JOIN REQUEST STACK ===== */
         .request-stack {
             position: fixed;
             top: 30px;
             right: 30px;
             z-index: 9999;
-            display: none;             /* hidden until first request arrives */
+            display: none;
             flex-direction: column;
             gap: 10px;
             min-width: 300px;
@@ -325,6 +326,73 @@
             letter-spacing: 2px; padding: 10px 24px; cursor: pointer; transition: all 0.2s;
         }
         .waiting-cancel-btn:hover { border-color: #cc4444; color: #cc4444; }
+
+        /* ===== RECONNECTING OVERLAY (rejoin path) ===== */
+        .reconnecting-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 8500;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .reconnecting-overlay.show { display: flex; }
+        .reconnecting-box {
+            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
+            border: 2px solid #c9a45c;
+            border-radius: 16px;
+            padding: 52px 60px;
+            text-align: center;
+            max-width: 440px;
+            box-shadow: 0 0 40px rgba(201,164,92,0.2);
+        }
+        .reconnecting-icon {
+            font-size: 60px;
+            margin-bottom: 18px;
+            display: block;
+            animation: spin-slow 3s linear infinite;
+        }
+        @keyframes spin-slow {
+            0%   { transform: rotate(0deg);   }
+            100% { transform: rotate(360deg); }
+        }
+        .reconnecting-title {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 18px rgba(201,164,92,0.6);
+        }
+        .reconnecting-sub {
+            color: #8b7355;
+            font-size: 13px;
+            letter-spacing: 1px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .reconnecting-code {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 28px;
+            color: #c9a45c44;
+            letter-spacing: 8px;
+            margin-bottom: 4px;
+        }
+        .reconnecting-dots {
+            color: #c9a45c;
+            font-size: 20px;
+            letter-spacing: 6px;
+            animation: pulse 1.2s ease-in-out infinite;
+            margin-top: 10px;
+        }
+        .reconnecting-cancel-btn {
+            margin-top: 24px;
+            background: none; border: 1px solid #5a2020; border-radius: 8px;
+            color: #8b4040; font-family: 'Cinzel', serif; font-size: 12px;
+            letter-spacing: 2px; padding: 10px 24px; cursor: pointer; transition: all 0.2s;
+        }
+        .reconnecting-cancel-btn:hover { border-color: #cc4444; color: #cc4444; }
 
         /* ===== BANISHMENT SCREEN ===== */
         .banished-overlay {
@@ -485,7 +553,7 @@
     </div>
 </div>
 
-<!-- HOST: Join request stack — rendered dynamically, hidden when empty -->
+<!-- HOST: Join request stack -->
 <div class="request-stack" id="requestStack"></div>
 
 <!-- JOINER: Waiting for host approval -->
@@ -496,6 +564,18 @@
         <div class="waiting-overlay-sub">The gatekeeper has been notified of your arrival.<br>Please stand by, adventurer.</div>
         <div class="waiting-overlay-dots">&#9830; &#9830; &#9830;</div>
         <button class="waiting-cancel-btn" onclick="cancelWaiting()">&#8592; Withdraw Request</button>
+    </div>
+</div>
+
+<!-- ===== RECONNECTING OVERLAY (shown immediately when rejoin param detected) ===== -->
+<div class="reconnecting-overlay" id="reconnectingOverlay">
+    <div class="reconnecting-box">
+        <span class="reconnecting-icon">&#9967;</span>
+        <div class="reconnecting-title">Returning to the Realm</div>
+        <div class="reconnecting-sub">Locating your party and restoring your connection...</div>
+        <div class="reconnecting-code" id="reconnectingCode"></div>
+        <div class="reconnecting-dots">&#9830; &#9830; &#9830;</div>
+        <button class="reconnecting-cancel-btn" onclick="cancelReconnecting()">&#8592; Return to Crossroads</button>
     </div>
 </div>
 
@@ -537,7 +617,6 @@ let myRoom = null;
 let socket = null;
 let knownPlayers = [];
 
-// Active join requests (host side) — array of usernames, rendered as stacked cards
 const activeRequests = [];
 
 if (!username) { window.location.href = 'index.html'; }
@@ -554,12 +633,31 @@ if (action === 'host') {
     document.getElementById('entryTitle').innerHTML    = rejoinCode
         ? '&#9873; Rejoining Your Realm'
         : '&#9873; Enter an Existing Realm';
-    // Auto-fill and auto-submit if this is a rejoin
+
+    // ===== REJOIN: hide entry form immediately, show reconnecting overlay =====
     if (rejoinCode) {
         document.getElementById('joinCodeInput').value = rejoinCode;
-        // Fire after socket is ready
-        window.addEventListener('load', () => setTimeout(doJoin, 300));
+        document.getElementById('entryWrapper').style.display = 'none';
+        showReconnectingOverlay(rejoinCode);
+        // Auto-connect after a brief tick so the overlay renders first
+        setTimeout(doJoin, 200);
     }
+}
+
+// ===== RECONNECTING OVERLAY HELPERS =====
+function showReconnectingOverlay(code) {
+    document.getElementById('reconnectingCode').textContent = code || '';
+    document.getElementById('reconnectingOverlay').classList.add('show');
+}
+
+function hideReconnectingOverlay() {
+    document.getElementById('reconnectingOverlay').classList.remove('show');
+}
+
+function cancelReconnecting() {
+    hideReconnectingOverlay();
+    if (socket) { socket.disconnect(); socket = null; }
+    window.location.href = 'mode-select.html';
 }
 
 // ===== SOCKET =====
@@ -577,14 +675,14 @@ function connectSocket() {
         addSystemMsg(`Your realm is open. Code: ${room.code}`);
     });
 
-    // Rejoining a room that already started — go straight to the game
+    // ===== REJOIN: if game already started, go STRAIGHT to game-multi — no delay =====
     socket.on('rejoined', (room) => {
         if (room.started) {
+            hideReconnectingOverlay();
             sessionStorage.setItem('dnd_room', JSON.stringify(room));
-            showNotif('Rejoining your realm...');
-            setTimeout(() => window.location.href = 'character-multi.html', 1200);
+            window.location.href = 'character-multi.html';
         }
-        // If not started (lobby rejoin), fall through to normal lobby display
+        // If not started yet, fall through to normal lobby display
     });
 
     socket.on('room-joined', (room) => {
@@ -592,21 +690,24 @@ function connectSocket() {
         isHost = false;
         knownPlayers = [...room.players];
         hideWaitingOverlay();
+        hideReconnectingOverlay();
         showLobby(room);
-        addSystemMsg(`You have joined the realm of ${room.host}.`);
+        // ===== GREEN: "you joined" message uses joined class =====
+        addEventMsg(`You have entered the realm of ${room.host}.`, 'joined');
     });
 
     socket.on('join-error', (msg) => {
         hideWaitingOverlay();
+        hideReconnectingOverlay();
+        document.getElementById('entryWrapper').style.display = 'block';
         showNotif(msg, true);
     });
 
-    // Joiner: request sent, now waiting for host
     socket.on('join-pending', ({ code }) => {
+        hideReconnectingOverlay();
         showWaitingOverlay(code);
     });
 
-    // Host: someone is knocking — add to stack immediately
     socket.on('join-request', ({ username: requester }) => {
         if (!isHost) return;
         if (!activeRequests.includes(requester)) {
@@ -616,14 +717,13 @@ function connectSocket() {
         addSystemMsg(`&#9873; ${requester} is requesting entry to the realm.`);
     });
 
-    // Joiner: host denied entry
     socket.on('join-denied', ({ message, banished }) => {
         hideWaitingOverlay();
+        hideReconnectingOverlay();
         if (banished) {
             showBanishedOverlay();
         } else {
             showNotif(message, true);
-            // Re-enable the join button so they can try again
             setTimeout(() => {
                 const entryWrapper = document.getElementById('entryWrapper');
                 if (entryWrapper) entryWrapper.style.display = 'block';
@@ -637,6 +737,7 @@ function connectSocket() {
         const joined = newPlayers.filter(name => !knownPlayers.includes(name));
         joined.forEach(name => {
             if (name === username) return;
+            // ===== GREEN: others joining in lobby =====
             addEventMsg(`${name} has joined the realm.`, 'joined');
         });
 
@@ -690,7 +791,12 @@ function doHost() {
 
 function doJoin() {
     const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-    if (code.length !== 4) { showNotif('Please enter the full 4-letter realm code.', true); return; }
+    if (code.length !== 4) {
+        hideReconnectingOverlay();
+        showNotif('Please enter the full 4-letter realm code.', true);
+        document.getElementById('entryWrapper').style.display = 'block';
+        return;
+    }
     connectSocket();
     socket.emit('join-room', { username, code });
 }
@@ -721,7 +827,6 @@ function copyCode() {
 
 function leaveRoom() {
     if (socket) socket.disconnect();
-    // Clear session on intentional leave
     localStorage.removeItem('dnd_session');
     window.location.href = 'mode-select.html';
 }
@@ -729,9 +834,7 @@ function leaveRoom() {
 function goBack() { window.location.href = 'mode-select.html'; }
 
 // ===== HOST REQUEST STACK =====
-
 function renderRequestStack() {
-    // Only the host ever calls this; non-hosts never have activeRequests
     const stack = document.getElementById('requestStack');
     stack.innerHTML = '';
     if (activeRequests.length === 0) {
@@ -760,7 +863,6 @@ function respondToRequest(requester, accepted) {
     const idx = activeRequests.indexOf(requester);
     if (idx !== -1) activeRequests.splice(idx, 1);
     renderRequestStack();
-
     if (accepted) {
         socket.emit('accept-request', { username: requester });
     } else {
@@ -779,11 +881,7 @@ function hideWaitingOverlay() {
 
 function cancelWaiting() {
     hideWaitingOverlay();
-    if (socket) {
-        socket.disconnect();
-        socket = null;
-    }
-    // Go back to entry screen
+    if (socket) { socket.disconnect(); socket = null; }
     document.getElementById('entryWrapper').style.display = 'block';
 }
 
@@ -813,7 +911,6 @@ function showLobby(room) {
     renderPlayers(room);
     updateStatus(room);
 
-    // Save session to localStorage for rejoin
     localStorage.setItem('dnd_session', JSON.stringify({ code: room.code, host: room.host }));
 }
 
