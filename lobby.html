@@ -6,12 +6,9 @@
     <title>The Gathering Hall - D&D Realm</title>
     <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-
-    <!-- Socket.io client — loaded from CDN so it always matches the server version -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <style>
-        /* ===== PAGE SHELL ===== */
         body {
             background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d1b2a 100%);
             min-height: 100vh;
@@ -26,12 +23,7 @@
             padding: 40px 20px;
         }
 
-        /* ===== HEADER ===== */
-        .lobby-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
+        .lobby-header { text-align: center; margin-bottom: 32px; }
         .lobby-header .dnd-icon { font-size: 52px; display: block; margin-bottom: 6px; }
         .lobby-header h1 {
             font-family: 'Uncial Antiqua', cursive;
@@ -43,7 +35,6 @@
         }
         .lobby-header p { color: #8b7355; font-size: 13px; letter-spacing: 2px; font-style: italic; }
 
-        /* ===== PANELS ===== */
         .lobby-grid {
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -71,17 +62,12 @@
             text-shadow: 0 0 12px rgba(201,164,92,0.4);
         }
 
-        /* Corner decorations reused from styles.css */
         .corner-decoration { position: absolute; width: 40px; height: 40px; border: 2px solid #c9a45c; opacity: 0.3; }
         .corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
         .corner-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
         .corner-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
         .corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
 
-        /* ===== ENTRY SCREEN (host vs join choice rendered by JS) ===== */
-        #entryScreen { display: flex; flex-direction: column; gap: 12px; }
-
-        /* ===== ROOM CODE DISPLAY ===== */
         .room-code-box {
             background: rgba(0,0,0,0.45);
             border: 2px solid #c9a45c;
@@ -90,15 +76,7 @@
             text-align: center;
             margin-bottom: 18px;
         }
-
-        .room-code-label {
-            color: #8b7355;
-            font-size: 11px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
+        .room-code-label { color: #8b7355; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
         .room-code-value {
             font-family: 'Uncial Antiqua', cursive;
             font-size: 52px;
@@ -107,285 +85,297 @@
             text-shadow: 0 0 25px rgba(201,164,92,0.6);
             line-height: 1;
         }
-
-        .room-code-hint {
-            color: #5a4a3a;
-            font-size: 11px;
-            letter-spacing: 1px;
-            margin-top: 10px;
-        }
-
+        .room-code-hint { color: #5a4a3a; font-size: 11px; letter-spacing: 1px; margin-top: 10px; }
         .copy-btn {
-            background: none;
-            border: 1px solid #3d2f1f;
-            border-radius: 6px;
-            color: #8b7355;
-            font-family: 'Cinzel', serif;
-            font-size: 11px;
-            letter-spacing: 1px;
-            padding: 6px 14px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.2s;
+            background: none; border: 1px solid #3d2f1f; border-radius: 6px;
+            color: #8b7355; font-family: 'Cinzel', serif; font-size: 11px;
+            letter-spacing: 1px; padding: 6px 14px; cursor: pointer; margin-top: 10px; transition: all 0.2s;
         }
         .copy-btn:hover { border-color: #c9a45c; color: #c9a45c; }
 
-        /* ===== PLAYERS LIST ===== */
         .player-list { display: flex; flex-direction: column; gap: 10px; min-height: 80px; }
-
         .player-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #3d2f1f;
-            border-radius: 8px;
-            padding: 10px 14px;
-            transition: border-color 0.2s;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f;
+            border-radius: 8px; padding: 10px 14px; transition: border-color 0.2s;
         }
-
         .player-row.is-host { border-color: #c9a45c; background: rgba(201,164,92,0.05); }
-
         .player-avatar {
             width: 36px; height: 36px;
             background: linear-gradient(135deg, #c9a45c22, #8b735522);
-            border: 1px solid #3d2f1f;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
+            border: 1px solid #3d2f1f; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
         }
-
         .player-name { flex: 1; color: #c9a45c; font-size: 14px; letter-spacing: 1px; }
         .player-host-badge {
-            font-size: 10px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #c9a45c;
-            border: 1px solid #c9a45c44;
-            border-radius: 4px;
-            padding: 2px 8px;
+            font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+            color: #c9a45c; border: 1px solid #c9a45c44; border-radius: 4px; padding: 2px 8px;
         }
-
         .kick-btn {
-            background: none;
-            border: 1px solid #5a2020;
-            border-radius: 5px;
-            color: #a04040;
-            font-family: 'Cinzel', serif;
-            font-size: 10px;
-            letter-spacing: 1px;
-            padding: 3px 10px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: none; border: 1px solid #5a2020; border-radius: 5px;
+            color: #a04040; font-family: 'Cinzel', serif; font-size: 10px;
+            letter-spacing: 1px; padding: 3px 10px; cursor: pointer; transition: all 0.2s;
         }
         .kick-btn:hover { border-color: #cc4444; color: #cc4444; }
-
         .empty-slot {
-            border: 2px dashed #2a1f0f;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            color: #3d2f1f;
-            font-size: 12px;
-            letter-spacing: 1px;
+            border: 2px dashed #2a1f0f; border-radius: 8px; padding: 10px;
+            text-align: center; color: #3d2f1f; font-size: 12px; letter-spacing: 1px;
         }
 
-        /* ===== WAITING SPINNER ===== */
         .waiting-text {
-            text-align: center;
-            color: #8b7355;
-            font-size: 12px;
-            letter-spacing: 2px;
-            margin-top: 16px;
-            animation: pulse 2s ease-in-out infinite;
+            text-align: center; color: #8b7355; font-size: 12px;
+            letter-spacing: 2px; margin-top: 16px; animation: pulse 2s ease-in-out infinite;
         }
-
-        /* ===== CHAT ===== */
-        .chat-panel { display: flex; flex-direction: column; height: 100%; }
 
         .chat-messages {
-            flex: 1;
-            min-height: 200px;
-            max-height: 320px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.35);
-            border: 1px solid #3d2f1f;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            scroll-behavior: smooth;
+            flex: 1; min-height: 200px; max-height: 320px; overflow-y: auto;
+            background: rgba(0,0,0,0.35); border: 1px solid #3d2f1f;
+            border-radius: 8px; padding: 12px; margin-bottom: 12px;
+            display: flex; flex-direction: column; gap: 6px; scroll-behavior: smooth;
         }
-
         .chat-messages::-webkit-scrollbar { width: 6px; }
         .chat-messages::-webkit-scrollbar-track { background: transparent; }
         .chat-messages::-webkit-scrollbar-thumb { background: #3d2f1f; border-radius: 3px; }
 
         .chat-msg { font-size: 12px; line-height: 1.6; }
-        .chat-msg .who { color: #c9a45c; }
+        .chat-msg .who  { color: #c9a45c; }
         .chat-msg .text { color: #8b7355; }
         .chat-msg.system .text { color: #5a4a3a; font-style: italic; }
+        .chat-msg.joined .text { color: #27ae60; font-style: italic; }
+        .chat-msg.left   .text { color: #c0392b; font-style: italic; }
 
         .chat-input-row { display: flex; gap: 8px; }
         .chat-input-row input {
-            flex: 1;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid #3d2f1f;
-            border-radius: 6px;
-            color: #c9a45c;
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            padding: 10px 12px;
-            transition: border-color 0.2s;
+            flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #3d2f1f;
+            border-radius: 6px; color: #c9a45c; font-family: 'Cinzel', serif;
+            font-size: 13px; padding: 10px 12px; transition: border-color 0.2s;
         }
         .chat-input-row input:focus { outline: none; border-color: #c9a45c; }
         .chat-input-row input::placeholder { color: #3d2f1f; }
-
         .chat-send-btn {
-            padding: 10px 16px;
-            background: rgba(201,164,92,0.1);
-            border: 1px solid #8b7355;
-            border-radius: 6px;
-            color: #c9a45c;
-            font-family: 'Cinzel', serif;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
+            padding: 10px 16px; background: rgba(201,164,92,0.1);
+            border: 1px solid #8b7355; border-radius: 6px; color: #c9a45c;
+            font-family: 'Cinzel', serif; font-size: 12px; cursor: pointer; transition: all 0.2s;
         }
         .chat-send-btn:hover { background: rgba(201,164,92,0.2); }
 
-        /* ===== STATUS BADGE ===== */
         .status-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid #3d2f1f;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            font-size: 12px;
-            color: #8b7355;
-            letter-spacing: 1px;
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0,0,0,0.3); border: 1px solid #3d2f1f;
+            border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;
+            font-size: 12px; color: #8b7355; letter-spacing: 1px;
         }
-
         .status-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: #c9a45c;
-            animation: pulse-dot 2s ease-in-out infinite;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #c9a45c; animation: pulse-dot 2s ease-in-out infinite;
         }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
+            50%       { opacity: 0.4; transform: scale(0.8); }
         }
 
-        /* ===== BUTTONS ===== */
         .start-btn {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, #c9a45c, #8b7355);
-            border: none;
-            border-radius: 8px;
-            color: #1a0a2e;
-            font-family: 'Cinzel', serif;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 16px;
-            position: relative;
-            overflow: hidden;
+            border: none; border-radius: 8px; color: #1a0a2e;
+            font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+            transition: all 0.3s; margin-top: 16px; position: relative; overflow: hidden;
         }
         .start-btn::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
+            content: ''; position: absolute; top: 0; left: -100%;
             width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
             transition: left 0.5s;
         }
         .start-btn:hover::before { left: 100%; }
         .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(201,164,92,0.4); }
-        .start-btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+        .start-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
         .start-btn:disabled::before { display: none; }
 
         .leave-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 11px;
-            background: none;
-            border: 1px solid #5a2020;
-            border-radius: 8px;
-            color: #8b4040;
-            font-family: 'Cinzel', serif;
-            font-size: 13px;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
+            width: 100%; margin-top: 10px; padding: 11px;
+            background: none; border: 1px solid #5a2020; border-radius: 8px;
+            color: #8b4040; font-family: 'Cinzel', serif; font-size: 13px;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
         }
         .leave-btn:hover { border-color: #cc4444; color: #cc4444; }
 
-        /* ===== JOIN CODE INPUT ===== */
         .code-input {
-            width: 100%;
-            text-align: center;
-            font-family: 'Uncial Antiqua', cursive;
-            font-size: 32px;
-            letter-spacing: 8px;
-            text-transform: uppercase;
-            background: rgba(0,0,0,0.5);
-            border: 2px solid #3d2f1f;
-            border-radius: 8px;
-            color: #c9a45c;
-            padding: 16px;
-            margin-bottom: 16px;
+            width: 100%; text-align: center; font-family: 'Uncial Antiqua', cursive;
+            font-size: 32px; letter-spacing: 8px; text-transform: uppercase;
+            background: rgba(0,0,0,0.5); border: 2px solid #3d2f1f;
+            border-radius: 8px; color: #c9a45c; padding: 16px; margin-bottom: 16px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .code-input:focus {
-            outline: none;
-            border-color: #c9a45c;
-            box-shadow: 0 0 15px rgba(201,164,92,0.25);
-        }
+        .code-input:focus { outline: none; border-color: #c9a45c; box-shadow: 0 0 15px rgba(201,164,92,0.25); }
         .code-input::placeholder { color: #3d2f1f; letter-spacing: 4px; font-size: 24px; }
 
-        /* ===== NOTIFICATION ===== */
-        .notif {
+        /* ===== JOIN REQUEST STACK (host-only, only visible when requests exist) ===== */
+        .request-stack {
             position: fixed;
-            bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(13,13,26,0.97);
-            border: 1px solid #c9a45c;
-            border-radius: 10px;
-            padding: 14px 24px;
+            top: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: none;             /* hidden until first request arrives */
+            flex-direction: column;
+            gap: 10px;
+            min-width: 300px;
+            max-width: 340px;
+        }
+        .request-stack.has-requests { display: flex; }
+
+        .request-card {
+            background: linear-gradient(145deg, rgba(20,10,38,0.98), rgba(10,20,35,0.98));
+            border: 2px solid #c9a45c;
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 0 24px rgba(201,164,92,0.3);
+            animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(360px); opacity: 0; }
+            to   { transform: translateX(0);     opacity: 1; }
+        }
+        .request-card-title {
+            font-family: 'Uncial Antiqua', cursive;
             color: #c9a45c;
             font-size: 13px;
-            letter-spacing: 1px;
-            z-index: 9999;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            max-width: 380px;
-            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
         }
-        .notif.show { transform: translateX(-50%) translateY(0); }
+        .request-card-name {
+            color: #fff;
+            font-size: 17px;
+            font-family: 'Cinzel', serif;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .request-card-desc {
+            color: #8b7355;
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .request-card-btns { display: flex; gap: 8px; }
+        .toast-accept-btn {
+            flex: 1; padding: 9px;
+            background: linear-gradient(135deg, #2d6a2d, #1a4a1a);
+            border: 1px solid #4caf50; border-radius: 7px;
+            color: #7fde7f; font-family: 'Cinzel', serif; font-size: 11px;
+            letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+        }
+        .toast-accept-btn:hover { background: linear-gradient(135deg, #3a8a3a, #256025); box-shadow: 0 0 10px rgba(76,175,80,0.4); }
+        .toast-deny-btn {
+            flex: 1; padding: 9px;
+            background: linear-gradient(135deg, #6a1a1a, #4a0f0f);
+            border: 1px solid #cc4444; border-radius: 7px;
+            color: #f08080; font-family: 'Cinzel', serif; font-size: 11px;
+            letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+        }
+        .toast-deny-btn:hover { background: linear-gradient(135deg, #8a2020, #601515); box-shadow: 0 0 10px rgba(204,68,68,0.4); }
+
+        /* ===== JOINER WAITING OVERLAY ===== */
+        .waiting-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.82);
+            z-index: 8000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .waiting-overlay.show { display: flex; }
+        .waiting-overlay-box {
+            background: linear-gradient(145deg, rgba(26,10,46,0.98), rgba(13,27,42,0.98));
+            border: 2px solid #c9a45c;
+            border-radius: 16px;
+            padding: 48px 52px;
+            text-align: center;
+            max-width: 420px;
+        }
+        .waiting-overlay-icon { font-size: 52px; margin-bottom: 16px; }
+        .waiting-overlay-title {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #c9a45c;
+            font-size: 22px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(201,164,92,0.5);
+        }
+        .waiting-overlay-sub {
+            color: #8b7355;
+            font-size: 13px;
+            letter-spacing: 1px;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+        .waiting-overlay-dots {
+            color: #c9a45c;
+            font-size: 24px;
+            letter-spacing: 6px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        .waiting-cancel-btn {
+            margin-top: 20px;
+            background: none; border: 1px solid #5a2020; border-radius: 8px;
+            color: #8b4040; font-family: 'Cinzel', serif; font-size: 12px;
+            letter-spacing: 2px; padding: 10px 24px; cursor: pointer; transition: all 0.2s;
+        }
+        .waiting-cancel-btn:hover { border-color: #cc4444; color: #cc4444; }
+
+        /* ===== BANISHMENT SCREEN ===== */
+        .banished-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .banished-overlay.show { display: flex; }
+        .banished-inner { text-align: center; padding: 40px; max-width: 480px; }
+        .banished-skull { font-size: 72px; margin-bottom: 20px; filter: drop-shadow(0 0 20px #c0392b); }
+        .banished-title {
+            font-family: 'Uncial Antiqua', cursive;
+            color: #cc4444;
+            font-size: 32px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 30px rgba(204,68,68,0.7);
+            margin-bottom: 16px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        .banished-sub {
+            color: #8b4040;
+            font-size: 14px;
+            letter-spacing: 2px;
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+        .banished-back-btn {
+            padding: 14px 36px;
+            background: none; border: 2px solid #5a2020; border-radius: 8px;
+            color: #8b4040; font-family: 'Cinzel', serif; font-size: 14px;
+            letter-spacing: 2px; cursor: pointer; transition: all 0.3s;
+        }
+        .banished-back-btn:hover { border-color: #cc4444; color: #cc4444; box-shadow: 0 0 15px rgba(204,68,68,0.3); }
+
+        .notif {
+            position: fixed; bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(13,13,26,0.97); border: 1px solid #c9a45c;
+            border-radius: 10px; padding: 14px 24px; color: #c9a45c;
+            font-size: 13px; letter-spacing: 1px; z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 380px; text-align: center;
+        }
+        .notif.show  { transform: translateX(-50%) translateY(0); }
         .notif.error { border-color: #cc4444; color: #cc4444; }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 700px) {
-            .lobby-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 700px) { .lobby-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -399,7 +389,7 @@
         <p id="lobbySubtitle">Where adventurers unite before the quest begins</p>
     </div>
 
-    <!-- ====== ENTRY SCREEN (before connecting) ====== -->
+    <!-- ENTRY SCREEN -->
     <div id="entryWrapper" style="width:100%;max-width:480px;display:block;">
         <div class="panel" style="padding:36px 32px;">
             <div class="corner-decoration corner-tl"></div>
@@ -409,7 +399,6 @@
 
             <div class="panel-title" id="entryTitle">&#127963; Realm Online</div>
 
-            <!-- HOST view -->
             <div id="hostEntry">
                 <p style="color:#8b7355;font-size:13px;text-align:center;margin-bottom:20px;letter-spacing:1px;line-height:1.7;">
                     You are opening the gates.<br>A room code will be generated for others to join.
@@ -426,18 +415,13 @@
                 <button class="dnd-btn" onclick="doHost()">&#9820; Open the Gates</button>
             </div>
 
-            <!-- JOIN view -->
             <div id="joinEntry" style="display:none;">
                 <p style="color:#8b7355;font-size:13px;text-align:center;margin-bottom:20px;letter-spacing:1px;line-height:1.7;">
                     Step through the portal.<br>Enter the 4-letter realm code your host shared.
                 </p>
                 <input
-                    class="code-input"
-                    id="joinCodeInput"
-                    maxlength="4"
-                    placeholder="CODE"
-                    autocomplete="off"
-                    spellcheck="false"
+                    class="code-input" id="joinCodeInput" maxlength="4" placeholder="CODE"
+                    autocomplete="off" spellcheck="false"
                     oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');"
                     onkeydown="if(event.key==='Enter') doJoin();"
                 >
@@ -448,11 +432,10 @@
         </div>
     </div>
 
-    <!-- ====== LOBBY SCREEN (after connecting) ====== -->
+    <!-- LOBBY SCREEN -->
     <div id="lobbyScreen" style="width:100%;max-width:960px;display:none;">
         <div class="lobby-grid">
 
-            <!-- LEFT: Players & Controls -->
             <div class="panel">
                 <div class="corner-decoration corner-tl"></div>
                 <div class="corner-decoration corner-tr"></div>
@@ -461,7 +444,6 @@
 
                 <div class="panel-title">&#9876; Adventurers Gathered</div>
 
-                <!-- Room code shown to everyone -->
                 <div class="room-code-box">
                     <div class="room-code-label">&#9830; Realm Code &#9830;</div>
                     <div class="room-code-value" id="displayCode">????</div>
@@ -469,25 +451,18 @@
                     <button class="copy-btn" onclick="copyCode()">&#128203; Copy Code</button>
                 </div>
 
-                <!-- Status -->
                 <div class="status-bar">
                     <div class="status-dot"></div>
                     <span id="statusText">Waiting for adventurers...</span>
                 </div>
 
-                <!-- Player list -->
                 <div class="player-list" id="playerList"></div>
-
                 <p class="waiting-text" id="waitingText">Awaiting companions...</p>
 
-                <!-- Host-only controls -->
                 <div id="hostControls" style="display:none;">
-                    <button class="start-btn" id="startBtn" onclick="startGame()" disabled>
-                        Begin the Quest
-                    </button>
+                    <button class="start-btn" id="startBtn" onclick="startGame()" disabled>Begin the Quest</button>
                 </div>
 
-                <!-- Non-host message -->
                 <div id="guestWait" style="display:none;text-align:center;color:#5a4a3a;font-size:12px;letter-spacing:1px;margin-top:16px;">
                     Waiting for the Host to begin the quest...
                 </div>
@@ -495,20 +470,14 @@
                 <button class="leave-btn" onclick="leaveRoom()">&#8592; Leave Realm</button>
             </div>
 
-            <!-- RIGHT: Chat -->
             <div class="panel" style="display:flex;flex-direction:column;">
                 <div class="panel-title">&#128172; Tavern Chat</div>
                 <div class="chat-messages" id="chatMessages">
                     <div class="chat-msg system"><span class="text">&#9830; You have entered the gathering hall. Speak freely...</span></div>
                 </div>
                 <div class="chat-input-row">
-                    <input
-                        type="text"
-                        id="chatInput"
-                        placeholder="Speak, adventurer..."
-                        maxlength="200"
-                        onkeydown="if(event.key==='Enter') sendChat();"
-                    >
+                    <input type="text" id="chatInput" placeholder="Speak, adventurer..."
+                        maxlength="200" onkeydown="if(event.key==='Enter') sendChat();">
                     <button class="chat-send-btn" onclick="sendChat()">&#9654;</button>
                 </div>
             </div>
@@ -516,7 +485,34 @@
     </div>
 </div>
 
-<!-- Notification toast -->
+<!-- HOST: Join request stack — rendered dynamically, hidden when empty -->
+<div class="request-stack" id="requestStack"></div>
+
+<!-- JOINER: Waiting for host approval -->
+<div class="waiting-overlay" id="waitingOverlay">
+    <div class="waiting-overlay-box">
+        <div class="waiting-overlay-icon">&#9873;</div>
+        <div class="waiting-overlay-title">Awaiting the Host</div>
+        <div class="waiting-overlay-sub">The gatekeeper has been notified of your arrival.<br>Please stand by, adventurer.</div>
+        <div class="waiting-overlay-dots">&#9830; &#9830; &#9830;</div>
+        <button class="waiting-cancel-btn" onclick="cancelWaiting()">&#8592; Withdraw Request</button>
+    </div>
+</div>
+
+<!-- JOINER: Banished screen -->
+<div class="banished-overlay" id="banishedOverlay">
+    <div class="banished-inner">
+        <div class="banished-skull">&#128128;</div>
+        <div class="banished-title">You are Banished from this Realm</div>
+        <div class="banished-sub">
+            Three times the gates were barred against you.<br>
+            The host has spoken. Your name is stricken<br>
+            from the rolls of this realm forever.
+        </div>
+        <button class="banished-back-btn" onclick="window.location.href='mode-select.html'">&#8592; Return to the Crossroads</button>
+    </div>
+</div>
+
 <div class="notif" id="notif"></div>
 
 <script>
@@ -535,15 +531,19 @@ for (let i = 0; i < 50; i++) {
 // ===== STATE =====
 const username = localStorage.getItem('dnd_user');
 const params   = new URLSearchParams(window.location.search);
-const action   = params.get('action'); // 'host' or 'join'
+const action   = params.get('action');
 let isHost = false;
 let myRoom = null;
 let socket = null;
+let knownPlayers = [];
 
-// Guard: must be logged in
+// Active join requests (host side) — array of usernames, rendered as stacked cards
+const activeRequests = [];
+
 if (!username) { window.location.href = 'index.html'; }
 
-// Show correct entry panel
+const rejoinCode = params.get('rejoin');
+
 if (action === 'host') {
     document.getElementById('joinEntry').style.display = 'none';
     document.getElementById('hostEntry').style.display = 'block';
@@ -551,15 +551,20 @@ if (action === 'host') {
 } else {
     document.getElementById('hostEntry').style.display = 'none';
     document.getElementById('joinEntry').style.display = 'block';
-    document.getElementById('entryTitle').innerHTML    = '&#9873; Enter an Existing Realm';
+    document.getElementById('entryTitle').innerHTML    = rejoinCode
+        ? '&#9873; Rejoining Your Realm'
+        : '&#9873; Enter an Existing Realm';
+    // Auto-fill and auto-submit if this is a rejoin
+    if (rejoinCode) {
+        document.getElementById('joinCodeInput').value = rejoinCode;
+        // Fire after socket is ready
+        window.addEventListener('load', () => setTimeout(doJoin, 300));
+    }
 }
 
-// ===== SOCKET SETUP =====
-// Connect lazily so we don't consume sockets before user presses a button
+// ===== SOCKET =====
 function connectSocket() {
-    if (socket) return; // already connected
-
-    // Connect to the same origin the page was served from
+    if (socket) return;
     socket = io({ transports: ['websocket', 'polling'] });
 
     socket.on('connect', () => console.log('Socket connected:', socket.id));
@@ -567,20 +572,80 @@ function connectSocket() {
     socket.on('room-created', (room) => {
         myRoom = room;
         isHost = true;
+        knownPlayers = [...room.players];
         showLobby(room);
         addSystemMsg(`Your realm is open. Code: ${room.code}`);
+    });
+
+    // Rejoining a room that already started — go straight to the game
+    socket.on('rejoined', (room) => {
+        if (room.started) {
+            sessionStorage.setItem('dnd_room', JSON.stringify(room));
+            showNotif('Rejoining your realm...');
+            setTimeout(() => window.location.href = 'character-multi.html', 1200);
+        }
+        // If not started (lobby rejoin), fall through to normal lobby display
     });
 
     socket.on('room-joined', (room) => {
         myRoom = room;
         isHost = false;
+        knownPlayers = [...room.players];
+        hideWaitingOverlay();
         showLobby(room);
-        addSystemMsg(`You entered the realm of ${room.host}.`);
+        addSystemMsg(`You have joined the realm of ${room.host}.`);
     });
 
-    socket.on('join-error', (msg) => showNotif(msg, true));
+    socket.on('join-error', (msg) => {
+        hideWaitingOverlay();
+        showNotif(msg, true);
+    });
+
+    // Joiner: request sent, now waiting for host
+    socket.on('join-pending', ({ code }) => {
+        showWaitingOverlay(code);
+    });
+
+    // Host: someone is knocking — add to stack immediately
+    socket.on('join-request', ({ username: requester }) => {
+        if (!isHost) return;
+        if (!activeRequests.includes(requester)) {
+            activeRequests.push(requester);
+            renderRequestStack();
+        }
+        addSystemMsg(`&#9873; ${requester} is requesting entry to the realm.`);
+    });
+
+    // Joiner: host denied entry
+    socket.on('join-denied', ({ message, banished }) => {
+        hideWaitingOverlay();
+        if (banished) {
+            showBanishedOverlay();
+        } else {
+            showNotif(message, true);
+            // Re-enable the join button so they can try again
+            setTimeout(() => {
+                const entryWrapper = document.getElementById('entryWrapper');
+                if (entryWrapper) entryWrapper.style.display = 'block';
+            }, 100);
+        }
+    });
 
     socket.on('player-list-updated', (room) => {
+        const newPlayers = room.players || [];
+
+        const joined = newPlayers.filter(name => !knownPlayers.includes(name));
+        joined.forEach(name => {
+            if (name === username) return;
+            addEventMsg(`${name} has joined the realm.`, 'joined');
+        });
+
+        const left = knownPlayers.filter(name => !newPlayers.includes(name));
+        left.forEach(name => {
+            addEventMsg(`${name} has left the realm.`, 'left');
+        });
+
+        knownPlayers = [...newPlayers];
         myRoom = room;
         renderPlayers(room);
         updateStatus(room);
@@ -602,13 +667,12 @@ function connectSocket() {
     });
 
     socket.on('game-started', (room) => {
-        // Store room info for the game page
         sessionStorage.setItem('dnd_room', JSON.stringify(room));
         showNotif('The quest begins! Entering the realm...');
-    setTimeout(() => window.location.href = 'character-multi.html', 1800);
+        setTimeout(() => window.location.href = 'character-multi.html', 1800);
     });
 
-    socket.on('lobby-chat', ({ username: who, message, ts }) => {
+    socket.on('lobby-chat', ({ username: who, message }) => {
         addChatMsg(who, message, who === username);
     });
 
@@ -626,10 +690,7 @@ function doHost() {
 
 function doJoin() {
     const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-    if (code.length !== 4) {
-        showNotif('Please enter the full 4-letter realm code.', true);
-        return;
-    }
+    if (code.length !== 4) { showNotif('Please enter the full 4-letter realm code.', true); return; }
     connectSocket();
     socket.emit('join-room', { username, code });
 }
@@ -660,11 +721,75 @@ function copyCode() {
 
 function leaveRoom() {
     if (socket) socket.disconnect();
+    // Clear session on intentional leave
+    localStorage.removeItem('dnd_session');
     window.location.href = 'mode-select.html';
 }
 
-function goBack() {
-    window.location.href = 'mode-select.html';
+function goBack() { window.location.href = 'mode-select.html'; }
+
+// ===== HOST REQUEST STACK =====
+
+function renderRequestStack() {
+    // Only the host ever calls this; non-hosts never have activeRequests
+    const stack = document.getElementById('requestStack');
+    stack.innerHTML = '';
+    if (activeRequests.length === 0) {
+        stack.classList.remove('has-requests');
+        return;
+    }
+    stack.classList.add('has-requests');
+    activeRequests.forEach(requester => {
+        const card = document.createElement('div');
+        card.className = 'request-card';
+        card.dataset.requester = requester;
+        card.innerHTML = `
+            <div class="request-card-title">&#9873; Adventurer at the Gates</div>
+            <div class="request-card-name">${requester}</div>
+            <div class="request-card-desc">seeks entry to your realm. Grant passage or turn them away.</div>
+            <div class="request-card-btns">
+                <button class="toast-accept-btn" onclick="respondToRequest('${requester}', true)">&#10003; Accept</button>
+                <button class="toast-deny-btn"   onclick="respondToRequest('${requester}', false)">&#10007; Deny</button>
+            </div>`;
+        stack.appendChild(card);
+    });
+}
+
+function respondToRequest(requester, accepted) {
+    if (!socket) return;
+    const idx = activeRequests.indexOf(requester);
+    if (idx !== -1) activeRequests.splice(idx, 1);
+    renderRequestStack();
+
+    if (accepted) {
+        socket.emit('accept-request', { username: requester });
+    } else {
+        socket.emit('deny-request', { username: requester });
+    }
+}
+
+// ===== JOINER WAITING OVERLAY =====
+function showWaitingOverlay(code) {
+    document.getElementById('waitingOverlay').classList.add('show');
+}
+
+function hideWaitingOverlay() {
+    document.getElementById('waitingOverlay').classList.remove('show');
+}
+
+function cancelWaiting() {
+    hideWaitingOverlay();
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
+    // Go back to entry screen
+    document.getElementById('entryWrapper').style.display = 'block';
+}
+
+// ===== BANISHMENT =====
+function showBanishedOverlay() {
+    document.getElementById('banishedOverlay').classList.add('show');
 }
 
 // ===== RENDER =====
@@ -687,6 +812,9 @@ function showLobby(room) {
 
     renderPlayers(room);
     updateStatus(room);
+
+    // Save session to localStorage for rejoin
+    localStorage.setItem('dnd_session', JSON.stringify({ code: room.code, host: room.host }));
 }
 
 function renderPlayers(room) {
@@ -715,7 +843,6 @@ function renderPlayers(room) {
             row.appendChild(badge);
         }
 
-        // Kick button: only shown to host, not for themselves
         if (isHost && name !== username) {
             const kick = document.createElement('button');
             kick.className = 'kick-btn';
@@ -727,7 +854,6 @@ function renderPlayers(room) {
         list.appendChild(row);
     });
 
-    // Empty slots
     const emptySlots = (room.maxPlayers || 4) - room.players.length;
     for (let i = 0; i < emptySlots; i++) {
         const slot = document.createElement('div');
@@ -736,7 +862,6 @@ function renderPlayers(room) {
         list.appendChild(slot);
     }
 
-    // Enable start only when ≥2 players
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
         startBtn.disabled = room.players.length < 2;
@@ -750,13 +875,8 @@ function updateStatus(room) {
     const count = room.players.length;
     const max   = room.maxPlayers || 4;
     document.getElementById('statusText').textContent = `${count} / ${max} adventurers gathered`;
-
     const waiting = document.getElementById('waitingText');
-    waiting.textContent = count < 2
-        ? 'Awaiting companions...'
-        : count >= max
-            ? 'The realm is full!'
-            : 'Ready to begin!';
+    waiting.textContent = count < 2 ? 'Awaiting companions...' : count >= max ? 'The realm is full!' : 'Ready to begin!';
 }
 
 // ===== CHAT HELPERS =====
@@ -778,7 +898,16 @@ function addSystemMsg(text) {
     box.scrollTop = box.scrollHeight;
 }
 
-// ===== TOAST NOTIFICATION =====
+function addEventMsg(text, type) {
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `chat-msg ${type}`;
+    div.innerHTML = `<span class="text">&#9830; ${text}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+// ===== TOAST =====
 let notifTimer;
 function showNotif(msg, isError = false) {
     const el = document.getElementById('notif');

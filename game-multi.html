@@ -113,6 +113,8 @@
         .pchat-msg .who { color: #c9a45c; }
         .pchat-msg .txt { color: #8b7355; }
         .pchat-msg.sys .txt { color: #3d2f1f; font-style: italic; }
+        .pchat-msg.left .txt { color: #c0392b; font-style: italic; }
+        .pchat-msg.joined .txt { color: #27ae60; font-style: italic; }
         .party-chat-row { display: flex; border-top: 1px solid rgba(61,47,31,0.4); }
         .party-chat-input {
             flex: 1; background: rgba(0,0,0,0.5); border: none; color: #c9a45c;
@@ -385,9 +387,9 @@ function connectSocket() {
         // Figure out who left or joined by comparing old list to new
         if (partyPlayers.length > 0) {
             const left = partyPlayers.filter(name => !newPlayers.includes(name));
-            left.forEach(name => addPartySysMsg(`${name} has left the realm.`));
+            left.forEach(name => addPartyEventMsg(`${name} has left the realm.`, 'left'));
             const joined = newPlayers.filter(name => !partyPlayers.includes(name));
-            joined.forEach(name => addPartySysMsg(`${name} has joined the realm.`));
+            joined.forEach(name => addPartyEventMsg(`${name} has joined the realm.`, 'joined'));
         }
 
         partyPlayers = newPlayers;
@@ -453,6 +455,15 @@ function addPartyChatMsg(who, text, isSelf) {
     const div = document.createElement('div');
     div.className = 'pchat-msg';
     div.innerHTML = `<span class="who">${isSelf ? 'You' : who}:</span> <span class="txt">${text}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function addPartyEventMsg(text, type) {
+    const box = document.getElementById('partyChatMsgs');
+    const div = document.createElement('div');
+    div.className = `pchat-msg ${type}`;
+    div.innerHTML = `<span class="txt">&#9830; ${text}</span>`;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 }

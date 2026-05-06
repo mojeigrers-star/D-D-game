@@ -69,9 +69,19 @@ app.post('/api/login', async (req, res) => {
 });
 
 // ===== ROOMS (in-memory) =====
-// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers, readyPlayers: Set, mapSeed: number }
+// rooms[code] = { host, players: [{username, socketId}], started, maxPlayers, readyPlayers: Set, mapSeed: number,
+//                 pendingRequests: { username -> socketId },
+//                 denyCounts: { username -> number },
+//                 banned: Set<username> }
 
 const rooms = {};
+
+// ===== SESSIONS (in-memory) =====
+// sessions[username] = { code, host }
+// Stored when a player successfully joins or hosts; cleared on intentional leave.
+// Allows "Rejoin Last Session" without a database.
+
+const sessions = {};
 
 function generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -108,38 +118,155 @@ io.on('connection', (socket) => {
             started: false,
             maxPlayers,
             readyPlayers: new Set(),
-            mapSeed: null
+            mapSeed: null,
+            pendingRequests: {},
+            denyCounts: {},
+            banned: new Set()
         };
 
         socket.join(code);
         socket.data.roomCode = code;
         socket.data.username = username;
 
+        // Save session for the host
+        sessions[username] = { code, host: username };
+
         socket.emit('room-created', safeRoomInfo(code));
         console.log(`Room ${code} created by ${username}`);
     });
 
-    // --- JOIN: enter an existing room by code ---
+    // --- JOIN REQUEST: joiner asks host for entry (replaces instant join-room) ---
     socket.on('join-room', ({ username, code }) => {
         const room = rooms[code];
 
         if (!room)
             return socket.emit('join-error', 'Room not found. Check the code and try again.');
-        if (room.started)
+
+        // If the game has started, only allow back in if they have a saved session for this room
+        if (room.started) {
+            const session = sessions[username];
+            const wasInRoom = room.players.find(p => p.username === username)
+                           || (session && session.code === code);
+            if (wasInRoom) {
+                // Treat this as a rejoin — promote directly without host approval
+                const existing = room.players.find(p => p.username === username);
+                if (existing) {
+                    existing.socketId = socket.id;
+                } else {
+                    room.players.push({ username, socketId: socket.id });
+                }
+                socket.join(code);
+                socket.data.roomCode = code;
+                socket.data.username = username;
+                sessions[username] = { code, host: room.host };
+
+                const readyList = Array.from(room.readyPlayers || []);
+                socket.emit('rejoined', {
+                    ...safeRoomInfo(code),
+                    readyPlayers: readyList,
+                    mapSeed: room.mapSeed || null
+                });
+                io.to(code).emit('player-list-updated', safeRoomInfo(code));
+                console.log(`${username} auto-rejoined started room ${code} via join-room`);
+                return;
+            }
             return socket.emit('join-error', 'This realm has already begun its quest.');
+        }
+
         if (room.players.length >= room.maxPlayers)
             return socket.emit('join-error', 'The realm is full. No more adventurers may enter.');
         if (room.players.find(p => p.username === username))
             return socket.emit('join-error', 'An adventurer with that name is already in this realm.');
+        if (room.banned && room.banned.has(username))
+            return socket.emit('join-error', 'You are Banished from this Realm.');
 
-        room.players.push({ username, socketId: socket.id });
-        socket.join(code);
-        socket.data.roomCode = code;
+        // Queue a pending request
+        room.pendingRequests[username] = socket.id;
+        socket.data.pendingCode = code;
         socket.data.username = username;
 
-        socket.emit('room-joined', safeRoomInfo(code));
+        // Tell the joiner to wait
+        socket.emit('join-pending', { code });
+
+        // Tell the host someone is knocking
+        const hostPlayer = room.players.find(p => p.username === room.host);
+        if (hostPlayer && hostPlayer.socketId) {
+            io.to(hostPlayer.socketId).emit('join-request', { username, code });
+        }
+
+        console.log(`${username} requested to join room ${code}`);
+    });
+
+    // --- HOST: accept a pending join request ---
+    socket.on('accept-request', ({ username }) => {
+        const code = socket.data.roomCode;
+        const room = rooms[code];
+        if (!room || room.host !== socket.data.username) return;
+
+        const joinerSocketId = room.pendingRequests[username];
+        if (!joinerSocketId) return;
+
+        delete room.pendingRequests[username];
+        // Reset deny count on successful join
+        if (room.denyCounts) room.denyCounts[username] = 0;
+
+        // Check capacity again (race condition guard)
+        if (room.players.length >= room.maxPlayers) {
+            io.to(joinerSocketId).emit('join-error', 'The realm filled while you were waiting.');
+            return;
+        }
+
+        room.players.push({ username, socketId: joinerSocketId });
+
+        const joinerSocket = io.sockets.sockets.get(joinerSocketId);
+        if (joinerSocket) {
+            joinerSocket.join(code);
+            joinerSocket.data.roomCode = code;
+            joinerSocket.data.username = username;
+        }
+
+        // Save session for the joiner
+        sessions[username] = { code, host: room.host };
+
+        io.to(joinerSocketId).emit('room-joined', safeRoomInfo(code));
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
-        console.log(`${username} joined room ${code}`);
+        console.log(`${username} accepted into room ${code}`);
+    });
+
+    // --- HOST: deny a pending join request ---
+    socket.on('deny-request', ({ username }) => {
+        const code = socket.data.roomCode;
+        const room = rooms[code];
+        if (!room || room.host !== socket.data.username) return;
+
+        const joinerSocketId = room.pendingRequests[username];
+        if (!joinerSocketId) return;
+
+        delete room.pendingRequests[username];
+
+        if (!room.denyCounts) room.denyCounts = {};
+        room.denyCounts[username] = (room.denyCounts[username] || 0) + 1;
+
+        const count = room.denyCounts[username];
+
+        if (count >= 3) {
+            // Banish after 3 consecutive denials
+            if (!room.banned) room.banned = new Set();
+            room.banned.add(username);
+            io.to(joinerSocketId).emit('join-denied', {
+                message: 'You are Banished from this Realm.',
+                banished: true,
+                count
+            });
+            console.log(`${username} banished from room ${code} after ${count} denials`);
+        } else {
+            io.to(joinerSocketId).emit('join-denied', {
+                message: `The host has denied your entry. (${count}/3 — banished at 3)`,
+                banished: false,
+                count
+            });
+            console.log(`${username} denied from room ${code} (${count}/3)`);
+        }
     });
 
     // --- REJOIN: reconnect after page navigation ---
@@ -157,6 +284,9 @@ io.on('connection', (socket) => {
         socket.join(code);
         socket.data.roomCode = code;
         socket.data.username = username;
+
+        // Refresh session
+        sessions[username] = { code, host: room.host };
 
         const readyList = Array.from(room.readyPlayers || []);
         socket.emit('rejoined', {
@@ -196,12 +326,7 @@ io.on('connection', (socket) => {
         const readyCount = room.readyPlayers.size;
         const totalCount = room.players.length;
 
-        io.to(code).emit('ready-update', {
-            readyCount,
-            totalCount,
-            readyPlayers: readyList
-        });
-
+        io.to(code).emit('ready-update', { readyCount, totalCount, readyPlayers: readyList });
         console.log(`${username} is ready in room ${code} (${readyCount}/${totalCount})`);
 
         if (readyCount >= totalCount && totalCount >= 1) {
@@ -222,6 +347,9 @@ io.on('connection', (socket) => {
 
         room.players = room.players.filter(p => p.username !== targetUsername);
         if (room.readyPlayers) room.readyPlayers.delete(targetUsername);
+
+        // Clear their session so rejoin doesn't bring them back
+        delete sessions[targetUsername];
 
         io.to(target.socketId).emit('kicked', { reason: 'The Host has removed you from the realm.' });
         io.to(code).emit('player-list-updated', safeRoomInfo(code));
@@ -279,6 +407,9 @@ io.on('connection', (socket) => {
         room.players = room.players.filter(p => p.username !== username);
         if (room.readyPlayers) room.readyPlayers.delete(username);
 
+        // Clear session on intentional leave
+        delete sessions[username];
+
         if (room.players.length === 0) {
             delete rooms[code];
             console.log(`Room ${code} deleted (empty)`);
@@ -299,30 +430,35 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         const code = socket.data.roomCode;
         const username = socket.data.username;
+
+        // Clean up any pending join request if the joiner disconnects while waiting
+        if (socket.data.pendingCode && !code) {
+            const pendingRoom = rooms[socket.data.pendingCode];
+            if (pendingRoom && pendingRoom.pendingRequests[username]) {
+                delete pendingRoom.pendingRequests[username];
+                console.log(`${username} disconnected while pending in room ${socket.data.pendingCode}`);
+            }
+            return;
+        }
+
         if (!code || !rooms[code]) return;
 
         const room = rooms[code];
 
-        // If game has started, mark the player as disconnected but keep them
-        // in the list with a short grace period — if they rejoin it cancels out.
-        // Either way, notify remaining players immediately.
         if (room.started) {
-            // Mark socket as gone so rejoin can update it
             const existing = room.players.find(p => p.username === username);
             if (existing) existing.socketId = null;
 
-            // Tell everyone this player disconnected
             io.to(code).emit('player-list-updated', safeRoomInfo(code));
 
-            // Give them 30 seconds to rejoin before removing them permanently
             setTimeout(() => {
                 const r = rooms[code];
                 if (!r) return;
                 const p = r.players.find(p => p.username === username);
                 if (p && p.socketId === null) {
-                    // Still disconnected after grace period — remove them
                     r.players = r.players.filter(p => p.username !== username);
                     if (r.readyPlayers) r.readyPlayers.delete(username);
+                    delete sessions[username];
                     if (r.players.length === 0) {
                         delete rooms[code];
                         console.log(`Room ${code} deleted (empty after grace period)`);
