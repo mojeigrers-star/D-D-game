@@ -1,814 +1,1304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Realm - D&D</title>
-    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body { background: #0a0508; min-height: 100vh; overflow: hidden; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Realm — D&D</title>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080608;--bg2:#0f0b0e;--bg3:#171018;
+  --bdr:#3d2e1a;--bdr2:#5a4520;--bdr3:#7a6030;
+  --gold:#c9a45c;--gold2:#e8c878;--gold3:#8a6c18;--goldDim:#6a5010;
+  --txt:#d4c5a0;--txt2:#a09070;--txt3:#6a5840;
+  --red:#c44444;--blue:#4a7acc;--green:#4a9a5a;
+  --panel:rgba(8,6,8,0.96);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-direction:column}
+
+/* ── PARTICLES ── */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.pt{position:absolute;width:2px;height:2px;background:var(--gold);border-radius:50%;opacity:0;animation:ptFloat linear infinite}
+@keyframes ptFloat{0%{opacity:0;transform:translateY(0) scale(0)}10%{opacity:.45}90%{opacity:.15}100%{opacity:0;transform:translateY(-80px) scale(1.5)}}
+
+/* ── HUD ── */
+#hud{position:relative;z-index:50;background:linear-gradient(180deg,rgba(8,6,8,1) 0%,rgba(8,6,8,.95) 100%);border-bottom:2px solid var(--bdr2);padding:0 16px;height:58px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.hud-logo{font-family:'Cinzel Decorative',cursive;font-size:13px;color:var(--gold);letter-spacing:2px;text-shadow:0 0 20px rgba(201,164,92,.4);white-space:nowrap;flex-shrink:0}
+.hud-sep{color:var(--bdr2);font-size:20px;flex-shrink:0}
+.hud-char{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);border:1px solid var(--bdr);border-radius:4px;padding:5px 12px}
+.hud-avatar{width:34px;height:34px;border-radius:3px;border:1px solid var(--gold3);background:linear-gradient(135deg,rgba(201,164,92,.12),rgba(139,108,24,.06));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hud-name{font-family:'Cinzel',serif;color:var(--gold);font-size:13px;letter-spacing:1px}
+.hud-sub{color:var(--txt3);font-size:10px;letter-spacing:.5px;margin-top:1px}
+.hud-bars{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.bar-row{display:flex;align-items:center;gap:7px}
+.bar-lbl{font-size:9px;color:var(--txt3);width:28px;letter-spacing:.5px;font-family:'Cinzel',serif}
+.bar-track{width:110px;height:5px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+.bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.bar-hp{background:linear-gradient(90deg,#8b1a1a,#c43030)}
+.bar-mp{background:linear-gradient(90deg,#1a3a8b,#3060cc)}
+.bar-xp{background:linear-gradient(90deg,var(--goldDim),var(--gold3))}
+.bar-val{font-size:9px;color:var(--txt2);font-family:monospace;min-width:50px}
+.hud-stats{display:flex;gap:10px;flex-shrink:0}
+.hud-stat{text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--bdr);border-radius:3px;padding:4px 8px;min-width:42px}
+.hud-stat-val{font-family:'Cinzel',serif;font-size:14px;color:var(--gold);line-height:1}
+.hud-stat-name{font-size:8px;color:var(--txt3);letter-spacing:.5px;margin-top:2px}
+.hud-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.hbtn{background:linear-gradient(135deg,rgba(61,46,26,.8),rgba(90,69,32,.6));border:1px solid var(--bdr2);color:var(--gold);padding:5px 10px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;white-space:nowrap}
+.hbtn:hover{background:linear-gradient(135deg,rgba(90,69,32,.9),rgba(122,96,48,.7));border-color:var(--gold);box-shadow:0 0 10px rgba(201,164,92,.25)}
+.hbtn.danger{border-color:#5a2020;color:#a05050}
+.hbtn.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* ── GAME WRAP ── */
+#gameWrap{flex:1;display:flex;overflow:hidden;position:relative;min-height:0}
+#mapArea{flex:1;position:relative;overflow:hidden;background:#030201;cursor:crosshair}
+#mapCanvas{position:absolute;top:0;left:0;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* ── ZOOM CONTROLS ── */
+#zoomBox{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:3px;z-index:20}
+.zbtn{background:rgba(8,6,8,.92);border:1px solid var(--bdr2);color:var(--gold);width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:2px;transition:background .12s;font-family:monospace}
+.zbtn:hover{background:rgba(61,46,26,.9)}
+
+/* ── MINIMAP ── */
+#minimap{position:absolute;bottom:148px;right:16px;border:1px solid var(--bdr2);background:rgba(5,4,3,.9);box-shadow:0 0 20px rgba(0,0,0,.8);z-index:20;border-radius:2px}
+.minimap-title{font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);letter-spacing:2px;text-align:center;padding:4px 0 2px;border-bottom:1px solid var(--bdr)}
+#minimapCanvas{display:block;image-rendering:pixelated}
+#mmvp{position:absolute;border:1px solid rgba(201,164,92,.8);pointer-events:none;box-shadow:inset 0 0 4px rgba(201,164,92,.2)}
+
+/* ── COORDS ── */
+#coords{position:absolute;bottom:148px;left:16px;background:rgba(8,6,8,.85);border:1px solid var(--bdr);padding:3px 9px;font-size:10px;color:var(--txt3);font-family:monospace;pointer-events:none;z-index:20;border-radius:2px}
+
+/* ── TOOLTIP ── */
+#tooltip{position:absolute;background:rgba(8,6,8,.97);border:1px solid var(--bdr2);padding:9px 12px;font-size:11px;pointer-events:none;display:none;z-index:100;min-width:140px;box-shadow:0 4px 24px rgba(0,0,0,.9);border-radius:2px}
+.tt-name{font-family:'Cinzel',serif;color:var(--gold);font-size:12px;margin-bottom:3px}
+.tt-sub{color:var(--txt2);font-size:10px}
+.tt-hint{color:var(--gold3);font-size:9px;margin-top:4px;letter-spacing:.5px}
+
+/* ── NARRATIVE (compact) ── */
+#narrative{
+  position:absolute;bottom:0;left:0;right:0;
+  height:135px;
+  background:linear-gradient(180deg,transparent 0%,rgba(8,6,8,.97) 14%,rgba(8,6,8,1) 100%);
+  border-top:1px solid var(--bdr);z-index:30;
+  display:flex;flex-direction:column;
+  padding:0 16px 10px;
+}
+.narr-header{display:flex;align-items:center;gap:8px;padding:5px 0 4px}
+.narr-speaker{font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:2px}
+.narr-line{flex:1;height:1px;background:linear-gradient(90deg,var(--gold3),transparent)}
+.narr-text{font-family:'Crimson Text',serif;font-size:13px;color:var(--txt);line-height:1.55;flex:1;overflow:hidden;font-style:italic}
+.narr-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.act-btn{
+  background:linear-gradient(135deg,rgba(61,46,26,.6),rgba(8,6,8,.8));
+  border:1px solid var(--bdr);color:var(--txt2);
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.2px;
+  padding:5px 10px;cursor:pointer;border-radius:2px;transition:all .2s;text-transform:uppercase
+}
+.act-btn:hover{border-color:var(--gold3);color:var(--gold);background:rgba(61,46,26,.8)}
+.act-btn.primary{border-color:var(--gold3);color:var(--gold)}
+.act-btn.primary:hover{border-color:var(--gold);background:rgba(90,69,32,.6);box-shadow:0 0 12px rgba(201,164,92,.2)}
+
+/* ── INTRO OVERLAY ── */
+#introOverlay{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 1.2s}
+#introOverlay.fade-out{opacity:0;pointer-events:none}
+.intro-title{font-family:'Cinzel Decorative',cursive;color:var(--gold);font-size:32px;letter-spacing:5px;text-shadow:0 0 40px rgba(201,164,92,.55),0 0 80px rgba(201,164,92,.2);animation:introGlow 3s ease-in-out infinite alternate}
+@keyframes introGlow{from{text-shadow:0 0 30px rgba(201,164,92,.4)}to{text-shadow:0 0 60px rgba(201,164,92,.8),0 0 100px rgba(201,164,92,.3)}}
+.intro-sub{font-family:'IM Fell English',serif;color:var(--txt2);font-size:15px;font-style:italic;letter-spacing:2px}
+.intro-skip{font-family:'Cinzel',serif;color:var(--txt3);font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid var(--bdr);padding:6px 18px;border-radius:2px;transition:all .2s;margin-top:10px;text-transform:uppercase}
+.intro-skip:hover{color:var(--gold);border-color:var(--gold3)}
+.intro-orb{width:80px;height:80px;border-radius:50%;border:2px solid var(--gold3);box-shadow:0 0 30px rgba(201,164,92,.3),inset 0 0 30px rgba(201,164,92,.06);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:8px;animation:orbPulse 2.5s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 20px rgba(201,164,92,.2),inset 0 0 20px rgba(201,164,92,.05)}50%{box-shadow:0 0 50px rgba(201,164,92,.5),inset 0 0 40px rgba(201,164,92,.1)}}
+
+/* ── INVENTORY OVERLAY ── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.ov.active{display:flex}
+.ov-panel{background:linear-gradient(145deg,var(--bg3),var(--bg2));border:1px solid var(--bdr2);border-radius:4px;padding:28px;width:520px;max-width:96%;position:relative;box-shadow:0 0 40px rgba(201,164,92,.15);max-height:90vh;overflow-y:auto}
+.ov-title{font-family:'Uncial Antiqua',cursive;color:var(--gold);font-size:18px;letter-spacing:2px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
+.close-ov{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--txt3);font-size:22px;cursor:pointer;transition:color .2s}
+.close-ov:hover{color:var(--gold)}
+.inv-stats-row{display:flex;gap:10px;margin-bottom:16px}
+.inv-stat-box{flex:1;text-align:center;background:rgba(0,0,0,.3);border:1px solid var(--bdr);border-radius:3px;padding:8px}
+.inv-stat-val{font-family:'Cinzel',serif;font-size:18px;color:var(--gold)}
+.inv-stat-lbl{font-size:9px;color:var(--txt3);letter-spacing:1px;margin-top:2px}
+.inv-section-label{font-family:'Cinzel',serif;font-size:9px;color:var(--txt3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(61,46,26,.5)}
+.equip-slots{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:18px}
+.equip-slot{aspect-ratio:1;background:rgba(201,164,92,.04);border:1px solid var(--bdr2);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:border-color .15s}
+.equip-slot:hover{border-color:var(--gold3)}
+.equip-slot-label{font-family:'Cinzel',serif;font-size:7px;color:var(--txt3);letter-spacing:1px;margin-top:3px;text-transform:uppercase}
+.inv-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.inv-slot{aspect-ratio:1;background:rgba(0,0,0,.4);border:1px solid var(--bdr);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;cursor:pointer;transition:border-color .15s}
+.inv-slot:hover{border-color:var(--bdr2)}
+.inv-slot.occupied{border-color:var(--bdr2);background:rgba(61,46,26,.2)}
+.item-qty{position:absolute;bottom:2px;right:3px;font-size:9px;color:var(--gold);font-family:monospace}
+.item-tooltip-inner{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:rgba(8,6,8,.97);border:1px solid var(--bdr2);padding:4px 8px;font-size:10px;color:var(--txt);white-space:nowrap;pointer-events:none;display:none;z-index:10;border-radius:2px}
+.inv-slot:hover .item-tooltip-inner{display:block}
+
+/* ── SETTINGS OVERLAY ── */
+#settingsOv{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:110;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+#settingsOv.active{display:flex}
+.settings-panel{background:linear-gradient(145deg,var(--bg3),var(--bg2));border:1px solid var(--bdr2);border-radius:4px;padding:28px;width:400px;max-width:94%;position:relative;box-shadow:0 0 40px rgba(201,164,92,.12)}
+.settings-panel h2{font-family:'Uncial Antiqua',cursive;color:var(--gold);font-size:17px;letter-spacing:2px;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}
+.close-settings{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--txt3);font-size:22px;cursor:pointer;transition:color .2s}
+.close-settings:hover{color:var(--gold)}
+.slider-group{margin-bottom:14px}
+.slider-label{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);margin-bottom:6px}
+.slider-value{color:var(--gold);font-family:monospace}
+.slider-container{position:relative;height:22px;cursor:pointer;padding:8px 0}
+.slider-track{height:4px;background:rgba(255,255,255,.06);border:1px solid var(--bdr);border-radius:2px;position:relative;overflow:visible}
+.slider-fill{height:100%;background:linear-gradient(90deg,var(--goldDim),var(--gold3));border-radius:2px;transition:width .05s}
+.slider-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:var(--gold);border:2px solid var(--bg);border-radius:50%;box-shadow:0 0 6px rgba(201,164,92,.5);pointer-events:none}
+.settings-hint{color:var(--txt3);font-size:9px;letter-spacing:.5px;margin-top:8px;text-align:center;font-style:italic}
+
+/* ── NOTIFICATION ── */
+#notif{position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(8,6,8,.97);border:1px solid var(--gold);border-radius:4px;padding:10px 20px;color:var(--gold);font-size:12px;letter-spacing:1px;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s;pointer-events:none;white-space:nowrap;opacity:0;visibility:hidden}
+#notif.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+#notif.err{border-color:var(--red);color:var(--red)}
+
+/* ── DOUBLE-TAP HINT ── */
+#dtapHint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);background:rgba(8,6,8,.97);border:1px solid var(--gold3);border-radius:4px;padding:8px 16px;color:var(--gold);font-size:11px;font-family:'Cinzel',serif;letter-spacing:1px;z-index:9998;opacity:0;pointer-events:none;transition:opacity .5s}
+#dtapHint.show{opacity:1}
+
+/* ── CURSOR BLINK ── */
+@keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--gold3);vertical-align:text-bottom;animation:cursor-blink .9s infinite}
+</style>
 </head>
 <body>
 
-<div class="game-bg"></div>
-<div class="fog-layer"></div>
-<div class="particles" id="particles"></div>
+<div id="particles"></div>
 
-<!-- ===== INTRO OVERLAY ===== -->
-<div class="intro-overlay" id="introOverlay">
-    <div class="intro-title" id="introTitle">The Realm Awaits</div>
-    <div class="intro-sub"   id="introSub">Your legend begins now...</div>
-    <div class="intro-skip"  onclick="skipIntro()">&#9654; Skip Intro</div>
+<!-- INTRO OVERLAY -->
+<div id="introOverlay">
+  <div class="intro-orb" id="introOrb">⚔</div>
+  <div class="intro-title" id="introTitle">The Realm Awaits</div>
+  <div class="intro-sub" id="introSub">Your legend begins now...</div>
+  <div class="intro-skip" onclick="skipIntro()">▶ Skip Intro</div>
 </div>
 
-<!-- ===== INVENTORY OVERLAY ===== -->
-<div class="inv-overlay" id="invOverlay">
-    <div class="inv-panel">
-        <button class="close-inv" onclick="closeInventory()">&times;</button>
-        <div class="inv-panel-title">&#127894; Inventory</div>
-
-        <div class="inv-stats-row">
-            <div class="inv-stat-box">
-                <div class="inv-stat-box-val" id="invGold">0</div>
-                <div class="inv-stat-box-label">&#127881; Gold</div>
-            </div>
-            <div class="inv-stat-box">
-                <div class="inv-stat-box-val" id="invItems">0</div>
-                <div class="inv-stat-box-label">&#127894; Items</div>
-            </div>
-            <div class="inv-stat-box">
-                <div class="inv-stat-box-val">24</div>
-                <div class="inv-stat-box-label">&#128465; Capacity</div>
-            </div>
-        </div>
-
-        <div class="inv-section-label">&#9876; Equipped</div>
-        <div class="equip-slots">
-            <div class="equip-slot"><span>&#128081;</span><span class="equip-slot-label">Head</span></div>
-            <div class="equip-slot"><span>&#128093;</span><span class="equip-slot-label">Chest</span></div>
-            <div class="equip-slot"><span>&#9876;</span>  <span class="equip-slot-label">Weapon</span></div>
-            <div class="equip-slot"><span>&#128737;</span><span class="equip-slot-label">Shield</span></div>
-            <div class="equip-slot"><span>&#128098;</span><span class="equip-slot-label">Boots</span></div>
-            <div class="equip-slot"><span>&#128141;</span><span class="equip-slot-label">Ring</span></div>
-        </div>
-
-        <div class="inv-section-label">&#127894; Bag</div>
-        <div class="inv-grid" id="invGrid"></div>
+<!-- INVENTORY OVERLAY -->
+<div class="ov" id="invOv">
+  <div class="ov-panel">
+    <button class="close-ov" onclick="closeInventory()">×</button>
+    <div class="ov-title">📦 Inventory</div>
+    <div class="inv-stats-row">
+      <div class="inv-stat-box"><div class="inv-stat-val" id="invGold">0</div><div class="inv-stat-lbl">⚜ Gold</div></div>
+      <div class="inv-stat-box"><div class="inv-stat-val" id="invItems">0</div><div class="inv-stat-lbl">📦 Items</div></div>
+      <div class="inv-stat-box"><div class="inv-stat-val">24</div><div class="inv-stat-lbl">🗄 Capacity</div></div>
     </div>
+    <div class="inv-section-label">⚔ Equipped</div>
+    <div class="equip-slots">
+      <div class="equip-slot"><span>⛑</span><span class="equip-slot-label">Head</span></div>
+      <div class="equip-slot"><span>🧥</span><span class="equip-slot-label">Chest</span></div>
+      <div class="equip-slot"><span>⚔</span><span class="equip-slot-label">Weapon</span></div>
+      <div class="equip-slot"><span>🛡</span><span class="equip-slot-label">Shield</span></div>
+      <div class="equip-slot"><span>👢</span><span class="equip-slot-label">Boots</span></div>
+      <div class="equip-slot"><span>💍</span><span class="equip-slot-label">Ring</span></div>
+    </div>
+    <div class="inv-section-label">📦 Bag</div>
+    <div class="inv-grid" id="invGrid"></div>
+  </div>
 </div>
 
-<!-- ===== SETTINGS OVERLAY ===== -->
-<div class="settings-overlay" id="settingsOverlay">
-    <div class="settings-panel">
-        <button class="close-settings" onclick="closeSettings()">&times;</button>
-        <h2>&#9881; Settings</h2>
-
-        <div class="slider-group">
-            <div class="slider-label"><span>&#127925; Music</span><span class="slider-value" id="musicValue">70</span></div>
-            <div class="slider-container" tabindex="0" data-slider="music">
-                <div class="slider-track"><div class="slider-fill" style="width:70%"></div></div>
-                <div class="slider-thumb" style="left:70%"></div>
-            </div>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>&#128264; Master Volume</span><span class="slider-value" id="masterValue">80</span></div>
-            <div class="slider-container" tabindex="0" data-slider="master">
-                <div class="slider-track"><div class="slider-fill" style="width:80%"></div></div>
-                <div class="slider-thumb" style="left:80%"></div>
-            </div>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>&#9876; Enemies</span><span class="slider-value" id="enemiesValue">50</span></div>
-            <div class="slider-container" tabindex="0" data-slider="enemies">
-                <div class="slider-track"><div class="slider-fill" style="width:50%"></div></div>
-                <div class="slider-thumb" style="left:50%"></div>
-            </div>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>&#129309; Friends</span><span class="slider-value" id="friendsValue">60</span></div>
-            <div class="slider-container" tabindex="0" data-slider="friends">
-                <div class="slider-track"><div class="slider-fill" style="width:60%"></div></div>
-                <div class="slider-thumb" style="left:60%"></div>
-            </div>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>&#127752; Ambient</span><span class="slider-value" id="ambientValue">75</span></div>
-            <div class="slider-container" tabindex="0" data-slider="ambient">
-                <div class="slider-track"><div class="slider-fill" style="width:75%"></div></div>
-                <div class="slider-thumb" style="left:75%"></div>
-            </div>
-        </div>
-
-        <p class="settings-hint">Use arrow keys &#8592; &#8594; to adjust &bull; Click to set value</p>
+<!-- SETTINGS OVERLAY -->
+<div id="settingsOv">
+  <div class="settings-panel">
+    <button class="close-settings" onclick="closeSettings()">×</button>
+    <h2>⚙ Settings</h2>
+    <div class="slider-group">
+      <div class="slider-label"><span>🎵 Music</span><span class="slider-value" id="musicValue">70</span></div>
+      <div class="slider-container" tabindex="0" data-slider="music"><div class="slider-track"><div class="slider-fill" style="width:70%"></div></div><div class="slider-thumb" style="left:70%"></div></div>
     </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>🔊 Master Volume</span><span class="slider-value" id="masterValue">80</span></div>
+      <div class="slider-container" tabindex="0" data-slider="master"><div class="slider-track"><div class="slider-fill" style="width:80%"></div></div><div class="slider-thumb" style="left:80%"></div></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>⚔ Enemies</span><span class="slider-value" id="enemiesValue">50</span></div>
+      <div class="slider-container" tabindex="0" data-slider="enemies"><div class="slider-track"><div class="slider-fill" style="width:50%"></div></div><div class="slider-thumb" style="left:50%"></div></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>🤝 Friends</span><span class="slider-value" id="friendsValue">60</span></div>
+      <div class="slider-container" tabindex="0" data-slider="friends"><div class="slider-track"><div class="slider-fill" style="width:60%"></div></div><div class="slider-thumb" style="left:60%"></div></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>🌬 Ambient</span><span class="slider-value" id="ambientValue">75</span></div>
+      <div class="slider-container" tabindex="0" data-slider="ambient"><div class="slider-track"><div class="slider-fill" style="width:75%"></div></div><div class="slider-thumb" style="left:75%"></div></div>
+    </div>
+    <p class="settings-hint">Arrow keys ← → to adjust · Click to set value</p>
+  </div>
 </div>
 
-<!-- ===== LOCATION TOOLTIP ===== -->
-<div class="map-tooltip" id="mapTooltip">
-    <div id="ttName">Location</div>
-    <div class="tt-sub" id="ttSub">Click to explore</div>
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-logo">⚔ The Realm</div>
+  <span class="hud-sep">◆</span>
+  <div class="hud-char">
+    <div class="hud-avatar" id="hudAvatar">⚔</div>
+    <div>
+      <div class="hud-name" id="hudName">Hero</div>
+      <div class="hud-sub" id="hudSub">Lv.1 Human Fighter</div>
+    </div>
+  </div>
+  <div class="hud-bars">
+    <div class="bar-row"><span class="bar-lbl">❤ HP</span><div class="bar-track"><div class="bar-fill bar-hp" id="barHp" style="width:80%"></div></div><span class="bar-val" id="valHp">80/100</span></div>
+    <div class="bar-row"><span class="bar-lbl">✦ MP</span><div class="bar-track"><div class="bar-fill bar-mp" id="barMp" style="width:100%"></div></div><span class="bar-val" id="valMp">60/60</span></div>
+    <div class="bar-row"><span class="bar-lbl">★ XP</span><div class="bar-track"><div class="bar-fill bar-xp" id="barXp" style="width:0%"></div></div><span class="bar-val" id="valXp">0/100</span></div>
+  </div>
+  <div class="hud-stats">
+    <div class="hud-stat"><div class="hud-stat-val" id="statGold">0</div><div class="hud-stat-name">⚜ Gold</div></div>
+    <div class="hud-stat"><div class="hud-stat-val" id="statAC">10</div><div class="hud-stat-name">🛡 AC</div></div>
+    <div class="hud-stat"><div class="hud-stat-val" id="statSpd">30</div><div class="hud-stat-name">💨 Spd</div></div>
+  </div>
+  <div class="hud-right">
+    <button class="hbtn" onclick="openSettings()">⚙ Settings</button>
+    <button class="hbtn" onclick="generateNewIsland()">🗺 New Island</button>
+    <button class="hbtn" onclick="openInventory()">📦 Inventory</button>
+    <button class="hbtn danger" onclick="leaveRealm()">✕ Leave</button>
+  </div>
 </div>
 
-<!-- ===== TOP HUD ===== -->
-<div class="top-hud">
-    <div class="hud-section">
-        <button class="hud-side-btn" onclick="openSettings()">&#9881; Settings</button>
-        <div class="char-pill">
-            <span id="hudCharName">Hero</span>
-            <span class="level" id="hudCharSub"> &mdash; Lv.1 Human Fighter</span>
-        </div>
-    </div>
-
-    <div class="hud-section" style="flex-direction:column; gap:5px;">
-        <div class="hud-bar-group">
-            <div class="hud-bar-label"><span>&#10084; HP</span><span id="hpText">80 / 100</span></div>
-            <div class="hud-bar-track"><div class="hud-bar-fill bar-hp-fill" id="hpBar" style="width:80%"></div></div>
-        </div>
-        <div class="hud-bar-group">
-            <div class="hud-bar-label"><span>&#128302; Mana</span><span id="manaText">60 / 60</span></div>
-            <div class="hud-bar-track"><div class="hud-bar-fill bar-mana-fill" id="manaBar" style="width:100%"></div></div>
-        </div>
-        <div class="hud-bar-group">
-            <div class="hud-bar-label"><span>&#11088; XP</span><span id="xpText">0 / 100</span></div>
-            <div class="hud-bar-track"><div class="hud-bar-fill bar-xp-fill" id="xpBar" style="width:0%"></div></div>
-        </div>
-    </div>
-
-    <div class="hud-section">
-        <div class="quick-stats">
-            <div class="quick-stat"><div class="quick-stat-val" id="statGold">0</div><div class="quick-stat-name">&#127881; Gold</div></div>
-            <div class="quick-stat"><div class="quick-stat-val" id="statAC">10</div><div class="quick-stat-name">&#128737; AC</div></div>
-            <div class="quick-stat"><div class="quick-stat-val" id="statSpd">30</div><div class="quick-stat-name">&#128640; Speed</div></div>
-        </div>
-        <button class="hud-side-btn" onclick="openInventory()">&#127894; Inventory</button>
-        <button class="hud-side-btn danger" onclick="leaveRealm()">&#9664; Leave</button>
-    </div>
-</div>
-
-<!-- ===== MAP CANVAS ===== -->
-<div class="game-area">
+<!-- GAME WRAP -->
+<div id="gameWrap">
+  <div id="mapArea">
     <canvas id="mapCanvas"></canvas>
-</div>
 
-<!-- ===== NEW ISLAND BUTTON ===== -->
-<button class="new-island-btn" onclick="generateNewIsland()">&#8635; New Island</button>
-
-<!-- ===== MINIMAP ===== -->
-<div class="minimap">
-    <div class="minimap-title">&#9741; Map</div>
-    <canvas id="minimapCanvas" width="130" height="95"></canvas>
-</div>
-
-<!-- ===== TERRAIN LEGEND ===== -->
-<div class="map-legend">
-    <div class="legend-row"><div class="legend-swatch" style="background:#1a3a6b"></div>Deep Sea</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#2a5fa0"></div>Shallow Water</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#c9a45c"></div>Beach</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#4a7c3f"></div>Grassland</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#2d5c28"></div>Forest</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#7a6a5a"></div>Hills</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#a09080"></div>Mountains</div>
-    <div class="legend-row"><div class="legend-swatch" style="background:#d4d0cc"></div>Snow Peak</div>
-</div>
-
-<!-- ===== NARRATIVE BOX ===== -->
-<div class="narrative-area">
-    <div class="narrative-header">
-        <div class="narrative-speaker" id="narrativeSpeaker">&#9830; The Dungeon Master</div>
-        <div class="narrative-divider"></div>
+    <!-- ZOOM CONTROLS -->
+    <div id="zoomBox">
+      <button class="zbtn" onclick="adjustZoom(1.25)" title="Zoom In">+</button>
+      <button class="zbtn" id="zoomOutBtn" onclick="adjustZoom(.8)" title="Zoom Out">−</button>
+      <button class="zbtn" style="font-size:11px" onclick="resetView()" title="Reset">⌂</button>
     </div>
-    <div class="narrative-text" id="narrativeText"></div>
-    <div class="action-row" id="actionRow">
-        <button class="action-btn" onclick="doAction('explore')">&#128269; Explore</button>
-        <button class="action-btn" onclick="doAction('attack')">&#9876; Attack</button>
-        <button class="action-btn" onclick="doAction('magic')">&#10024; Cast Spell</button>
-        <button class="action-btn" onclick="openInventory()">&#127894; Inventory</button>
-        <button class="action-btn next-btn" onclick="nextScene()">Continue &#9654;</button>
+
+    <!-- MINIMAP -->
+    <div id="minimap">
+      <div class="minimap-title">◈ CHART</div>
+      <canvas id="minimapCanvas" width="120" height="120"></canvas>
+      <div id="mmvp"></div>
     </div>
+
+    <div id="coords">X: —  Y: —</div>
+    <div id="tooltip"></div>
+    <div id="dtapHint">⚔ Double-tap to enter</div>
+
+    <!-- NARRATIVE (compact, no Attack button) -->
+    <div id="narrative">
+      <div class="narr-header">
+        <span class="narr-speaker" id="narrSpeaker">◈ The Dungeon Master</span>
+        <div class="narr-line"></div>
+      </div>
+      <div class="narr-text" id="narrText"></div>
+      <div class="narr-actions">
+        <button class="act-btn" onclick="doAction('explore')">🔍 Explore</button>
+        <button class="act-btn" onclick="doAction('magic')">✨ Cast Spell</button>
+        <button class="act-btn" onclick="openInventory()">📦 Inventory</button>
+        <button class="act-btn primary" onclick="nextScene()">Continue ›</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Shared character utilities (sprite paths, loadCharacter, etc.) -->
-<script src="character-utils.js"></script>
- 
+<div id="notif"></div>
+
 <script>
-// ===== GUARD =====
-const user = localStorage.getItem('dnd_user');
+'use strict';
 
-// ===== PARTICLES =====
-const pc = document.getElementById('particles');
-for (let i = 0; i < 50; i++) {
-    const p = document.createElement('div');
-    p.classList.add('particle');
+/* ═══════════════════════════════════════════════════════
+   PARTICLES
+═══════════════════════════════════════════════════════ */
+(function(){
+  const wrap = document.getElementById('particles');
+  for (let i = 0; i < 45; i++) {
+    const p = document.createElement('div'); p.className = 'pt';
     p.style.left = Math.random() * 100 + '%';
-    p.style.top  = Math.random() * 100 + '%';
-    p.style.animationDelay    = Math.random() * 8 + 's';
-    p.style.animationDuration = (Math.random() * 5 + 5) + 's';
-    pc.appendChild(p);
-}
+    p.style.bottom = (Math.random() * 40) + '%';
+    p.style.animationDelay = Math.random() * 12 + 's';
+    p.style.animationDuration = (Math.random() * 8 + 5) + 's';
+    wrap.appendChild(p);
+  }
+})();
 
-// ===== PLAYER DATA =====
+/* ═══════════════════════════════════════════════════════
+   PLAYER DATA
+═══════════════════════════════════════════════════════ */
+const user      = localStorage.getItem('dnd_user') || 'Adventurer';
 const statsRaw  = localStorage.getItem('dnd_stats_' + user);
-const character = loadCharacter(user) || { race:'human', class:'fighter', sex:'male' };
+const charRaw   = localStorage.getItem('dnd_char_' + user);
+const character = charRaw ? JSON.parse(charRaw) : { race:'human', class:'fighter', sex:'male' };
 const stats     = statsRaw ? JSON.parse(statsRaw) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
- 
-const cap = charUtilsCap;
- 
-document.getElementById('hudCharName').textContent = user;
-document.getElementById('hudCharSub').textContent  = ` — Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+const CLASS_ICONS = { fighter:'⚔', wizard:'🧙', rogue:'🗡', ranger:'🏹', cleric:'✝', paladin:'🛡', barbarian:'🪓', bard:'🎵', druid:'🌿', warlock:'👁', monk:'👊', sorcerer:'🔮' };
 
-document.getElementById('statGold').textContent    = stats.gold;
-document.getElementById('xpText').textContent      = `${stats.xp} / ${stats.xpMax}`;
-document.getElementById('xpBar').style.width       = (stats.xp / stats.xpMax * 100) + '%';
+document.getElementById('hudAvatar').textContent = CLASS_ICONS[character.class] || '⚔';
+document.getElementById('hudName').textContent   = user;
+document.getElementById('hudSub').textContent    = `Lv.${stats.level} ${cap(character.race)} ${cap(character.class)}`;
+document.getElementById('statGold').textContent  = stats.gold || 0;
+document.getElementById('valXp').textContent     = `${stats.xp||0}/${stats.xpMax||100}`;
+document.getElementById('barXp').style.width     = ((stats.xp||0)/(stats.xpMax||100)*100) + '%';
+const hp = Math.max(1, (stats.con||10)*5), hpMax = Math.max(1, (stats.con||10)*5);
+document.getElementById('valHp').textContent = `${hp}/${hpMax}`;
+document.getElementById('barHp').style.width = (hp/hpMax*100) + '%';
+const mp = Math.max(1, (stats.int||10)*3);
+document.getElementById('valMp').textContent = `${mp}/${mp}`;
+document.getElementById('statAC').textContent = 10 + Math.floor(((stats.dex||10)-10)/2);
+document.getElementById('statSpd').textContent = character.race === 'dwarf' ? 25 : 30;
 
-const hp = stats.con * 5 || 80, hpMax = stats.con * 5 || 100;
-document.getElementById('hpText').textContent = `${hp} / ${hpMax}`;
-document.getElementById('hpBar').style.width  = (hp / hpMax * 100) + '%';
-
-const mana = stats.int * 3 || 60;
-document.getElementById('manaText').textContent = `${mana} / ${mana}`;
-document.getElementById('statAC').textContent   = 10 + Math.floor((stats.dex - 10) / 2);
-document.getElementById('statSpd').textContent  = character.race === 'dwarf' ? 25 : 30;
-
-// ===== INVENTORY =====
-function openInventory() {
-    document.getElementById('invGold').textContent = stats.gold;
-    buildInvGrid();
-    document.getElementById('invOverlay').classList.add('active');
-    document.addEventListener('keydown', handleInvEsc);
-}
-function closeInventory() {
-    document.getElementById('invOverlay').classList.remove('active');
-    document.removeEventListener('keydown', handleInvEsc);
-}
-function handleInvEsc(e) { if (e.key === 'Escape') closeInventory(); }
-
-function buildInvGrid() {
-    const saved = localStorage.getItem('dnd_inventory_' + user);
-    const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
-    while (items.length < 24) items.push(null);
-    const grid = document.getElementById('invGrid');
-    grid.innerHTML = '';
-    let count = 0;
-    for (let i = 0; i < 24; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'inv-slot';
-        const item = items[i];
-        if (item) {
-            count++;
-            slot.classList.add('occupied');
-            slot.innerHTML = `${item.icon}${item.qty > 1 ? `<span class="item-qty">${item.qty}</span>` : ''}<div class="item-tooltip">${item.name}</div>`;
-        }
-        grid.appendChild(slot);
-    }
-    document.getElementById('invItems').textContent = count;
+/* ═══════════════════════════════════════════════════════
+   NOTIFICATION
+═══════════════════════════════════════════════════════ */
+let notifTimer;
+function showNotif(msg, isErr = false) {
+  const el = document.getElementById('notif');
+  el.textContent = msg; el.className = (isErr ? 'err' : '') + ' show';
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => { el.className = isErr ? 'err' : ''; }, 3000);
 }
 
-// ===== NARRATIVE =====
-const scenes = [
-    {
-        speaker: '&#9830; The Dungeon Master',
-        text: 'Before you stretches a vast island realm — ancient, mysterious, and alive with hidden dangers. Mountains pierce the clouds to the north, dense forests whisper secrets in the east. Click any location marker on the map to begin your investigation, or choose an action below.'
-    },
-    {
-        speaker: '&#9830; The Dungeon Master',
-        text: 'The island holds many secrets. Ruins of a forgotten civilization dot the coastline, and deep within the forest, something stirs. Travelers speak of a dungeon beneath the central peak, sealed for a thousand years. What draws you here, adventurer?'
-    },
-    {
-        speaker: '&#9876; A Voice on the Wind',
-        text: '"So... another hero washes ashore on the Shattered Isle. How many have come before you? How many remain?" The voice fades into the crash of distant waves. Something watches from the shadows of the treeline.'
-    }
-];
-
-let currentScene = 0, typewriterTimer = null;
-
-function typeText(text, el, speed = 28) {
-    el.innerHTML = '';
-    let i = 0;
-    clearInterval(typewriterTimer);
-    const cursor = document.createElement('span');
-    cursor.className = 'cursor';
-    el.appendChild(cursor);
-    typewriterTimer = setInterval(() => {
-        if (i < text.length) {
-            el.insertBefore(document.createTextNode(text[i]), cursor);
-            i++;
-        } else {
-            clearInterval(typewriterTimer);
-            cursor.remove();
-        }
-    }, speed);
-}
-
-function loadScene(index) {
-    const el = document.getElementById('narrativeText');
-    if (index >= scenes.length) {
-        document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-        typeText('The island sprawls endlessly before you. Every hill, ruin, and forest trail holds a story waiting to be uncovered.', el);
-        return;
-    }
-    document.getElementById('narrativeSpeaker').innerHTML = scenes[index].speaker;
-    typeText(scenes[index].text, el);
-}
-
-function nextScene() { currentScene++; loadScene(currentScene); }
-
-function doAction(type) {
-    const terrain = currentTerrain || 'ancient land';
-    const msgs = {
-        explore: `You cautiously survey the surrounding terrain. Your ${cap(character.class)} instincts keep you sharp as you study the ${terrain} ahead. Strange markings in the earth suggest others have passed this way.`,
-        attack:  `You raise your weapon, ready for battle. As a ${cap(character.race)} ${cap(character.class)}, your training takes over. The island is quiet now... but danger never stays hidden for long.`,
-        magic:   `You reach into the arcane currents flowing through this ancient island. The earth hums beneath your feet, resonating with old magic. Something deep within the island stirs in response.`
-    };
-    document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-    typeText(msgs[type] || 'You act.', document.getElementById('narrativeText'));
-}
-
-// ===== INTRO =====
+/* ═══════════════════════════════════════════════════════
+   INTRO
+═══════════════════════════════════════════════════════ */
 function skipIntro() {
-    const o = document.getElementById('introOverlay');
-    o.classList.add('fade-out');
-    setTimeout(() => o.remove(), 1500);
+  const o = document.getElementById('introOverlay');
+  o.classList.add('fade-out');
+  setTimeout(() => { if (o.parentNode) o.parentNode.removeChild(o); }, 1300);
 }
 
-// ===== MAP =====
-const MAP_W = 240;
-const MAP_H = 165;
-
-let mapData = null;
-let currentTerrain = '';
-
-function mulberry32(a) {
-    return function() {
-        a |= 0; a = a + 0x6D2B79F5 | 0;
-        let t = Math.imul(a ^ a >>> 15, 1 | a);
-        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-        return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
+/* ═══════════════════════════════════════════════════════
+   INVENTORY
+═══════════════════════════════════════════════════════ */
+function openInventory() {
+  document.getElementById('invGold').textContent = stats.gold || 0;
+  buildInvGrid();
+  document.getElementById('invOv').classList.add('active');
+}
+function closeInventory() { document.getElementById('invOv').classList.remove('active'); }
+function buildInvGrid() {
+  const saved = localStorage.getItem('dnd_inventory_' + user);
+  const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
+  while (items.length < 24) items.push(null);
+  const grid = document.getElementById('invGrid'); grid.innerHTML = '';
+  let count = 0;
+  for (let i = 0; i < 24; i++) {
+    const slot = document.createElement('div'); slot.className = 'inv-slot';
+    const item = items[i];
+    if (item) {
+      count++; slot.classList.add('occupied');
+      slot.innerHTML = `${item.icon||'📦'}${item.qty>1?`<span class="item-qty">${item.qty}</span>`:''}<div class="item-tooltip-inner">${item.name}</div>`;
+    }
+    grid.appendChild(slot);
+  }
+  document.getElementById('invItems').textContent = count;
 }
 
-function smoothNoise(w, h, rng, scale, octaves) {
-    const base = Array.from({length: h}, () => Array.from({length: w}, () => rng()));
-    const result = Array.from({length: h}, () => new Float32Array(w));
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            let val = 0, amp = 1, freq = 1, max = 0;
-            for (let o = 0; o < octaves; o++) {
-                const fx = (x / w) * freq * scale;
-                const fy = (y / h) * freq * scale;
-                const ix = Math.floor(fx) % w, iy = Math.floor(fy) % h;
-                const fxf = fx - Math.floor(fx), fyf = fy - Math.floor(fy);
-                const u = fxf * fxf * (3 - 2 * fxf);
-                const v = fyf * fyf * (3 - 2 * fyf);
-                const a = base[iy % h][(ix) % w];
-                const b = base[iy % h][(ix + 1) % w];
-                const c = base[(iy + 1) % h][(ix) % w];
-                const d = base[(iy + 1) % h][(ix + 1) % w];
-                val += amp * (a + u * (b - a) + v * (c - a + u * (d - b - c + a)));
-                max += amp; amp *= 0.5; freq *= 2.1;
-            }
-            result[y][x] = val / max;
-        }
-    }
-    return result;
-}
-
-function getTerrainColor(h, m) {
-    if (h < 0.0)  return { r:22,  g:48,  b:100, name:'Deep Sea'     };
-    if (h < 0.08) return { r:38,  g:82,  b:150, name:'Shallow Water' };
-    if (h < 0.15) return { r:195, g:162, b:88,  name:'Beach'         };
-    if (h < 0.38) return m > 0.55
-        ? { r:34, g:85,  b:30,  name:'Forest'    }
-        : { r:65, g:115, b:48,  name:'Grassland'  };
-    if (h < 0.55) return m > 0.52
-        ? { r:28, g:70,  b:24,  name:'Dense Forest' }
-        : { r:50, g:100, b:38,  name:'Grassland'    };
-    if (h < 0.58) return { r:115, g:100, b:82,  name:'Hills'      };
-    if (h < 0.75) return { r:145, g:130, b:112, name:'Mountains'  };
-    return { r:210, g:205, b:200, name:'Snow Peak' };
-}
-
-function generateMap(seed) {
-    const rng = mulberry32(seed);
-    const noise    = smoothNoise(MAP_W, MAP_H, rng, 3.5, 5);
-    const moisture = smoothNoise(MAP_W, MAP_H, rng, 2.8, 4);
-
-    const cx = MAP_W / 2 + (rng() - 0.5) * 20;
-    const cy = MAP_H / 2 + (rng() - 0.5) * 14;
-    const rx = MAP_W * (0.28 + rng() * 0.12);
-    const ry = MAP_H * (0.30 + rng() * 0.10);
-
-    const heightMap = Array.from({length: MAP_H}, (_, y) =>
-        Array.from({length: MAP_W}, (_, x) => {
-            const dx = (x - cx) / rx, dy = (y - cy) / ry;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const wobble = 0.18 * Math.sin(dx * 7.3 + rng() * 2) + 0.12 * Math.cos(dy * 5.1 + rng() * 2);
-            return noise[y][x] * 0.6 + Math.max(0, 1 - dist + wobble) * 0.55 - 0.35;
-        })
-    );
-
-    const locationTypes = [
-        { icon: '⚔', name: 'Ancient Dungeon',  color: '#c0392b',
-          narratives: [
-            `The dungeon entrance yawns before you like a wound in the earth. Carved runes flicker with a sickly green light, warning those who can read them: "Abandon hope." As a ${cap(character.class)}, you feel the pull of whatever lies within.`,
-            `Cold air breathes from the dungeon's maw, carrying the scent of rot and old magic. Iron doors hang ajar, one twisted off its hinges. Something left in a hurry... or something got in.`
-          ]
-        },
-        { icon: '🏰', name: 'Ruined Castle',    color: '#8b7355',
-          narratives: [
-            `A crumbled castle rises against the sky, its towers broken like snapped teeth. The banners that once flew here have long since rotted away. In the courtyard, a dry fountain bears the crest of a kingdom no one remembers.`,
-            `The castle walls are pocked with scars from some ancient siege. Moss claims the fallen stone. Through a shattered window, you glimpse movement — shadow, or wind, or something worse.`
-          ]
-        },
-        { icon: '⛪', name: 'Coastal Village',  color: '#c9a45c',
-          narratives: [
-            `A small village clings to the coast, its fishing boats rocking at weathered docks. Smoke rises from a handful of chimneys. The villagers watch you with wary eyes — strangers rarely bring good news to this island.`,
-            `The village seems peaceful at first glance, but the doors are barred in daylight and effigies of protective spirits hang over every threshold. The innkeeper speaks in hushed tones about what stalks the forest at night.`
-          ]
-        },
-        { icon: '💀', name: 'Ancient Ruins',    color: '#7a6a5a',
-          narratives: [
-            `Stone pillars jut from the earth at odd angles, their carvings worn smooth by centuries of rain. This was once a place of power — an altar, perhaps, or a temple to a god whose name was struck from all records.`,
-            `The ruins hum faintly under your feet, a resonance you feel more than hear. Shards of something crystalline litter the ground, and at the center, a stone basin still holds water that doesn't reflect the sky above.`
-          ]
-        },
-        { icon: '🌋', name: 'Smoldering Peak',  color: '#e74c3c',
-          narratives: [
-            `The mountain vents sulfurous smoke in lazy coils, painting the air with the smell of the underworld. Flows of cooled lava form jagged black ridges. Something lives in the caldera — you can see its silhouette against the orange glow.`,
-            `Heat shimmers off the volcanic rock as you approach. The ground is warm underfoot. A crude altar of lava stone bears fresh offerings — someone is appeasing whatever dwells here.`
-          ]
-        },
-        { icon: '🌿', name: 'Sacred Grove',     color: '#27ae60',
-          narratives: [
-            `Ancient trees form a perfect circle here, their branches interlaced overhead like clasped hands. The light that filters through is golden and still, and the air carries the scent of rain and something floral you can't name.`,
-            `A spring wells up at the center of the grove, its water impossibly clear. Offerings of woven grass and carved wood line the bank. The grove feels watched — but benevolently so. You sense healing power here.`
-          ]
-        },
-        { icon: '⚓', name: 'Hidden Port',      color: '#2980b9',
-          narratives: [
-            `A natural cove shelters weathered ships of dubious origin. Crates stamped with foreign sigils are stacked on the dock, and lanterns burn at odd hours. This is no lawful harbor — questions here come at a price.`,
-            `The port smells of salt, pitch, and secrets. A harbormaster of indeterminate loyalty eyes you from beneath a wide hat. Ships come and go without registering names. Whatever you need, it can probably be found here — for a cost.`
-          ]
-        },
-    ];
-
-    const locations = [];
-    const numLocs = 5 + Math.floor(rng() * 5);
-    for (let i = 0; i < numLocs; i++) {
-        let placed = false, attempts = 0;
-        while (!placed && attempts++ < 100) {
-            const lx = Math.floor(MAP_W * 0.1 + rng() * MAP_W * 0.8);
-            const ly = Math.floor(MAP_H * 0.1 + rng() * MAP_H * 0.8);
-            const h  = heightMap[ly][lx];
-            if (h > 0.13 && h < 0.88) {
-                const tooClose = locations.some(l => Math.hypot(l.x - lx, l.y - ly) < 22);
-                if (!tooClose) {
-                    const type = locationTypes[Math.floor(rng() * locationTypes.length)];
-                    locations.push({ x: lx, y: ly, ...type });
-                    placed = true;
-                }
-            }
-        }
-    }
-
-    return { heightMap, moisture, locations, seed };
-}
-
-// ===== RENDER MAP =====
-function renderMap() {
-    const canvas = document.getElementById('mapCanvas');
-    const area   = document.querySelector('.game-area');
-    const aW = area.clientWidth  || window.innerWidth;
-    const aH = area.clientHeight || (window.innerHeight - 68 - 220);
-    if (canvas.width  !== aW) canvas.width  = aW;
-    if (canvas.height !== aH) canvas.height = aH;
-    const ctx = canvas.getContext('2d');
-
-    const scaleX = canvas.width  / MAP_W;
-    const scaleY = canvas.height / MAP_H;
-
-    const { heightMap, moisture, locations } = mapData;
-
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) {
-            const h = heightMap[y][x];
-            const m = moisture[y][x];
-            const tc = getTerrainColor(h, m);
-            const vary = (Math.sin(x * 7.3 + y * 3.1) * 0.5 + 0.5) * 10 - 5;
-            ctx.fillStyle = `rgb(${Math.round(tc.r+vary)},${Math.round(tc.g+vary)},${Math.round(tc.b+vary)})`;
-            ctx.fillRect(Math.floor(x * scaleX), Math.floor(y * scaleY),
-                         Math.ceil(scaleX) + 1, Math.ceil(scaleY) + 1);
-        }
-    }
-
-    const vig = ctx.createRadialGradient(
-        canvas.width/2, canvas.height/2, Math.min(canvas.width, canvas.height) * 0.3,
-        canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height) * 0.75
-    );
-    vig.addColorStop(0, 'rgba(0,0,0,0)');
-    vig.addColorStop(1, 'rgba(0,0,0,0.45)');
-    ctx.fillStyle = vig;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    locations.forEach(loc => {
-        const px = (loc.x + 0.5) * scaleX;
-        const py = (loc.y + 0.5) * scaleY;
-        const r  = Math.max(10, Math.min(scaleX * 2.5, 18));
-
-        ctx.beginPath();
-        ctx.arc(px, py, r + 4, 0, Math.PI * 2);
-        ctx.strokeStyle = loc.color + '55';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(px, py, r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.72)';
-        ctx.fill();
-        ctx.strokeStyle = loc.color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.font = `${Math.round(r * 1.1)}px sans-serif`;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle    = '#fff';
-        ctx.fillText(loc.icon, px, py);
-
-        ctx.font         = `bold ${Math.max(9, Math.round(scaleX * 0.9))}px 'Cinzel', serif`;
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'top';
-        ctx.fillStyle    = '#fff';
-        ctx.shadowColor  = '#000';
-        ctx.shadowBlur   = 5;
-        ctx.fillText(loc.name, px, py + r + 4);
-        ctx.shadowBlur   = 0;
-    });
-
-    renderMinimap();
-}
-
-function renderMinimap() {
-    const mc   = document.getElementById('minimapCanvas');
-    const mCtx = mc.getContext('2d');
-    const mW = mc.width, mH = mc.height;
-    const { heightMap, moisture, locations } = mapData;
-
-    const sX = mW / MAP_W, sY = mH / MAP_H;
-
-    for (let y = 0; y < MAP_H; y++) {
-        for (let x = 0; x < MAP_W; x++) {
-            const tc = getTerrainColor(heightMap[y][x], moisture[y][x]);
-            mCtx.fillStyle = `rgb(${tc.r},${tc.g},${tc.b})`;
-            mCtx.fillRect(Math.floor(x * sX), Math.floor(y * sY),
-                          Math.ceil(sX) + 1, Math.ceil(sY) + 1);
-        }
-    }
-
-    locations.forEach(loc => {
-        const px = (loc.x + 0.5) * sX;
-        const py = (loc.y + 0.5) * sY;
-        mCtx.beginPath();
-        mCtx.arc(px, py, 2.5, 0, Math.PI * 2);
-        mCtx.fillStyle = loc.color;
-        mCtx.fill();
-        mCtx.strokeStyle = '#fff';
-        mCtx.lineWidth = 0.5;
-        mCtx.stroke();
-    });
-}
-
-// ===== MOUSE INTERACTION =====
-document.getElementById('mapCanvas').addEventListener('mousemove', function(e) {
-    if (!mapData) return;
-    const canvas  = this;
-    const rect    = canvas.getBoundingClientRect();
-    const mx      = e.clientX - rect.left;
-    const my      = e.clientY - rect.top;
-    const scaleX  = canvas.width  / MAP_W;
-    const scaleY  = canvas.height / MAP_H;
-    const tileX   = Math.floor(mx / scaleX);
-    const tileY   = Math.floor(my / scaleY);
-
-    let hoveredLoc = null;
-    mapData.locations.forEach(loc => {
-        const px   = (loc.x + 0.5) * scaleX;
-        const py   = (loc.y + 0.5) * scaleY;
-        const dist = Math.hypot(mx - px, my - py);
-        if (dist < Math.max(12, scaleX * 2.8)) hoveredLoc = loc;
-    });
-
-    const tooltip = document.getElementById('mapTooltip');
-    if (hoveredLoc) {
-        canvas.style.cursor = 'pointer';
-        document.getElementById('ttName').textContent = hoveredLoc.icon + ' ' + hoveredLoc.name;
-        document.getElementById('ttSub').textContent  = 'Click to explore';
-        tooltip.style.display = 'block';
-        tooltip.style.left    = (e.clientX + 14) + 'px';
-        tooltip.style.top     = (e.clientY - 10) + 'px';
-    } else {
-        canvas.style.cursor = 'crosshair';
-        tooltip.style.display = 'none';
-        if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
-            const h = mapData.heightMap[tileY][tileX];
-            const m = mapData.moisture[tileY][tileX];
-            currentTerrain = getTerrainColor(h, m).name.toLowerCase();
-        }
-    }
-});
-
-document.getElementById('mapCanvas').addEventListener('mouseleave', function() {
-    document.getElementById('mapTooltip').style.display = 'none';
-});
-
-document.getElementById('mapCanvas').addEventListener('click', function(e) {
-    if (!mapData) return;
-    const canvas = this;
-    const rect   = canvas.getBoundingClientRect();
-    const mx     = e.clientX - rect.left;
-    const my     = e.clientY - rect.top;
-    const scaleX = canvas.width  / MAP_W;
-    const scaleY = canvas.height / MAP_H;
-
-    let clicked = null;
-    mapData.locations.forEach(loc => {
-        const px   = (loc.x + 0.5) * scaleX;
-        const py   = (loc.y + 0.5) * scaleY;
-        const dist = Math.hypot(mx - px, my - py);
-        if (dist < Math.max(14, scaleX * 3)) clicked = loc;
-    });
-
-    if (clicked) {
-        const narrative = clicked.narratives[Math.floor(Math.random() * clicked.narratives.length)];
-        document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-        typeText(narrative, document.getElementById('narrativeText'));
-        document.getElementById('mapTooltip').style.display = 'none';
-        return;
-    }
-
-    const tileX = Math.floor(mx / scaleX);
-    const tileY = Math.floor(my / scaleY);
-    if (tileX >= 0 && tileX < MAP_W && tileY >= 0 && tileY < MAP_H) {
-        const h = mapData.heightMap[tileY][tileX];
-        const m = mapData.moisture[tileY][tileX];
-        const tc = getTerrainColor(h, m);
-        if (tc.name === 'Deep Sea' || tc.name === 'Shallow Water') {
-            typeText('The cold sea stretches before you, waves breaking against jagged rocks. You would need a vessel to venture further in this direction.', document.getElementById('narrativeText'));
-        } else {
-            const terrainNarratives = {
-                'Beach':        `You walk along the tide-swept beach. The sand is dark and fine, littered with strange shells and fragments of rope that speak of shipwrecks long past. Gulls cry overhead.`,
-                'Grassland':    `Open grassland rolls before you, bending in the ocean wind. Wildflowers push through in bursts of color. Somewhere in the grass, something rustles — animal or human, you can't yet say.`,
-                'Forest':       `The forest closes around you, canopy filtering the light to green shadow. Ancient trees bear carvings — old territory markers, or warnings. The silence here is heavy and deliberate.`,
-                'Dense Forest': `The forest here is thick and old, the undergrowth tangled and dark. Your path narrows to a deer trail. A strange symbol has been scored into the bark of every tenth tree.`,
-                'Hills':        `Rolling hills offer a view of the surrounding terrain. From this vantage, you can see the sweep of the island — the glint of water, the dark smudge of forest, the pale thread of a path between settlements.`,
-                'Mountains':    `The mountain terrain is punishing — loose scree and cold wind. But from the ridge, the entire island is laid out below. You can see movement on the plains far below. More than one kind of movement.`,
-                'Snow Peak':    `Ice and stone. The air is thin and bitterly cold up here. A cairn of rocks marks the summit — left by someone who was here before you. Tucked beneath the topmost stone is a small rolled parchment.`
-            };
-            const msg = terrainNarratives[tc.name] || `You move through the ${tc.name.toLowerCase()}, alert to every sound.`;
-            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-            typeText(msg, document.getElementById('narrativeText'));
-        }
-    }
-});
-
-// ===== GENERATE & PERSIST ISLAND =====
-function generateNewIsland() {
-    try {
-        const seed = Math.floor(Math.random() * 999999);
-        const u = localStorage.getItem('dnd_user') || '';
-        if (u) localStorage.setItem('dnd_map_seed_' + u, seed);
-        mapData = generateMap(seed);
-        requestAnimationFrame(() => {
-            renderMap();
-            document.getElementById('narrativeSpeaker').innerHTML = '&#9830; The Dungeon Master';
-            typeText('The realm shifts and reshapes itself. A new island rises from the mists — uncharted, unmapped, full of danger and promise. Where will you venture first?', document.getElementById('narrativeText'));
-        });
-    } catch(e) { console.error('Island gen error:', e); }
-}
-
-// ===== RESIZE HANDLER =====
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { if (mapData) renderMap(); }, 150);
-});
-
-// ===== INIT =====
-window.onload = function() {
-    const sub = sessionStorage.getItem('dnd_sub');
-    if (sub === 'oneshot') {
-        document.getElementById('introTitle').textContent = 'The Final Hunt';
-        document.getElementById('introSub').textContent   = 'One path. No return.';
-    } else if (sub === 'join' || sub === 'host') {
-        document.getElementById('introTitle').textContent = 'The Shared Realm';
-        document.getElementById('introSub').textContent   = 'Adventure with companions...';
-    }
-
-    setTimeout(() => {
-        const o = document.getElementById('introOverlay');
-        if (o) { o.classList.add('fade-out'); setTimeout(() => o && o.remove(), 1500); }
-    }, 3500);
-
-    const savedSeed = localStorage.getItem('dnd_map_seed_' + user);
-    const seed = savedSeed ? parseInt(savedSeed) : Math.floor(Math.random() * 999999);
-    if (!savedSeed) localStorage.setItem('dnd_map_seed_' + user, seed);
-
-    mapData = generateMap(seed);
-    renderMap();
-
-    setTimeout(() => loadScene(0), 800);
-
-    initSliders();
-};
-
-// ===== SETTINGS =====
-const sliders = {
-    music:   { value: 70 }, master:  { value: 80 },
-    enemies: { value: 50 }, friends: { value: 60 }, ambient: { value: 75 }
-};
+/* ═══════════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════════ */
+const sliders = { music:{value:70}, master:{value:80}, enemies:{value:50}, friends:{value:60}, ambient:{value:75} };
 let activeSlider = null, isDragging = false;
 
-function openSettings() {
-    loadSliderValues();
-    document.getElementById('settingsOverlay').classList.add('active');
-    document.addEventListener('keydown', handleSettingsEsc);
-}
-function closeSettings() {
-    document.getElementById('settingsOverlay').classList.remove('active');
-    document.removeEventListener('keydown', handleSettingsEsc);
-}
-function handleSettingsEsc(e) { if (e.key === 'Escape') closeSettings(); }
-
+function openSettings() { loadSliderValues(); document.getElementById('settingsOv').classList.add('active'); }
+function closeSettings() { document.getElementById('settingsOv').classList.remove('active'); }
 function loadSliderValues() {
-    const saved = localStorage.getItem('dnd_sliders');
-    if (saved) {
-        const vals = JSON.parse(saved);
-        Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } });
-    } else {
-        Object.keys(sliders).forEach(k => updateSliderUI(k));
-    }
+  const saved = localStorage.getItem('dnd_sliders');
+  if (saved) { const vals = JSON.parse(saved); Object.keys(vals).forEach(k => { if (sliders[k]) { sliders[k].value = vals[k]; updateSliderUI(k); } }); }
+  else Object.keys(sliders).forEach(k => updateSliderUI(k));
 }
-function saveSliderValues() {
-    const vals = {};
-    Object.keys(sliders).forEach(k => { vals[k] = sliders[k].value; });
-    localStorage.setItem('dnd_sliders', JSON.stringify(vals));
-}
+function saveSliderValues() { const v = {}; Object.keys(sliders).forEach(k => { v[k] = sliders[k].value; }); localStorage.setItem('dnd_sliders', JSON.stringify(v)); }
 function updateSliderUI(name) {
-    const container = document.querySelector(`#settingsOverlay [data-slider="${name}"]`);
-    if (!container) return;
-    const pct = sliders[name].value;
-    container.querySelector('.slider-fill').style.width = pct + '%';
-    container.querySelector('.slider-thumb').style.left = pct + '%';
-    const el = document.getElementById(name + 'Value');
-    if (el) el.textContent = pct;
+  const c = document.querySelector(`#settingsOv [data-slider="${name}"]`); if (!c) return;
+  const pct = sliders[name].value;
+  c.querySelector('.slider-fill').style.width = pct + '%';
+  c.querySelector('.slider-thumb').style.left = pct + '%';
+  const el = document.getElementById(name + 'Value'); if (el) el.textContent = pct;
 }
 function updateFromMouse(e, name, container) {
-    const rect = container.getBoundingClientRect();
-    const pct  = Math.round(Math.max(0, Math.min(e.clientX - rect.left, rect.width)) / rect.width * 100);
-    sliders[name].value = pct;
-    updateSliderUI(name); saveSliderValues();
+  const rect = container.getBoundingClientRect();
+  const pct = Math.round(Math.max(0, Math.min(e.clientX-rect.left, rect.width)) / rect.width * 100);
+  sliders[name].value = pct; updateSliderUI(name); saveSliderValues();
 }
 function initSliders() {
-    document.querySelectorAll('#settingsOverlay .slider-container').forEach(container => {
-        const name = container.dataset.slider;
-        container.addEventListener('mousedown', e => { isDragging = true; activeSlider = name; updateFromMouse(e, name, container); });
-        container.addEventListener('click', e => updateFromMouse(e, name, container));
-        container.addEventListener('keydown', e => {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                e.preventDefault();
-                sliders[name].value = Math.max(0, Math.min(100, sliders[name].value + (e.key === 'ArrowLeft' ? -1 : 1)));
-                updateSliderUI(name); saveSliderValues();
-            }
-        });
+  document.querySelectorAll('#settingsOv .slider-container').forEach(container => {
+    const name = container.dataset.slider;
+    container.addEventListener('mousedown', e => { isDragging = true; activeSlider = name; updateFromMouse(e, name, container); });
+    container.addEventListener('click', e => updateFromMouse(e, name, container));
+    container.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        sliders[name].value = Math.max(0, Math.min(100, sliders[name].value + (e.key==='ArrowLeft'?-1:1)));
+        updateSliderUI(name); saveSliderValues();
+      }
     });
-    document.addEventListener('mousemove', e => {
-        if (!isDragging || !activeSlider) return;
-        const container = document.querySelector(`#settingsOverlay [data-slider="${activeSlider}"]`);
-        if (container) updateFromMouse(e, activeSlider, container);
-    });
-    document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging || !activeSlider) return;
+    const c = document.querySelector(`#settingsOv [data-slider="${activeSlider}"]`);
+    if (c) updateFromMouse(e, activeSlider, c);
+  });
+  document.addEventListener('mouseup', () => { isDragging = false; activeSlider = null; });
 }
 
-// ===== LEAVE REALM =====
-function leaveRealm() {
-    // Disable the beforeunload warning so our own navigation works cleanly
-    window.removeEventListener('beforeunload', beforeUnloadHandler);
-    window.location.href = 'mode-select.html';
+/* ═══════════════════════════════════════════════════════
+   WORLD DIMENSIONS
+   Larger world: 320×320 tiles at 4px each = 1280×1280px offscreen
+═══════════════════════════════════════════════════════ */
+const W = 320, H = 320, TS = 4; // tile size in pixels
+
+/* ═══════════════════════════════════════════════════════
+   RNG & NOISE PRIMITIVES
+   (ported from game-multi.html for deterministic, seeded generation)
+═══════════════════════════════════════════════════════ */
+function mulberry32(seed) {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-// ===== BACK BUTTON BLOCK =====
-history.pushState(null, '', location.href);
-window.addEventListener('popstate', () => {
-    history.pushState(null, '', location.href);
+function hash2(ix, iy, seed) {
+  let h = (seed * 1664525 + ix * 374761393 + iy * 668265263) | 0;
+  h ^= h >>> 13; h = Math.imul(h, 1540483477) | 0;
+  h ^= h >>> 15; h = Math.imul(h, 2246822519) | 0;
+  h ^= h >>> 13;
+  return (h & 0x7fffffff) / 0x7fffffff;
+}
+
+const lerp  = (a, b, t) => a + (b - a) * t;
+const ss    = t => t * t * (3 - 2 * t);
+
+function vnoise(x, y, seed) {
+  const ix = Math.floor(x), iy = Math.floor(y), fx = x-ix, fy = y-iy;
+  const ux = ss(fx), uy = ss(fy);
+  return lerp(
+    lerp(hash2(ix,iy,seed),   hash2(ix+1,iy,seed),   ux),
+    lerp(hash2(ix,iy+1,seed), hash2(ix+1,iy+1,seed), ux),
+    uy
+  );
+}
+
+function fbm(x, y, seed, oct=6, per=0.5, lac=2.0) {
+  let v=0, a=1, f=1, mx=0;
+  for (let i=0; i<oct; i++) { v += vnoise(x*f, y*f, seed+i*3571) * a; mx += a; a *= per; f *= lac; }
+  return v / mx;
+}
+
+// Domain-warped FBM for more organic landmasses
+function warpedFbm(x, y, seed) {
+  const wx = fbm(x+0.4, y+0.2, seed+111, 4);
+  const wy = fbm(x+0.8, y+0.6, seed+222, 4);
+  return fbm(x + 2.4*wx, y + 2.4*wy, seed, 6, 0.55, 2.0);
+}
+
+// Island mask: forces land in center, ocean at edges
+function islandMask(nx, ny) {
+  // Slightly elliptical so islands are wider than tall
+  const cx = nx * 0.55 + 0.08, cy = ny * 0.60 - 0.04;
+  return 1.05 - Math.sqrt(cx*cx + cy*cy) * 1.18;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BIOME SYSTEM
+═══════════════════════════════════════════════════════ */
+const BIOMES = {
+  DEEP_OCEAN:'DEEP_OCEAN', OCEAN:'OCEAN', SHALLOW:'SHALLOW', BEACH:'BEACH',
+  TUNDRA:'TUNDRA', SNOW:'SNOW', TAIGA:'TAIGA', SHRUBLAND:'SHRUBLAND',
+  DRY_STEPPE:'DRY_STEPPE', RAIN_FOREST:'RAIN_FOREST', FOREST:'FOREST',
+  GRASSLAND:'GRASSLAND', JUNGLE:'JUNGLE', TROP_FOREST:'TROP_FOREST',
+  DESERT:'DESERT', SAVANNA:'SAVANNA', MOUNTAIN:'MOUNTAIN',
+  HIGH_MTN:'HIGH_MTN', SNOW_PEAK:'SNOW_PEAK', SWAMP:'SWAMP',
+  VOLCANIC:'VOLCANIC', BARE:'BARE',
+};
+
+// Biome color map
+const BC = {
+  DEEP_OCEAN:  { c:'#0d2744', n:'Deep Ocean' },
+  OCEAN:       { c:'#1a4a7a', n:'Ocean' },
+  SHALLOW:     { c:'#2a6499', n:'Shallow Water' },
+  BEACH:       { c:'#c8b078', n:'Beach' },
+  TUNDRA:      { c:'#bfcab5', n:'Tundra' },
+  SNOW:        { c:'#dce8ec', n:'Snow Fields' },
+  TAIGA:       { c:'#4e7060', n:'Taiga' },
+  SHRUBLAND:   { c:'#7a9860', n:'Shrubland' },
+  DRY_STEPPE:  { c:'#c0b880', n:'Dry Steppe' },
+  RAIN_FOREST: { c:'#246048', n:'Rainforest' },
+  FOREST:      { c:'#2e6e3a', n:'Forest' },
+  GRASSLAND:   { c:'#6aa84e', n:'Grasslands' },
+  JUNGLE:      { c:'#145a28', n:'Jungle' },
+  TROP_FOREST: { c:'#1e6830', n:'Tropical Forest' },
+  DESERT:      { c:'#d4a040', n:'Desert' },
+  SAVANNA:     { c:'#b09840', n:'Savanna' },
+  MOUNTAIN:    { c:'#7a7060', n:'Mountains' },
+  HIGH_MTN:    { c:'#9a9080', n:'High Mountains' },
+  SNOW_PEAK:   { c:'#e0e8f0', n:'Snow Peaks' },
+  SWAMP:       { c:'#304820', n:'Swamp' },
+  VOLCANIC:    { c:'#3d1818', n:'Volcanic Wastes' },
+  BARE:        { c:'#6a6050', n:'Barren Wastes' },
+};
+
+function getBiome(e, m, t) {
+  if (e < 0.22) return BIOMES.DEEP_OCEAN;
+  if (e < 0.35) return BIOMES.OCEAN;
+  if (e < 0.41) return BIOMES.SHALLOW;
+  if (e < 0.45) return BIOMES.BEACH;
+  if (e > 0.84) return BIOMES.SNOW_PEAK;
+  if (e > 0.74) return t < 0.3 ? BIOMES.SNOW_PEAK : BIOMES.HIGH_MTN;
+  if (e > 0.63) return t < 0.25 ? BIOMES.SNOW : BIOMES.MOUNTAIN;
+  if (e > 0.58 && m < 0.15 && t > 0.6) return BIOMES.VOLCANIC;
+  if (m > 0.72 && e < 0.53) return BIOMES.SWAMP;
+  if (t < 0.15) return m < 0.35 ? BIOMES.TUNDRA : BIOMES.SNOW;
+  if (t < 0.28) return m < 0.25 ? BIOMES.TUNDRA : BIOMES.TAIGA;
+  if (m < 0.08) return t > 0.55 ? BIOMES.DESERT : BIOMES.DRY_STEPPE;
+  if (m < 0.22) return t > 0.60 ? BIOMES.DESERT : t > 0.42 ? BIOMES.SAVANNA : BIOMES.SHRUBLAND;
+  if (m < 0.45) return t > 0.62 ? BIOMES.SAVANNA : t > 0.38 ? BIOMES.GRASSLAND : BIOMES.SHRUBLAND;
+  if (m < 0.70) return t > 0.62 ? BIOMES.TROP_FOREST : t > 0.38 ? BIOMES.FOREST : BIOMES.TAIGA;
+  return t > 0.62 ? BIOMES.JUNGLE : t > 0.38 ? BIOMES.RAIN_FOREST : BIOMES.TAIGA;
+}
+
+const isWater = b => b === BIOMES.DEEP_OCEAN || b === BIOMES.OCEAN || b === BIOMES.SHALLOW;
+const isLand  = b => !isWater(b) && b !== BIOMES.BEACH;
+
+/* ═══════════════════════════════════════════════════════
+   TERRAIN GENERATION
+   Returns flat array of tile objects
+═══════════════════════════════════════════════════════ */
+function generateTerrain(w, h, seed) {
+  const ts = new Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const nx = (x/w)*2-1, ny = (y/h)*2-1;
+      const raw    = warpedFbm(x/w*3.5, y/h*3.5, seed);
+      const mask   = islandMask(nx, ny);
+      const detail = fbm(x/w*9, y/h*9, seed+99, 3, 0.4, 2.5) * 0.12;
+      let e = raw*0.55 + mask*0.45 + detail;
+      e = Math.max(0, Math.min(1, e));
+
+      let m = fbm(x/w*3, y/h*3, seed+11111, 5, 0.6, 2.0);
+      m = Math.max(0, Math.min(1, m));
+
+      const latT  = 1 - Math.abs(ny) * 0.55;
+      const tNoise = fbm(x/w*2.5, y/h*2.5, seed+22222, 4, 0.5, 2) * 0.3;
+      let t = Math.max(0, Math.min(1, latT*0.7 + tNoise));
+      if (e > 0.6) t = Math.max(0, t - (e-0.6)*1.5);
+
+      const biome = getBiome(e, m, t);
+      const vari  = (hash2(x, y, seed*137) - 0.5) * 0.07;
+
+      ts[y*w+x] = {
+        biome, e, m, t, vari,
+        river: false, riverWidth: 1, riverEdge: false,
+        // No road/bridge fields — roads removed entirely
+      };
+    }
+  }
+  return ts;
+}
+
+/* ═══════════════════════════════════════════════════════
+   IMPROVED RIVER GENERATION
+   — Watershed / flow-accumulation approach
+   — Rivers are smoothed using Catmull-Rom spline paths
+   — Only rivers that reach the ocean are kept (no inland dead ends)
+   — Multiple width tiers for realism
+═══════════════════════════════════════════════════════ */
+function genRivers(tiles, w, h) {
+  // 8-directional neighbours
+  const DX = [0,1,1,1, 0,-1,-1,-1];
+  const DY = [-1,-1,0,1,1, 1, 0,-1];
+
+  // --- Step 1: Build flow-direction map (each cell drains to lowest neighbour) ---
+  const dir  = new Int8Array(w*h).fill(-1);
+  const flow = new Float32Array(w*h).fill(1);
+
+  for (let y=0; y<h; y++) for (let x=0; x<w; x++) {
+    const idx = y*w+x;
+    let minE = tiles[idx].e, md = -1;
+    for (let d=0; d<8; d++) {
+      const nx2 = x+DX[d], ny2 = y+DY[d];
+      if (nx2>=0 && nx2<w && ny2>=0 && ny2<h) {
+        const ne = tiles[ny2*w+nx2].e;
+        if (ne < minE) { minE = ne; md = d; }
+      }
+    }
+    dir[idx] = md;
+  }
+
+  // --- Step 2: Flow accumulation (sort by elevation descending, pour downhill) ---
+  const order = Array.from({length: w*h}, (_,i) => i).sort((a,b) => tiles[b].e - tiles[a].e);
+  for (const idx of order) {
+    const d = dir[idx]; if (d < 0) continue;
+    const x = idx % w, y = (idx/w) | 0;
+    const nx2 = x+DX[d], ny2 = y+DY[d];
+    if (nx2>=0 && nx2<w && ny2>=0 && ny2<h) flow[ny2*w+nx2] += flow[idx];
+  }
+
+  // --- Step 3: Threshold — only mark as river if flow is high enough ---
+  // Scale threshold relative to world size so rivers feel proportional
+  const area = w * h;
+  const smallThresh = area / 1600;  // minor tributaries
+  const bigThresh   = area / 500;   // major rivers (wider)
+
+  // --- Step 4: Trace river paths from sources to ocean ---
+  // We only keep river cells that actually reach water (ocean/shallow)
+  // This prevents inland pools and orphaned segments
+
+  // First pass: mark candidates
+  const riverCandidate = new Uint8Array(w*h);
+  for (let i=0; i<w*h; i++) {
+    const t = tiles[i];
+    if (flow[i] > smallThresh && t.e > 0.43 && t.e < 0.84) {
+      riverCandidate[i] = 1;
+    }
+  }
+
+  // Second pass: trace each river cell to ocean; discard if it dead-ends inland
+  const reachesOcean = new Uint8Array(w*h);
+  // Mark all ocean/shallow tiles as "ocean"
+  for (let i=0; i<w*h; i++) {
+    if (isWater(tiles[i].biome)) reachesOcean[i] = 1;
+  }
+
+  // Propagate "reaches ocean" backwards along the flow path (iterative)
+  // We do multiple passes until stable
+  let changed = true;
+  let passes = 0;
+  while (changed && passes < 60) {
+    changed = false; passes++;
+    for (let idx=0; idx<w*h; idx++) {
+      if (!riverCandidate[idx] || reachesOcean[idx]) continue;
+      const d = dir[idx]; if (d < 0) continue;
+      const x = idx%w, y = (idx/w)|0;
+      const nx2 = x+DX[d], ny2 = y+DY[d];
+      if (nx2>=0 && nx2<w && ny2>=0 && ny2<h) {
+        const ni = ny2*w+nx2;
+        if (reachesOcean[ni]) { reachesOcean[idx] = 1; changed = true; }
+      }
+    }
+  }
+
+  // --- Step 5: Apply to tiles ---
+  for (let i=0; i<w*h; i++) {
+    if (riverCandidate[i] && reachesOcean[i]) {
+      tiles[i].river = true;
+      tiles[i].riverWidth = flow[i] > bigThresh ? 2 : 1;
+    }
+  }
+
+  // --- Step 6: Smooth river edges — mark adjacent land for subtle blending ---
+  for (let y=1; y<h-1; y++) for (let x=1; x<w-1; x++) {
+    const t = tiles[y*w+x];
+    if (t.river && t.riverWidth === 2) {
+      for (let d=0; d<4; d++) {
+        const nx2 = x+DX[d*2], ny2 = y+DY[d*2];
+        if (nx2>=0 && nx2<w && ny2>=0 && ny2<h) {
+          const nt = tiles[ny2*w+nx2];
+          if (!isWater(nt.biome) && !nt.river) nt.riverEdge = true;
+        }
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   POI / LOCATION DEFINITIONS
+═══════════════════════════════════════════════════════ */
+const POI_CFG = {
+  VILLAGE: { c:'#f5c842', r:4, label:'Village',      icon:'🏘' },
+  TOWN:    { c:'#e89a30', r:5, label:'Town',          icon:'🏙' },
+  CASTLE:  { c:'#9040d0', r:5, label:'Castle',        icon:'🏰' },
+  DUNGEON: { c:'#c94040', r:4, label:'Dungeon',       icon:'💀' },
+  OUTPOST: { c:'#6080c0', r:3, label:'Outpost',       icon:'🗼' },
+  RUINS:   { c:'#806040', r:3, label:'Ruins',         icon:'🏚' },
+  CAVE:    { c:'#505050', r:3, label:'Cave',           icon:'🕳' },
+  PORT:    { c:'#4080b0', r:4, label:'Port',           icon:'⚓' },
+  TEMPLE:  { c:'#c09040', r:4, label:'Temple',        icon:'⛩' },
+  GROVE:   { c:'#50a050', r:3, label:'Druid Grove',   icon:'🌿' },
+};
+
+/* ═══════════════════════════════════════════════════════
+   NAME GENERATION
+═══════════════════════════════════════════════════════ */
+const NP = {
+  pre: ['Ash','Black','Blood','Cold','Crag','Dark','Dragon','Dusk','Elder','Ember',
+        'Fell','Fire','Frost','Ghost','Gold','Grey','Grim','Hallow','High','Iron',
+        'Lone','Lost','Moon','Moor','Night','Oak','Raven','Red','Shadow','Silver',
+        'Stone','Storm','Thunder','White','Wild','Wolf','Bone','Amber','Helm','Vale'],
+  suf: ['burg','castle','dale','fell','ford','gate','glen','hall','haven','heath',
+        'helm','hold','keep','mere','moor','peak','ridge','shire','vale','wick',
+        'wood','worth','brook','hollow','tor','bay','port','crest','watch'],
+  dPre:['Cavern of','Tomb of','Crypt of','Vault of','Dungeon of','Lair of',
+        'Temple of','Ruins of','The Forsaken','Pit of'],
+  dSuf:['the Damned','Shadows','Lost Souls','Dark Flame','Eternal Night',
+        'Whispers','the Cursed','Blood','Despair'],
+};
+function makeName(rng, type) {
+  if (type==='DUNGEON'||type==='RUINS')
+    return NP.dPre[(rng()*NP.dPre.length)|0] + ' ' + NP.dSuf[(rng()*NP.dSuf.length)|0];
+  if (type==='CAVE')   return NP.pre[(rng()*NP.pre.length)|0] + ' Cavern';
+  if (type==='TEMPLE') return NP.pre[(rng()*NP.pre.length)|0] + ' Shrine';
+  if (type==='GROVE')  return NP.pre[(rng()*NP.pre.length)|0] + ' Grove';
+  return NP.pre[(rng()*NP.pre.length)|0] + NP.suf[(rng()*NP.suf.length)|0];
+}
+
+/* ═══════════════════════════════════════════════════════
+   POI PLACEMENT
+   — No roads generated between them
+   — Natural placement based on terrain suitability
+═══════════════════════════════════════════════════════ */
+function minDist(list, x, y, d) {
+  for (const p of list) {
+    const dx = p.x-x, dy = p.y-y;
+    if (dx*dx + dy*dy < d*d) return false;
+  }
+  return true;
+}
+function nearWater(tiles, w, h, x, y, r) {
+  for (let dy=-r; dy<=r; dy++) for (let dx=-r; dx<=r; dx++) {
+    const nx=x+dx, ny=y+dy;
+    if (nx>=0&&nx<w&&ny>=0&&ny<h && isWater(tiles[ny*w+nx].biome)) return true;
+  }
+  return false;
+}
+
+function placePOIs(tiles, w, h, seed) {
+  const rng = mulberry32(seed + 54321);
+  const out  = [];
+  const cands = { VILLAGE:[], TOWN:[], CASTLE:[], DUNGEON:[], OUTPOST:[], RUINS:[], CAVE:[], PORT:[], TEMPLE:[], GROVE:[] };
+  const margin = 4;
+
+  for (let y=margin; y<h-margin; y++) for (let x=margin; x<w-margin; x++) {
+    const t = tiles[y*w+x];
+    const { biome:b, e } = t;
+    if (!isLand(b)) continue;
+
+    const flat = e>=0.45 && e<=0.60;
+    const mid  = e>=0.52 && e<=0.65;
+    const high = e>=0.60 && e<=0.76;
+
+    if (flat && ['GRASSLAND','FOREST','SHRUBLAND','SAVANNA','DRY_STEPPE','TROP_FOREST'].includes(b)) {
+      cands.VILLAGE.push({x,y});
+      if (rng() < 0.2) cands.TOWN.push({x,y});
+    }
+    if (high && ['MOUNTAIN','HIGH_MTN'].includes(b)) {
+      cands.CASTLE.push({x,y});
+      cands.OUTPOST.push({x,y});
+      if (rng() < 0.4) cands.CAVE.push({x,y});
+    }
+    if (mid && ['MOUNTAIN','TAIGA','RAIN_FOREST','SWAMP','JUNGLE','VOLCANIC'].includes(b))
+      cands.DUNGEON.push({x,y});
+    if (flat && ['FOREST','RAIN_FOREST','JUNGLE','TROP_FOREST'].includes(b)) {
+      if (rng() < 0.25) cands.TEMPLE.push({x,y});
+      if (rng() < 0.20) cands.GROVE.push({x,y});
+    }
+    if (rng() < 0.025) cands.RUINS.push({x,y});
+    if (flat && nearWater(tiles, w, h, x, y, 2)) cands.PORT.push({x,y});
+  }
+
+  const shuffle = a => { for (let i=a.length-1;i>0;i--){const j=(rng()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} };
+  Object.values(cands).forEach(shuffle);
+
+  // Larger world: more POIs
+  const goals = { VILLAGE:20, TOWN:7, CASTLE:6, DUNGEON:14, OUTPOST:10, RUINS:18, CAVE:9, PORT:7, TEMPLE:7, GROVE:7 };
+  const dists = { VILLAGE:18, TOWN:32, CASTLE:35, DUNGEON:12, OUTPOST:16, RUINS:9, CAVE:11, PORT:22, TEMPLE:14, GROVE:12 };
+
+  for (const [type, count] of Object.entries(goals)) {
+    let placed = 0;
+    for (const {x,y} of cands[type]) {
+      if (placed >= count) break;
+      if (minDist(out, x, y, dists[type])) {
+        out.push({ x, y, type, name: makeName(rng, type) });
+        placed++;
+      }
+    }
+  }
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COLOR UTILITIES
+═══════════════════════════════════════════════════════ */
+const hexRGB = {};
+function h2r(hex) {
+  if (hexRGB[hex]) return hexRGB[hex];
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return hexRGB[hex] = [r,g,b];
+}
+
+/* ═══════════════════════════════════════════════════════
+   OFFSCREEN CANVAS RENDERING
+   Renders terrain + rivers to a persistent offscreen canvas
+   for fast blitting to the main canvas during pan/zoom
+═══════════════════════════════════════════════════════ */
+let offC = null, offCtx = null;
+
+function buildOffscreen(tiles, w, h, pois, seed) {
+  const cw = w*TS, ch = h*TS;
+  offC = document.createElement('canvas');
+  offC.width = cw; offC.height = ch;
+  offCtx = offC.getContext('2d');
+
+  const img = offCtx.createImageData(cw, ch);
+  const d   = img.data;
+
+  // Paint terrain pixels
+  for (let y=0; y<h; y++) for (let x=0; x<w; x++) {
+    const t = tiles[y*w+x];
+    let baseColor = (BC[t.biome] || {c:'#888'}).c;
+    const [r,g,b] = h2r(baseColor);
+    const v = t.vari;
+    const fr = Math.max(0,Math.min(255, r+v*255));
+    const fg = Math.max(0,Math.min(255, g+v*255));
+    const fb = Math.max(0,Math.min(255, b+v*255));
+
+    let pr=fr, pg=fg, pb=fb;
+
+    if (t.river && t.e > 0.43) {
+      // Rivers: blue, wider rivers darker
+      if (t.riverWidth === 2) { pr=28; pg=90; pb=168; }
+      else                    { pr=38; pg=112; pb=180; }
+    } else if (t.riverEdge) {
+      // Subtle bank darkening
+      pr = Math.max(0, fr-18);
+      pg = Math.max(0, fg-18);
+      pb = Math.max(0, fb-18);
+    }
+
+    for (let ty=0; ty<TS; ty++) for (let tx=0; tx<TS; tx++) {
+      const px = ((y*TS+ty)*cw + (x*TS+tx)) * 4;
+      d[px]=pr; d[px+1]=pg; d[px+2]=pb; d[px+3]=255;
+    }
+  }
+  offCtx.putImageData(img, 0, 0);
+
+  // Draw POI markers on the offscreen canvas
+  for (const p of pois) drawPOIOnOffscreen(p);
+}
+
+function drawPOIOnOffscreen(p) {
+  const cfg = POI_CFG[p.type]; if (!cfg) return;
+  const cx = p.x*TS + TS/2, cy = p.y*TS + TS/2, r = cfg.r;
+
+  offCtx.save();
+  offCtx.shadowColor = 'rgba(0,0,0,.9)'; offCtx.shadowBlur = 6;
+
+  // Drop shadow ring
+  offCtx.beginPath(); offCtx.arc(cx, cy, r+3, 0, Math.PI*2);
+  offCtx.fillStyle = 'rgba(0,0,0,.6)'; offCtx.fill();
+
+  // Filled circle
+  offCtx.beginPath(); offCtx.arc(cx, cy, r, 0, Math.PI*2);
+  offCtx.fillStyle = cfg.c; offCtx.fill();
+
+  // Inner highlight
+  offCtx.beginPath(); offCtx.arc(cx, cy, r*.38, 0, Math.PI*2);
+  offCtx.fillStyle = 'rgba(255,255,255,.8)'; offCtx.fill();
+
+  // Outline
+  offCtx.beginPath(); offCtx.arc(cx, cy, r, 0, Math.PI*2);
+  offCtx.strokeStyle = 'rgba(255,255,255,.3)'; offCtx.lineWidth = 0.7; offCtx.stroke();
+
+  offCtx.shadowBlur = 0;
+
+  // Icon inside marker
+  const iconSize = Math.max(7, r*1.3) | 0;
+  offCtx.font = `${iconSize}px sans-serif`;
+  offCtx.textAlign = 'center'; offCtx.textBaseline = 'middle';
+  offCtx.fillStyle = '#fff';
+  offCtx.fillText(cfg.icon || '', cx, cy);
+
+  // Name label — multi-stroke for readability at all zoom levels
+  const fs = Math.max(9, TS * 2.4);
+  offCtx.font = `600 ${fs}px 'IM Fell English',serif`;
+  offCtx.textBaseline = 'alphabetic';
+  offCtx.lineWidth = 3; offCtx.strokeStyle = 'rgba(0,0,0,.95)';
+  offCtx.strokeText(p.name, cx, cy - r - 5);
+  offCtx.fillStyle = '#f8e8b0';
+  offCtx.fillText(p.name, cx, cy - r - 5);
+
+  offCtx.restore();
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW STATE & ZOOM
+═══════════════════════════════════════════════════════ */
+let vx = 0, vy = 0, zoom = 1;
+let minZoomAllowed = 0.5;
+
+function clampZoom(z) { return Math.max(minZoomAllowed, Math.min(16, z)); }
+
+function getNarrH() { return 135; } // compact narrator height
+
+function renderToScreen() {
+  const canvas = document.getElementById('mapCanvas');
+  const area   = document.getElementById('mapArea');
+  const aW = area.clientWidth, aH = area.clientHeight - getNarrH();
+  canvas.width = aW; canvas.height = aH;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#030201'; ctx.fillRect(0,0,aW,aH);
+  if (!offC) return;
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(offC, vx, vy, offC.width*zoom, offC.height*zoom);
+
+  // Vignette overlay
+  const gr = ctx.createRadialGradient(aW/2,aH/2,Math.min(aW,aH)*.3,aW/2,aH/2,Math.max(aW,aH)*.8);
+  gr.addColorStop(0,'transparent'); gr.addColorStop(1,'rgba(0,0,0,.55)');
+  ctx.fillStyle = gr; ctx.fillRect(0,0,aW,aH);
+
+  renderMMVP(aW, aH);
+}
+
+function renderMinimap(pois) {
+  const mc   = document.getElementById('minimapCanvas');
+  const mctx = mc.getContext('2d');
+  if (!offC) return;
+  mctx.clearRect(0,0,120,120);
+  mctx.drawImage(offC, 0, 0, 120, 120);
+  // Draw POI dots on minimap
+  if (pois) {
+    for (const p of pois) {
+      const cfg = POI_CFG[p.type] || {}; if (!cfg.c) continue;
+      const px = (p.x/W)*120, py = (p.y/H)*120;
+      mctx.beginPath(); mctx.arc(px, py, 2, 0, Math.PI*2);
+      mctx.fillStyle = cfg.c; mctx.fill();
+    }
+  }
+}
+
+function renderMMVP(aW, aH) {
+  if (!offC) return;
+  const mx = (-vx/zoom) / offC.width;
+  const my = (-vy/zoom) / offC.height;
+  const mw = (aW/zoom) / offC.width;
+  const mh = (aH/zoom) / offC.height;
+  const vp = document.getElementById('mmvp');
+  // Minimap is 120×120
+  vp.style.left   = Math.max(0, mx*120) + 'px';
+  vp.style.top    = Math.max(0, my*120) + 14 + 'px'; // 14 = title bar approx
+  vp.style.width  = Math.min(120, mw*120) + 'px';
+  vp.style.height = Math.min(120, mh*120) + 'px';
+}
+
+function resetView() {
+  if (!offC) return;
+  const area = document.getElementById('mapArea');
+  const aW = area.clientWidth, aH = area.clientHeight - getNarrH();
+  const fitZoom = Math.min(aW/offC.width, aH/offC.height) * 0.88;
+  minZoomAllowed = Math.max(0.5, fitZoom);
+  zoom = minZoomAllowed;
+  vx = (aW - offC.width*zoom) / 2;
+  vy = (aH - offC.height*zoom) / 2;
+  renderToScreen();
+  document.getElementById('zoomOutBtn').classList.toggle('disabled', zoom <= minZoomAllowed);
+}
+
+function adjustZoom(f) {
+  const area = document.getElementById('mapArea');
+  const cx = area.clientWidth/2, cy = (area.clientHeight-getNarrH())/2;
+  const nz = clampZoom(zoom*f);
+  if (nz === zoom) return;
+  const s = nz/zoom; vx = cx-(cx-vx)*s; vy = cy-(cy-vy)*s; zoom = nz;
+  renderToScreen();
+  document.getElementById('zoomOutBtn').classList.toggle('disabled', zoom <= minZoomAllowed);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAP INTERACTION — drag, zoom, hover, click
+═══════════════════════════════════════════════════════ */
+let drag = false, lmx = 0, lmy = 0;
+let currentTerrain = '';
+let mapData = null; // { tiles, pois, seed }
+
+const mc2 = document.getElementById('mapCanvas');
+
+mc2.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.15 : 0.87;
+  const rect = mc2.getBoundingClientRect();
+  const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+  const nz = clampZoom(zoom*f);
+  const s = nz/zoom; vx = mx-(mx-vx)*s; vy = my-(my-vy)*s; zoom = nz;
+  renderToScreen();
+}, { passive:false });
+
+mc2.addEventListener('mousedown', e => { drag=true; lmx=e.clientX; lmy=e.clientY; mc2.style.cursor='grabbing'; });
+window.addEventListener('mousemove', e => {
+  if (drag) { vx+=e.clientX-lmx; vy+=e.clientY-lmy; lmx=e.clientX; lmy=e.clientY; renderToScreen(); return; }
+  if (!mapData) return;
+
+  const rect   = mc2.getBoundingClientRect();
+  const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+  const tileX  = Math.floor((mx-vx)/zoom/TS);
+  const tileY  = Math.floor((my-vy)/zoom/TS);
+  document.getElementById('coords').textContent = `X: ${tileX}  Y: ${tileY}`;
+
+  if (tileX>=0 && tileX<W && tileY>=0 && tileY<H) {
+    const t = mapData.tiles[tileY*W+tileX];
+    currentTerrain = (BC[t.biome]||{n:''}).n.toLowerCase();
+  }
+
+  // Find hovered POI
+  const poi = getHoveredPOI(mx, my);
+  const tt  = document.getElementById('tooltip');
+
+  if (poi) {
+    mc2.style.cursor = 'pointer';
+    const cfg = POI_CFG[poi.type] || {};
+    tt.innerHTML = `<div class="tt-name">${cfg.icon||''} ${poi.name}</div><div class="tt-sub">${cfg.label||poi.type}</div><div class="tt-hint">Double-click to enter · Click to learn more</div>`;
+    tt.style.display = 'block';
+    const area = document.getElementById('mapArea');
+    tt.style.left = (e.clientX-area.offsetLeft+14)+'px';
+    tt.style.top  = (e.clientY-58+14)+'px';
+  } else {
+    mc2.style.cursor = drag ? 'grabbing' : 'crosshair';
+    tt.style.display = 'none';
+  }
+});
+window.addEventListener('mouseup', () => { drag=false; if (mc2) mc2.style.cursor='crosshair'; });
+
+function getHoveredPOI(mx, my) {
+  if (!mapData) return null;
+  for (const p of mapData.pois) {
+    const cfg = POI_CFG[p.type] || {r:4};
+    const px = (p.x*TS + TS/2)*zoom + vx;
+    const py = (p.y*TS + TS/2)*zoom + vy;
+    const hitR = Math.max(12, (cfg.r+4)*zoom);
+    if (Math.hypot(mx-px, my-py) < hitR) return p;
+  }
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DOUBLE-TAP / DOUBLE-CLICK NAVIGATION
+   — Single click/tap: narrate the location
+   — Double click/tap: navigate to LocationName.html
+   — Name is sanitized: spaces→no separator, special chars removed
+═══════════════════════════════════════════════════════ */
+function nameToFilename(name) {
+  // "Redhelm" → "Redhelm.html"
+  // "Ash Castle" → "AshCastle.html"
+  // "Cavern of the Damned" → "CavernoftheDamned.html"
+  return name
+    .replace(/[^a-zA-Z0-9 ']/g, '')  // keep letters, numbers, spaces, apostrophes
+    .replace(/'/g, '')                // remove apostrophes
+    .replace(/\s+/g, '')              // remove spaces (CamelCase collapse)
+    + '.html';
+}
+
+let lastClickTime = 0, lastClickPOI = null;
+const DOUBLE_CLICK_MS = 400;
+
+mc2.addEventListener('click', e => {
+  if (!mapData || drag) return;
+  const rect = mc2.getBoundingClientRect();
+  const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+
+  const poi = getHoveredPOI(mx, my);
+  const now = Date.now();
+
+  if (poi) {
+    // Double-click detection
+    if (lastClickPOI && lastClickPOI.name === poi.name && (now - lastClickTime) < DOUBLE_CLICK_MS) {
+      // Navigate to location page
+      const filename = nameToFilename(poi.name);
+      showNotif(`⚔ Entering ${poi.name}...`);
+      setTimeout(() => { window.location.href = filename; }, 600);
+      lastClickTime = 0; lastClickPOI = null;
+      return;
+    }
+    lastClickTime = now;
+    lastClickPOI  = poi;
+    narrateLocation(poi);
+    return;
+  }
+
+  lastClickPOI = null;
+
+  // Click on terrain
+  const tileX = Math.floor((mx-vx)/zoom/TS);
+  const tileY = Math.floor((my-vy)/zoom/TS);
+  if (tileX>=0 && tileX<W && tileY>=0 && tileY<H) {
+    narrateTerrain(mapData.tiles[tileY*W+tileX]);
+  }
 });
 
-// ===== LEAVE TAB WARNING =====
-function beforeUnloadHandler(e) {
-    e.preventDefault();
-    e.returnValue = '';
+// Touch: double-tap support for mobile
+let lastTapTime = 0, lastTapPOI = null;
+mc2.addEventListener('touchend', e => {
+  if (!mapData) return;
+  const touch = e.changedTouches[0];
+  const rect  = mc2.getBoundingClientRect();
+  const mx = touch.clientX - rect.left;
+  const my = touch.clientY - rect.top;
+  const poi = getHoveredPOI(mx, my);
+  const now = Date.now();
+
+  if (poi) {
+    if (lastTapPOI && lastTapPOI.name === poi.name && (now-lastTapTime) < DOUBLE_CLICK_MS) {
+      const filename = nameToFilename(poi.name);
+      showNotif(`⚔ Entering ${poi.name}...`);
+      setTimeout(() => { window.location.href = filename; }, 600);
+      lastTapTime = 0; lastTapPOI = null;
+      return;
+    }
+    lastTapTime = now; lastTapPOI = poi;
+
+    // Show double-tap hint briefly
+    const hint = document.getElementById('dtapHint');
+    hint.textContent = `⚔ Double-tap to enter ${poi.name}`;
+    hint.classList.add('show');
+    setTimeout(() => hint.classList.remove('show'), 1800);
+
+    narrateLocation(poi);
+  }
+}, { passive:true });
+
+/* ═══════════════════════════════════════════════════════
+   NARRATIVE CONTENT
+═══════════════════════════════════════════════════════ */
+const LOCATION_NARR = {
+  VILLAGE:['The village hums with quiet life. Smoke curls from chimneys, and villagers eye your party with wary curiosity. A board near the well bears fresh notices — work for capable hands.','Thatch-roofed homes cluster around a muddy square. A crier rings his bell as you approach. "Strangers! And armed ones at that." The crowd parts slowly.'],
+  TOWN:['A proper town with stone walls and a market in full cry. Merchants shout their wares, and the smell of fresh bread mingles with horse and steel.','The town gatehouse is manned by alert militia. Inside, the streets are busy with afternoon trade. Your party draws curious looks but no hostility — yet.'],
+  CASTLE:['Battlements rise against the grey sky. The drawbridge is up, the portcullis down. Someone watches from the tower — a glint of armour in the shadow.','The castle has seen siege. Scorched stone around the gatehouse tells of old fire. A single banner still flies — the crest worn beyond recognition.'],
+  DUNGEON:['The entrance yawns like a wound in the earth. Carved runes along the lintel pulse with sickly green light. Cold air breathes from the darkness below.','Iron doors hang ajar, one twisted off its hinges. Something left in a hurry — or something got in. Your party readies weapons and steps forward.'],
+  OUTPOST:['A watchtower of rough timber and stone, manned by a skeleton crew of soldiers who have not seen relief in months.','Smoke from a signal fire at the peak. The garrison salutes your party with relief. "Adventurers. Thank the gods. We have a problem."'],
+  RUINS:['Stone columns thrust from the earth at odd angles. At the centre, a basin holds water that does not reflect the sky.','The ruins hum faintly. Crystal shards litter the ground, each one warm to the touch. Old power still lingers here.'],
+  CAVE:['The cave mouth is cold and absolute. Your torchlight barely reaches the first bend. Something drips in the dark — water, or something else.','Claw marks score the rock around the entrance, old and deep. Whatever made them was large.'],
+  PORT:['Salt air and the creak of timber. Ships of dubious origin crowd the harbour. A harbormaster of indeterminate loyalty watches your approach.','The port smells of pitch, fish, and secrets. Sailors eye your weapons with professional interest. A noticeboard offers passage — for the right price.'],
+  TEMPLE:['The shrine is old, older than the faith it now serves. Moss-covered stones bear carvings in three languages, none of them common.','Candles still burn inside, though the priests fled long ago. The altar holds fresh offerings — someone is still keeping the old rites.'],
+  GROVE:['Ancient trees form a perfect circle, branches interlaced overhead. The air carries rain and old magic. The grove feels watched — but not with malice.','A spring wells up at the centre of the grove. The water tastes of iron and lightning. Your wounds begin to close on their own.'],
+};
+
+const TERRAIN_NARR = {
+  Grasslands: 'Open grassland rolls before you. Wildflowers push through in bursts of colour. Something rustles in the long grass ahead.',
+  Forest:     'The forest closes around your group. Ancient trees bear old carvings — territory marks, or warnings. Your party moves in formation.',
+  Jungle:     'The jungle is thick and hot and loud. Things move in the canopy overhead. The path narrows to a game trail.',
+  Beach:      'The tide-swept beach is dark sand and strange shells. Gulls wheel overhead. Footprints lead into the surf — and do not return.',
+  Mountains:  'The mountain terrain is punishing. From this ridge, the whole island spreads below. You count at least three moving shapes in the valley.',
+  'Snow Peaks': 'Ice and stone. A cairn at the summit holds a rolled parchment — a map drawn by someone who never came back down.',
+  Swamp:      'Dark water, pale roots, and the smell of things long dead. The ground shifts underfoot. Something large moves in the reeds.',
+  Desert:     'The desert heat shimmers. No wind, no sound except the creak of your equipment. In the sand ahead, a single boot, still laced.',
+  Savanna:    'The savanna is a sea of amber grass under a hammered copper sky. Distant shapes that might be animals — or might not be.',
+  Taiga:      'Dense pine forest, each tree leaning the same way, away from the north wind. Your breath fogs. Something has been here recently.',
+};
+
+function narrateLocation(poi) {
+  const narrs = LOCATION_NARR[poi.type];
+  if (!narrs) return;
+  document.getElementById('narrSpeaker').textContent = '◈ The Dungeon Master';
+  const icon = (POI_CFG[poi.type]||{icon:''}).icon;
+  typeNarr(`${icon} ${poi.name} — ${narrs[Math.floor(Math.random()*narrs.length)]}`);
 }
+
+function narrateTerrain(t) {
+  const name = (BC[t.biome]||{n:''}).n;
+  const msg = TERRAIN_NARR[name] || (isWater(t.biome)
+    ? 'The cold sea stretches before your party. A vessel would be needed to venture further.'
+    : 'Your party moves carefully through the terrain, alert to every sound.');
+  document.getElementById('narrSpeaker').textContent = '◈ The Dungeon Master';
+  typeNarr(msg);
+}
+
+/* ═══════════════════════════════════════════════════════
+   TYPEWRITER NARRATIVE
+═══════════════════════════════════════════════════════ */
+let typewriterTimer = null;
+function typeNarr(text, speed=20) {
+  const el = document.getElementById('narrText');
+  el.innerHTML = ''; let i = 0;
+  clearInterval(typewriterTimer);
+  const cursor = document.createElement('span'); cursor.className='cursor'; el.appendChild(cursor);
+  typewriterTimer = setInterval(() => {
+    if (i < text.length) { el.insertBefore(document.createTextNode(text[i]), cursor); i++; }
+    else { clearInterval(typewriterTimer); cursor.remove(); }
+  }, speed);
+}
+
+const SCENES = [
+  'Before you stretches a vast island realm — ancient, mysterious, alive. Mountains pierce the clouds to the north, dense forests whisper secrets in the east. Click any location on the map to begin.',
+  'The island holds many secrets. Ruins of a forgotten civilization dot the coastline, and deep within the forest, something stirs.',
+  '"So… more heroes wash ashore on the Shattered Isle. How many have come before you? How many remain?" The voice fades into crashing waves.',
+];
+let currentScene = 0;
+function nextScene() { currentScene++; typeNarr(SCENES[currentScene % SCENES.length]); }
+
+function doAction(type) {
+  const msgs = {
+    explore: `Your party fans out to survey the terrain. The ${cap(character.class)}'s instincts are sharp — something in the earth has changed since the last travellers passed through.`,
+    magic:   `You reach into the arcane currents flowing through this ancient island. The earth hums beneath your feet. Old magic responds to the presence of a ${cap(character.class)}.`,
+  };
+  typeNarr(msgs[type] || 'Your party acts with purpose.');
+}
+
+/* ═══════════════════════════════════════════════════════
+   WORLD BUILD (async with yielding for smooth loading)
+═══════════════════════════════════════════════════════ */
+const yld = () => new Promise(r => setTimeout(r, 8));
+
+async function buildWorld(seed) {
+  const tiles = generateTerrain(W, H, seed);
+  await yld();
+  genRivers(tiles, W, H);
+  await yld();
+  const pois = placePOIs(tiles, W, H, seed);
+  await yld();
+  buildOffscreen(tiles, W, H, pois, seed);
+  await yld();
+  return { tiles, pois, seed };
+}
+
+/* ═══════════════════════════════════════════════════════
+   NEW ISLAND / PERSISTENT SEED
+═══════════════════════════════════════════════════════ */
+async function generateNewIsland() {
+  const seed = Math.floor(Math.random()*999999) + 1;
+  localStorage.setItem('dnd_map_seed_' + (user||''), seed);
+  mapData = await buildWorld(seed);
+  renderMinimap(mapData.pois);
+  resetView();
+  typeNarr('The realm shifts and reshapes itself. A new island rises from the mists — uncharted, unmapped, full of danger and promise. Where will you venture first?');
+  showNotif('New island generated!');
+}
+
+/* ═══════════════════════════════════════════════════════
+   LEAVE & BACK BUTTON
+═══════════════════════════════════════════════════════ */
+function leaveRealm() {
+  window.removeEventListener('beforeunload', beforeUnloadHandler);
+  window.location.href = 'mode-select.html';
+}
+function beforeUnloadHandler(e) { e.preventDefault(); e.returnValue = ''; }
 window.addEventListener('beforeunload', beforeUnloadHandler);
+history.pushState(null, '', location.href);
+window.addEventListener('popstate', () => history.pushState(null,'',location.href));
+window.addEventListener('resize', () => { if (offC) renderToScreen(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') { closeInventory(); closeSettings(); } });
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+window.addEventListener('load', async () => {
+  const sub = sessionStorage.getItem('dnd_sub');
+  if (sub === 'oneshot') {
+    document.getElementById('introTitle').textContent = 'The Final Hunt';
+    document.getElementById('introSub').textContent   = 'One path. No return.';
+    document.getElementById('introOrb').textContent   = '💀';
+  }
+
+  setTimeout(() => skipIntro(), 3500);
+
+  const savedSeed = localStorage.getItem('dnd_map_seed_' + (user||''));
+  const seed = savedSeed ? parseInt(savedSeed) : Math.floor(Math.random()*999999)+1;
+  if (!savedSeed) localStorage.setItem('dnd_map_seed_' + (user||''), seed);
+
+  mapData = await buildWorld(seed);
+  renderMinimap(mapData.pois);
+  resetView();
+  initSliders();
+
+  setTimeout(() => typeNarr(SCENES[0]), 900);
+});
 </script>
 </body>
 </html>
