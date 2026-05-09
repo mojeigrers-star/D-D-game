@@ -1164,6 +1164,7 @@ let minimapVisible=false;
 function updateMinimapState() {
   document.getElementById('minimapBig').classList.toggle('hidden',!minimapVisible);
   document.getElementById('minimapCorner').style.display=minimapVisible?'none':'block';
+  document.getElementById('mmHint').style.display=minimapVisible?'none':'block';
 }
 document.addEventListener('keydown', e=>{
   if (e.key.toLowerCase()==='m') {
