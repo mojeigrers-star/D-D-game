@@ -55,9 +55,10 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .multi-badge{background:rgba(50,100,200,.12);border:1px solid rgba(50,100,200,.3);border-radius:3px;padding:3px 8px;font-family:'Cinzel',serif;font-size:9px;color:#8baeee;letter-spacing:1px;white-space:nowrap}
 
 /* ── MINIMAP ── */
-#minimap{position:absolute;bottom:150px;right:16px;border:1px solid var(--bdr2);background:rgba(5,4,3,.9);box-shadow:0 0 20px rgba(0,0,0,.8);z-index:20;border-radius:2px;transition:opacity .3s}
-#minimap.hidden{opacity:0;pointer-events:none}
-#minimapCanvas{display:block;image-rendering:pixelated}
+#minimap{position:absolute;bottom:150px;right:16px;border:1px solid var(--bdr2);background:rgba(2,2,4,0.97);box-shadow:0 0 20px rgba(0,0,0,.8);z-index:20;border-radius:4px;transition:all .3s;width:160px}
+#minimap.hidden{opacity:0;pointer-events:none;visibility:hidden}
+#minimap.expanded{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);width:80vw;max-width:1000px;box-shadow:0 0 60px rgba(0,0,0,0.95),0 0 0 9999px rgba(0,0,0,0.6)}
+#minimapCanvas{display:block;width:100%;aspect-ratio:16/9;image-rendering:pixelated}
 #mmvp{position:absolute;border:1px solid rgba(201,164,92,.8);pointer-events:none;box-shadow:inset 0 0 4px rgba(201,164,92,.2)}
 .minimap-title{font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);letter-spacing:2px;text-align:center;padding:4px 0 2px;border-bottom:1px solid var(--bdr)}
 .minimap-locked{font-family:'Cinzel',serif;font-size:9px;color:var(--red);text-align:center;padding:4px 6px;background:rgba(0,0,0,.7);display:none}
@@ -232,7 +233,7 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 </div>
 
 <!-- SPAWN OVERLAY -->
-<div id="spawnOverlay" class="hidden">
+<div id="spawnOverlay">
   <div class="spawn-frame">
     <div class="spawn-top">
       <div class="spawn-realm-label">⚔ Multiplayer Realm</div>
@@ -302,10 +303,10 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
       <button class="zbtn" id="zoomOutBtn" onclick="adjustZoom(.77)" title="Zoom Out">−</button>
       <button class="zbtn" style="font-size:11px" onclick="resetView()" title="Reset View">⌂</button>
     </div>
-    <div id="minimap">
+    <div id="minimap" class="hidden">
       <div class="minimap-title">◈ CHART</div>
       <div class="minimap-locked">🗺 Map Item Required<br><span style="font-size:8px;color:var(--txt3)">[M] to toggle</span></div>
-      <canvas id="minimapCanvas" width="120" height="120"></canvas>
+      <canvas id="minimapCanvas" width="1000" height="550"></canvas>
       <div id="mmvp"></div>
     </div>
     <div id="mmHint">[M] Map</div>
@@ -396,7 +397,7 @@ const CONFIG = {
 ═══════════════════════════════════════════════════════ */
 const user     = localStorage.getItem('dnd_user') || 'Adventurer';
 const roomData = (() => { try { return JSON.parse(sessionStorage.getItem('dnd_room') || '{}'); } catch(e) { return {}; } })();
-const isHost   = roomData.host === user;
+const isHost = !roomData.code || roomData.host === user;
 function loadCharacter(u) { try { return JSON.parse(localStorage.getItem('dnd_char_' + u) || 'null'); } catch(e) { return null; } }
 const character = loadCharacter(user) || { race:'human', class:'fighter', sex:'male' };
 const statsRaw  = localStorage.getItem('dnd_stats_' + user);
@@ -523,17 +524,17 @@ const BC = {
   INN:         { c:'#c8b078', n:'Wayfarers\' Inn' },
 };
 const POI_CFG = {
-  VILLAGE: { c:'#f5c842', r:4, label:'Village',      icon:'🏘' },
-  TOWN:    { c:'#e89a30', r:5, label:'Town',          icon:'🏙' },
-  CASTLE:  { c:'#9040d0', r:5, label:'Castle',        icon:'🏰' },
-  DUNGEON: { c:'#c94040', r:4, label:'Dungeon',       icon:'💀' },
-  OUTPOST: { c:'#6080c0', r:3, label:'Outpost',       icon:'🗼' },
-  RUINS:   { c:'#806040', r:3, label:'Ruins',         icon:'🏚' },
-  CAVE:    { c:'#505050', r:3, label:'Cave',           icon:'🕳' },
-  PORT:    { c:'#4080b0', r:4, label:'Port',           icon:'⚓' },
-  TEMPLE:  { c:'#c09040', r:4, label:'Temple',        icon:'⛩' },
-  GROVE:   { c:'#50a050', r:3, label:'Druid Grove',   icon:'🌿' },
-  INN:     { c:'#d4a44a', r:5, label:'Wayfarers\' Inn', icon:'🏠' },
+  VILLAGE: { c:'#f5c842', r:8,  label:'Village',       icon:'🏘' },
+  TOWN:    { c:'#e89a30', r:12, label:'Town',           icon:'🏙' },
+  CASTLE:  { c:'#9040d0', r:14, label:'Castle',         icon:'🏰' },
+  DUNGEON: { c:'#c94040', r:9,  label:'Dungeon',        icon:'💀' },
+  OUTPOST: { c:'#6080c0', r:8,  label:'Outpost',        icon:'🗼' },
+  RUINS:   { c:'#806040', r:9,  label:'Ruins',          icon:'🏚' },
+  CAVE:    { c:'#505050', r:8,  label:'Cave',           icon:'🕳' },
+  PORT:    { c:'#4080b0', r:12, label:'Port',           icon:'⚓' },
+  TEMPLE:  { c:'#c09040', r:10, label:'Temple',         icon:'⛩' },
+  GROVE:   { c:'#50a050', r:10, label:'Druid Grove',    icon:'🌿' },
+  INN:     { c:'#d4a44a', r:12, label:'Wayfarers\' Inn',icon:'🏠' },
 };
 
 /* ═══════════════════════════════════════════════════════
@@ -868,28 +869,246 @@ function buildOffscreen() {
   for (const p of pois) drawPOI(offCtx, p);
 }
 
-function drawPOI(ctx, p) {
+  function drawPOI(ctx, p) {
   const cfg = POI_CFG[p.type]; if (!cfg) return;
-  const cx=p.x*TS+TS/2, cy=p.y*TS+TS/2, r=cfg.r;
+  const cx = p.x * TS + TS / 2;
+  const cy = p.y * TS + TS / 2;
+  const u  = TS; // 1 unit = 10px on offscreen canvas
+
   ctx.save();
-  ctx.shadowColor='rgba(0,0,0,.9)'; ctx.shadowBlur=6;
-  if (p.isInn) { ctx.shadowColor='rgba(201,164,92,.8)'; ctx.shadowBlur=10; }
-  ctx.beginPath(); ctx.arc(cx,cy,r+3,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,.6)'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle=cfg.c; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx,cy,r*.38,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fill();
-  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.lineWidth=0.7; ctx.stroke();
-  ctx.shadowBlur=0;
-  const iconSize = Math.max(7, r*1.3)|0;
-  ctx.font=`${iconSize}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillStyle='#fff'; ctx.fillText(cfg.icon||'', cx, cy);
-  const fs=Math.max(9,TS*2.4);
-  ctx.font=`600 ${fs}px 'IM Fell English',serif`; ctx.textBaseline='alphabetic';
-  ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.95)'; ctx.strokeText(p.name, cx, cy-r-5);
-  ctx.fillStyle='#f8e8b0'; ctx.fillText(p.name, cx, cy-r-5);
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur  = 6;
+
+  switch (p.type) {
+
+    case 'VILLAGE': {
+      const houses = [
+        { dx:-u*1.5, dy:-u*0.5, w:u*1.8, h:u*1.8, roof:'#7a3d0f', wall:'#c09060' },
+        { dx: u*1.0, dy:-u*1.0, w:u*1.5, h:u*1.5, roof:'#8b4513', wall:'#b08050' },
+        { dx: u*0.3, dy: u*1.1, w:u*1.4, h:u*1.4, roof:'#6a300c', wall:'#a07040' },
+      ];
+      houses.forEach(({dx,dy,w,h,roof,wall}) => {
+        ctx.fillStyle = wall;
+        ctx.fillRect(cx+dx-w/2-1, cy+dy-h/2-1, w+2, h+2);
+        ctx.fillStyle = roof;
+        ctx.fillRect(cx+dx-w/2, cy+dy-h/2, w, h);
+        ctx.fillStyle = '#2a1408';
+        ctx.fillRect(cx+dx-u*0.15, cy+dy+h/2-u*0.5, u*0.3, u*0.5);
+      });
+      break;
+    }
+
+    case 'TOWN': {
+      ctx.strokeStyle = '#5a4828'; ctx.lineWidth = 2;
+      ctx.strokeRect(cx-u*2.8, cy-u*2.8, u*5.6, u*5.6);
+      [
+        { dx:0,     dy:-u,    w:u*2.5, h:u*2,   roof:'#6a3010', wall:'#c09060' },
+        { dx:-u*1.5, dy:u*0.9, w:u*1.8, h:u*1.8, roof:'#7a4018', wall:'#b08050' },
+        { dx: u*1.5, dy:u*1.0, w:u*1.6, h:u*1.6, roof:'#5a2808', wall:'#a07040' },
+      ].forEach(({dx,dy,w,h,roof,wall}) => {
+        ctx.fillStyle = wall; ctx.fillRect(cx+dx-w/2-1, cy+dy-h/2-1, w+2, h+2);
+        ctx.fillStyle = roof; ctx.fillRect(cx+dx-w/2, cy+dy-h/2, w, h);
+      });
+      [[-u*2.8,-u*2.8],[u*2.8,-u*2.8],[-u*2.8,u*2.8],[u*2.8,u*2.8]].forEach(([tx,ty]) => {
+        ctx.fillStyle = '#7a6848';
+        ctx.beginPath(); ctx.arc(cx+tx, cy+ty, u*0.7, 0, Math.PI*2); ctx.fill();
+      });
+      break;
+    }
+
+    case 'CASTLE': {
+      // Outer walls
+      ctx.fillStyle = '#7a7060';
+      ctx.fillRect(cx-u*3, cy-u*3, u*6, u*6);
+      ctx.fillStyle = '#5a5040';
+      ctx.fillRect(cx-u*2.5, cy-u*2.5, u*5, u*5);
+      // Courtyard
+      ctx.fillStyle = '#4a4030';
+      ctx.fillRect(cx-u*1.5, cy-u*1.5, u*3, u*3);
+      // Corner towers
+      [[-u*3,-u*3],[u*3,-u*3],[-u*3,u*3],[u*3,u*3]].forEach(([tx,ty]) => {
+        ctx.fillStyle = '#8a8070';
+        ctx.beginPath(); ctx.arc(cx+tx, cy+ty, u*0.9, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#3a3020';
+        ctx.beginPath(); ctx.arc(cx+tx, cy+ty, u*0.4, 0, Math.PI*2); ctx.fill();
+      });
+      // Keep
+      ctx.fillStyle = '#6a6050'; ctx.fillRect(cx-u*0.8, cy-u*0.8, u*1.6, u*1.6);
+      ctx.fillStyle = '#2a2010'; ctx.fillRect(cx-u*0.35, cy-u*0.35, u*0.7, u*0.7);
+      // Gate
+      ctx.fillStyle = '#1a1008'; ctx.fillRect(cx-u*0.5, cy+u*2.5, u, u*0.5);
+      break;
+    }
+
+    case 'DUNGEON': {
+      ctx.fillStyle = '#3a2a18';
+      ctx.beginPath(); ctx.ellipse(cx, cy, u*2.2, u*1.8, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#0d0608';
+      ctx.beginPath(); ctx.ellipse(cx, cy+u*0.2, u*1.4, u*1.0, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#5a4030'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(cx, cy, u*2.2, u*1.8, 0, 0, Math.PI*2); ctx.stroke();
+      // Rune dots
+      ctx.fillStyle = 'rgba(80,200,80,0.6)';
+      [[-u*1.2,-u*0.8],[u*1.1,-u*0.9],[0,-u*1.6]].forEach(([rx,ry]) => {
+        ctx.beginPath(); ctx.arc(cx+rx, cy+ry, 2.5, 0, Math.PI*2); ctx.fill();
+      });
+      break;
+    }
+
+    case 'OUTPOST': {
+      // Tower body
+      ctx.fillStyle = '#6a6050'; ctx.fillRect(cx-u*0.9, cy-u*3, u*1.8, u*5);
+      // Battlements
+      ctx.fillStyle = '#7a7060'; ctx.fillRect(cx-u*1.4, cy-u*3.2, u*2.8, u*0.8);
+      [-u*1.0, -u*0.2, u*0.6].forEach(bx => {
+        ctx.fillStyle = '#5a5040'; ctx.fillRect(cx+bx, cy-u*3.5, u*0.5, u*0.6);
+      });
+      ctx.fillStyle = '#1a1208'; ctx.fillRect(cx-u*0.2, cy-u*1.5, u*0.4, u*0.6);
+      ctx.fillStyle = '#2a1a08'; ctx.fillRect(cx-u*0.3, cy+u*1.6, u*0.6, u*0.8);
+      break;
+    }
+
+    case 'RUINS': {
+      const blocks = [
+        {dx:-u*1.5, dy:-u*1.0, w:u*1.4, h:u*0.9, a: 0.20},
+        {dx: u*0.8, dy:-u*1.4, w:u*1.0, h:u*1.2, a:-0.15},
+        {dx:-u*0.5, dy: u*1.2, w:u*1.2, h:u*0.8, a: 0.10},
+        {dx: u*1.3, dy: u*0.7, w:u*0.9, h:u*1.1, a:-0.20},
+        {dx:-u*1.8, dy: u*0.4, w:u*0.8, h:u*1.3, a: 0.30},
+        {dx: u*0.2, dy:-u*0.1, w:u*0.6, h:u*0.6, a: 0.05},
+      ];
+      const rc = ['#7a7060','#6a6050','#8a8070','#5a5040','#706858'];
+      blocks.forEach(({dx,dy,w,h,a}, i) => {
+        ctx.save();
+        ctx.translate(cx+dx, cy+dy); ctx.rotate(a);
+        ctx.fillStyle = rc[i % rc.length]; ctx.fillRect(-w/2, -h/2, w, h);
+        ctx.strokeStyle = '#3a3020'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.moveTo(-w*0.2,-h*0.3); ctx.lineTo(w*0.1, h*0.2); ctx.stroke();
+        ctx.restore();
+      });
+      break;
+    }
+
+    case 'CAVE': {
+      ctx.fillStyle = '#3a2a18';
+      ctx.beginPath(); ctx.ellipse(cx, cy, u*2, u*1.4, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#0d0a06';
+      ctx.beginPath(); ctx.ellipse(cx+u*0.2, cy, u*1.3, u*0.85, 0.1, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#5a4a30'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(cx, cy, u*2, u*1.4, 0, 0, Math.PI*2); ctx.stroke();
+      // Stalactites
+      ctx.fillStyle = '#4a3a22';
+      [[-u*0.8,-u*1.1],[u*0.2,-u*1.2],[u*1.0,-u*1.0]].forEach(([sx,sy]) => {
+        ctx.beginPath();
+        ctx.moveTo(cx+sx-u*0.2, cy+sy);
+        ctx.lineTo(cx+sx, cy+sy+u*0.5);
+        ctx.lineTo(cx+sx+u*0.2, cy+sy);
+        ctx.fill();
+      });
+      break;
+    }
+
+    case 'PORT': {
+      // Dock
+      ctx.fillStyle = '#6a4820';
+      ctx.fillRect(cx-u*0.5, cy-u*3.5, u, u*4.5);
+      ctx.fillRect(cx-u*2.5, cy-u*0.4, u*5, u*0.8);
+      // Boat hull
+      ctx.fillStyle = '#7a4e18';
+      ctx.beginPath(); ctx.ellipse(cx+u*3, cy-u*0.5, u*1.8, u*0.8, -0.2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#5a3810';
+      ctx.beginPath(); ctx.ellipse(cx+u*3, cy-u*0.5, u*1.4, u*0.5, -0.2, 0, Math.PI*2); ctx.fill();
+      // Mast & sail
+      ctx.strokeStyle = '#3a2808'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx+u*3, cy-u*0.5); ctx.lineTo(cx+u*3, cy-u*3); ctx.stroke();
+      ctx.fillStyle = 'rgba(220,200,160,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(cx+u*3, cy-u*2.8); ctx.lineTo(cx+u*4.8, cy-u*1.5); ctx.lineTo(cx+u*3, cy-u*0.8);
+      ctx.fill();
+      break;
+    }
+
+    case 'TEMPLE': {
+      // Steps
+      ctx.fillStyle = '#d8c8a0'; ctx.fillRect(cx-u*2.6, cy+u*1.5, u*5.2, u*0.5);
+      ctx.fillRect(cx-u*2.3, cy+u*1.9, u*4.6, u*0.4);
+      // Platform
+      ctx.fillStyle = '#c8b890'; ctx.fillRect(cx-u*2, cy-u*1.5, u*4, u*3);
+      // Inner sanctum
+      ctx.fillStyle = '#a89870'; ctx.fillRect(cx-u*1.3, cy-u*1.0, u*2.6, u*2);
+      // Columns
+      [-u*1.5,-u*0.5,u*0.5,u*1.5].forEach(colX => {
+        ctx.fillStyle = '#e0d0b0'; ctx.fillRect(cx+colX-u*0.22, cy-u*1.5, u*0.44, u*3);
+        ctx.fillStyle = '#c8b888';
+        ctx.fillRect(cx+colX-u*0.35, cy-u*1.5,   u*0.7, u*0.25);
+        ctx.fillRect(cx+colX-u*0.35, cy+u*1.25,  u*0.7, u*0.25);
+      });
+      break;
+    }
+
+    case 'GROVE': {
+      [
+        [0,    0,     u*1.4, '#1a5c28','#22782e'],
+        [-u*1.8,-u*0.8,u*1.1,'#246030','#2e8040'],
+        [ u*1.5,-u*1.0,u*1.0,'#185224','#1e6830'],
+        [-u*0.8, u*1.5,u*1.2,'#1e6428','#287838'],
+        [ u*1.6, u*0.9,u*1.0,'#156020','#1a7828'],
+        [-u*1.9, u*0.6,u*0.9,'#204a18','#286020'],
+      ].forEach(([tx,ty,r,dark,light]) => {
+        ctx.fillStyle = dark;  ctx.beginPath(); ctx.arc(cx+tx, cy+ty, r, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = light; ctx.beginPath(); ctx.arc(cx+tx-r*0.25, cy+ty-r*0.25, r*0.5, 0, Math.PI*2); ctx.fill();
+      });
+      // Spring
+      ctx.fillStyle = 'rgba(80,140,220,0.7)';
+      ctx.beginPath(); ctx.ellipse(cx, cy, u*0.5, u*0.35, 0, 0, Math.PI*2); ctx.fill();
+      break;
+    }
+
+    case 'INN': {
+      if (p.isInn) { ctx.shadowColor = 'rgba(201,164,92,0.7)'; ctx.shadowBlur = 18; }
+      // Shadow base
+      ctx.fillStyle = '#3a2810'; ctx.fillRect(cx-u*2.2, cy-u*2, u*4.4, u*4.2);
+      // Walls
+      ctx.fillStyle = '#c09060'; ctx.fillRect(cx-u*2, cy-u*1.8, u*4, u*3.8);
+      // Roof
+      ctx.fillStyle = '#7a4820'; ctx.fillRect(cx-u*2, cy-u*1.8, u*4, u*1.2);
+      // Ridge
+      ctx.fillStyle = '#5a3010'; ctx.fillRect(cx-u*0.15, cy-u*1.8, u*0.3, u*3.8);
+      // Windows (warm glow)
+      [[-u*1.1,-u*0.9],[u*0.9,-u*0.9],[-u*1.1,u*0.5],[u*0.9,u*0.5]].forEach(([wx,wy]) => {
+        ctx.fillStyle = 'rgba(255,190,60,0.85)';
+        ctx.fillRect(cx+wx-u*0.3, cy+wy-u*0.35, u*0.6, u*0.7);
+        ctx.fillStyle = 'rgba(255,220,120,0.25)';
+        ctx.fillRect(cx+wx-u*0.5, cy+wy-u*0.55, u, u*1.1);
+      });
+      // Door
+      ctx.fillStyle = '#3a2010'; ctx.fillRect(cx-u*0.35, cy+u*1.0, u*0.7, u*1.0);
+      ctx.strokeStyle = '#c9a45c'; ctx.lineWidth = 0.8;
+      ctx.strokeRect(cx-u*0.35, cy+u*1.0, u*0.7, u*1.0);
+      // Hanging sign
+      ctx.fillStyle = '#8b6030'; ctx.fillRect(cx+u*1.6, cy-u*0.6, u, u*0.8);
+      ctx.strokeStyle = '#c9a45c'; ctx.lineWidth = 1;
+      ctx.strokeRect(cx+u*1.6, cy-u*0.6, u, u*0.8);
+      ctx.strokeStyle = '#a07840';
+      ctx.beginPath(); ctx.moveTo(cx+u*1.6, cy-u*0.6); ctx.lineTo(cx+u*1.6, cy-u*1.2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+u*2.6, cy-u*0.6); ctx.lineTo(cx+u*2.6, cy-u*1.2); ctx.stroke();
+      break;
+    }
+  }
+
+  // Label
+  ctx.shadowColor = 'rgba(0,0,0,0.95)';
+  ctx.shadowBlur  = 4;
+  const fs = Math.max(9, TS * 2.4);
+  ctx.font = `600 ${fs}px 'IM Fell English',serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  const lo = { CASTLE:u*4.5, TOWN:u*4, OUTPOST:u*4.5, PORT:u*5, TEMPLE:u*3.5, INN:u*3.2 };
+  const labelY = cy - (lo[p.type] || u*3);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(0,0,0,0.95)'; ctx.strokeText(p.name, cx, labelY);
+  ctx.fillStyle = p.isInn ? '#ffd080' : '#f8e8b0'; ctx.fillText(p.name, cx, labelY);
+
   ctx.restore();
 }
 
@@ -949,30 +1168,35 @@ function renderToScreen() {
 }
 
 function renderMinimap() {
-  const mc=document.getElementById('minimapCanvas');
-  const mctx=mc.getContext('2d');
+  const mc = document.getElementById('minimapCanvas');
+  const mctx = mc.getContext('2d');
   if (!offC) return;
-  mctx.clearRect(0,0,120,120);
-  mctx.drawImage(offC,0,0,120,120);
-  for (const [name,pos] of Object.entries(playerPositions)) {
-    const px=(pos.x/W)*120, py=(pos.y/H)*120;
-    mctx.beginPath(); mctx.arc(px,py,3,0,Math.PI*2);
-    mctx.fillStyle=name===user?'#c9a45c':'#6080cc'; mctx.fill();
-    mctx.strokeStyle='#fff'; mctx.lineWidth=0.5; mctx.stroke();
+  mctx.clearRect(0, 0, mc.width, mc.height);
+  mctx.drawImage(offC, 0, 0, mc.width, mc.height);
+  for (const [name, pos] of Object.entries(playerPositions)) {
+    const px = (pos.x / W) * mc.width;
+    const py = (pos.y / H) * mc.height;
+    mctx.beginPath(); mctx.arc(px, py, 6, 0, Math.PI * 2);
+    mctx.fillStyle = name === user ? '#c9a45c' : '#6080cc'; mctx.fill();
+    mctx.strokeStyle = '#fff'; mctx.lineWidth = 1; mctx.stroke();
   }
 }
 
 function renderMMVP() {
   if (!offC) return;
-  const area=document.getElementById('mapArea');
-  const aW=area.clientWidth, aH=area.clientHeight-NARR_H;
-  const mx=(-vx/zoom)/offC.width, my=(-vy/zoom)/offC.height;
-  const mw=(aW/zoom)/offC.width, mh=(aH/zoom)/offC.height;
-  const vp=document.getElementById('mmvp');
-  vp.style.left=Math.max(0,mx*120)+'px';
-  vp.style.top=Math.max(0,my*120)+14+'px';
-  vp.style.width=Math.min(120,mw*120)+'px';
-  vp.style.height=Math.min(120,mh*120)+'px';
+  const mc  = document.getElementById('minimapCanvas');
+  const area = document.getElementById('mapArea');
+  const aW  = area.clientWidth, aH = area.clientHeight - NARR_H;
+  const mx  = (-vx / zoom) / offC.width;
+  const my  = (-vy / zoom) / offC.height;
+  const mw  = (aW / zoom) / offC.width;
+  const mh  = (aH / zoom) / offC.height;
+  const vp  = document.getElementById('mmvp');
+  const scale = mc.clientWidth / mc.width;
+  vp.style.left   = Math.max(0, mx * mc.width  * scale) + 'px';
+  vp.style.top    = Math.max(0, my * mc.height * scale) + 14 + 'px';
+  vp.style.width  = Math.min(mc.clientWidth,  mw * mc.width  * scale) + 'px';
+  vp.style.height = Math.min(mc.clientHeight, mh * mc.height * scale) + 'px';
 }
 
 function resetView() {
@@ -1136,11 +1360,16 @@ mc.addEventListener('touchend', e=>{
 /* ═══════════════════════════════════════════════════════
    MINIMAP TOGGLE (M key)
 ═══════════════════════════════════════════════════════ */
-let minimapVisible=true;
+let minimapVisible=false;
 function updateMinimapState() {
-  const mm=document.getElementById('minimap');
-  if (!hasMapItem()) { mm.classList.add('locked'); }
-  else { mm.classList.remove('locked'); mm.classList.toggle('hidden',!minimapVisible); }
+  const mm = document.getElementById('minimap');
+  if (!hasMapItem()) {
+    mm.classList.add('locked');
+    mm.classList.remove('expanded');
+  } else {
+    mm.classList.remove('locked');
+    mm.classList.toggle('expanded', minimapVisible);
+  }
 }
 document.addEventListener('keydown', e=>{
   if (e.key.toLowerCase()==='m') {
