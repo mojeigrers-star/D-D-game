@@ -15,7 +15,6 @@
         .top-btn:hover { background: rgba(201,164,92,0.2); border-color: #c9a45c; color: #c9a45c; }
         .options-btn { left: 20px; }
         .logout-btn  { right: 20px; }
-        .mode-badge-bar { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; padding: 8px 18px; border-radius: 20px; background: rgba(50,100,200,0.15); border: 1px solid rgba(50,100,200,0.4); color: #8baeee; text-transform: uppercase; }
 
         .options-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.82); z-index: 1000; justify-content: center; align-items: center; }
         .options-overlay.active { display: flex; }
@@ -210,7 +209,6 @@
     <div class="particles" id="particles"></div>
 
     <button class="top-btn options-btn" onclick="openOptions()">&#9881; Settings</button>
-    <div class="mode-badge-bar" id="modeBadge">&#127963; Realm Online</div>
     <button class="top-btn logout-btn" onclick="logout()">Leave Realm</button>
 
     <div class="options-overlay" id="optionsOverlay">
