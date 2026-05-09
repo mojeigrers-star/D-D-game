@@ -59,14 +59,12 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 #minimapCorner.locked #minimapCornerCanvas{opacity:0.15;filter:grayscale(1)}
 #minimapCornerCanvas{display:block;image-rendering:pixelated}
 #mmvp{position:absolute;border:1px solid rgba(201,164,92,.8);pointer-events:none;box-shadow:inset 0 0 4px rgba(201,164,92,.2)}
-#minimapBig{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:480px;height:510px;border:2px solid var(--bdr2);background:rgba(3,2,1,.97);box-shadow:0 0 80px rgba(0,0,0,.95),0 0 0 9999px rgba(0,0,0,.72);z-index:60;border-radius:4px;display:flex;flex-direction:column;transition:opacity .25s,transform .25s}
+#minimapBig{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);width:680px;height:420px;border:2px solid var(--bdr2);background:rgba(3,2,1,.97);box-shadow:0 0 80px rgba(0,0,0,.95),0 0 0 9999px rgba(0,0,0,.72);z-index:60;border-radius:4px;display:flex;flex-direction:column;transition:opacity .25s,transform .25s}
 #minimapBig.hidden{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.94)}
-#minimapBigCanvas{display:block;image-rendering:pixelated;width:480px;height:480px}
+#minimapBigCanvas{display:block;image-rendering:pixelated;width:680px;height:390px}
 .minimap-title{font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);letter-spacing:2px;text-align:center;padding:4px 0 2px;border-bottom:1px solid var(--bdr)}
-.minimap-locked{font-family:'Cinzel',serif;font-size:9px;color:var(--red);text-align:center;padding:4px 6px;background:rgba(0,0,0,.7);display:none}
-#minimap.locked .minimap-locked{display:block}
-#minimap.locked #minimapCanvas{opacity:0.15;filter:grayscale(1)}
-#minimap.locked #mmvp{display:none}
+
+/* ── COORDS / ZOOM ── */
 #coords{position:absolute;bottom:150px;left:16px;background:rgba(8,6,8,.85);border:1px solid var(--bdr);padding:3px 9px;font-size:10px;color:var(--txt3);font-family:monospace;pointer-events:none;z-index:20;border-radius:2px}
 #zoomBox{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:3px;z-index:20}
 .zbtn{background:rgba(8,6,8,.92);border:1px solid var(--bdr2);color:var(--gold);width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;border-radius:2px;transition:background .12s;font-family:monospace}
@@ -78,7 +76,7 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .tt-stats{color:var(--txt3);font-size:10px;line-height:1.6}
 .tt-hint{color:var(--gold3);font-size:9px;margin-top:4px;letter-spacing:.5px}
 
-/* ── NARRATIVE (compact) ── */
+/* ── NARRATIVE ── */
 #narrative{
   position:absolute;bottom:0;left:0;right:0;
   height:135px;
@@ -181,9 +179,9 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .load-bar{width:220px;height:2px;background:rgba(255,255,255,.05);border:1px solid var(--bdr)}
 .load-fill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold));transition:width .2s}
 
-/* ── NOTIFICATION ── */
-#notif{position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(8,6,8,.97);border:1px solid var(--gold);border-radius:4px;padding:10px 20px;color:var(--gold);font-size:12px;letter-spacing:1px;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s;pointer-events:none;white-space:nowrap;opacity:0;visibility:hidden}
-#notif.show{transform:translateX(-50%) translateY(0)}
+/* ── NOTIFICATION — fixed: opacity+visibility on .show ── */
+#notif{position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(8,6,8,.97);border:1px solid var(--gold);border-radius:4px;padding:10px 20px;color:var(--gold);font-size:12px;letter-spacing:1px;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s,visibility .4s;pointer-events:none;white-space:nowrap;opacity:0;visibility:hidden}
+#notif.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
 #notif.err{border-color:var(--red);color:var(--red)}
 
 /* ── DOUBLE-TAP HINT ── */
@@ -216,8 +214,8 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .inv-slot.occ{border-color:var(--bdr2);background:rgba(61,46,26,.2)}
 .inv-slot.has-minimap-item{border-color:rgba(100,180,255,.4);background:rgba(100,180,255,.06)}
 
-/* ── MINIMAP M-KEY HINT ── */
-#mmHint{position:absolute;bottom:150px;right:140px;background:rgba(8,6,8,.75);border:1px solid var(--bdr);padding:3px 8px;font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);border-radius:2px;letter-spacing:1px;pointer-events:none;z-index:20}
+/* ── MINIMAP M-KEY HINT — fixed position above corner map ── */
+#mmHint{position:absolute;bottom:276px;right:16px;background:rgba(8,6,8,.75);border:1px solid var(--bdr);padding:3px 8px;font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);border-radius:2px;letter-spacing:1px;pointer-events:none;z-index:20;text-align:center;width:120px}
 
 /* ── CURSOR BLINK ── */
 @keyframes cursor-blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -305,25 +303,30 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
       <button class="zbtn" id="zoomOutBtn" onclick="adjustZoom(.77)" title="Zoom Out">−</button>
       <button class="zbtn" style="font-size:11px" onclick="resetView()" title="Reset View">⌂</button>
     </div>
+
+    <!-- Corner minimap — always visible when map closed -->
     <div id="minimapCorner">
       <div class="minimap-title">◈ CHART</div>
       <canvas id="minimapCornerCanvas" width="120" height="120"></canvas>
       <div id="mmvp"></div>
     </div>
 
+    <!-- Big minimap — toggled with M, click backdrop to close -->
     <div id="minimapBig" class="hidden">
+      <div id="minimapBackdrop" onclick="closeBigMap()" style="position:fixed;inset:0;z-index:-1"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0">
         <span style="font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:2px">◈ CARTOGRAPHER'S CHART</span>
-        <span style="font-family:'Cinzel',serif;font-size:9px;color:var(--txt3);letter-spacing:1px">[M] to close</span>
+        <span style="font-family:'Cinzel',serif;font-size:9px;color:var(--txt3);letter-spacing:1px">[M] or [Esc] to close</span>
       </div>
       <canvas id="minimapBigCanvas"></canvas>
     </div>
+
     <div id="mmHint">[M] Map</div>
     <div id="coords">X: —  Y: —</div>
     <div id="tooltip"></div>
     <div id="dtapHint">⚔ Double-tap to enter</div>
 
-    <!-- NARRATIVE (compact, no Attack button) -->
+    <!-- NARRATIVE -->
     <div id="narrative">
       <div class="narr-header">
         <span class="narr-speaker" id="narrSpeaker">◈ The Dungeon Master</span>
@@ -406,7 +409,7 @@ const CONFIG = {
 ═══════════════════════════════════════════════════════ */
 const user     = localStorage.getItem('dnd_user') || 'Adventurer';
 const roomData = (() => { try { return JSON.parse(sessionStorage.getItem('dnd_room') || '{}'); } catch(e) { return {}; } })();
-const isHost   = roomData.host === user;
+const isHost = !roomData.code || roomData.host === user;
 function loadCharacter(u) { try { return JSON.parse(localStorage.getItem('dnd_char_' + u) || 'null'); } catch(e) { return null; } }
 const character = loadCharacter(user) || { race:'human', class:'fighter', sex:'male' };
 const statsRaw  = localStorage.getItem('dnd_stats_' + user);
@@ -439,7 +442,13 @@ function loadInventory() {
   const saved = localStorage.getItem('dnd_inventory_' + user);
   return saved ? JSON.parse(saved) : new Array(24).fill(null);
 }
-function saveInventory(inv) { localStorage.setItem('dnd_inventory_' + user, JSON.stringify(inv)); }
+
+/* FIX: cache invalidated on save */
+let _mapItemCache = null;
+function saveInventory(inv) {
+  localStorage.setItem('dnd_inventory_' + user, JSON.stringify(inv));
+  _mapItemCache = null;
+}
 function loadEquipped() {
   const saved = localStorage.getItem('dnd_equipped_' + user);
   if (saved) return JSON.parse(saved);
@@ -458,8 +467,11 @@ function giveStarterItems() {
   saveInventory(inv);
 }
 
+/* FIX: cached hasMapItem */
 function hasMapItem() {
-  return loadInventory().some(i => i && i.id === 'map_scroll');
+  if (_mapItemCache !== null) return _mapItemCache;
+  _mapItemCache = loadInventory().some(i => i && i.id === 'map_scroll');
+  return _mapItemCache;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -533,16 +545,16 @@ const BC = {
   INN:         { c:'#c8b078', n:'Wayfarers\' Inn' },
 };
 const POI_CFG = {
-  VILLAGE: { c:'#f5c842', r:4, label:'Village',      icon:'🏘' },
-  TOWN:    { c:'#e89a30', r:5, label:'Town',          icon:'🏙' },
-  CASTLE:  { c:'#9040d0', r:5, label:'Castle',        icon:'🏰' },
-  DUNGEON: { c:'#c94040', r:4, label:'Dungeon',       icon:'💀' },
-  OUTPOST: { c:'#6080c0', r:3, label:'Outpost',       icon:'🗼' },
-  RUINS:   { c:'#806040', r:3, label:'Ruins',         icon:'🏚' },
-  CAVE:    { c:'#505050', r:3, label:'Cave',           icon:'🕳' },
-  PORT:    { c:'#4080b0', r:4, label:'Port',           icon:'⚓' },
-  TEMPLE:  { c:'#c09040', r:4, label:'Temple',        icon:'⛩' },
-  GROVE:   { c:'#50a050', r:3, label:'Druid Grove',   icon:'🌿' },
+  VILLAGE: { c:'#f5c842', r:4, label:'Village',        icon:'🏘' },
+  TOWN:    { c:'#e89a30', r:5, label:'Town',            icon:'🏙' },
+  CASTLE:  { c:'#9040d0', r:5, label:'Castle',          icon:'🏰' },
+  DUNGEON: { c:'#c94040', r:4, label:'Dungeon',         icon:'💀' },
+  OUTPOST: { c:'#6080c0', r:3, label:'Outpost',         icon:'🗼' },
+  RUINS:   { c:'#806040', r:3, label:'Ruins',           icon:'🏚' },
+  CAVE:    { c:'#505050', r:3, label:'Cave',             icon:'🕳' },
+  PORT:    { c:'#4080b0', r:4, label:'Port',             icon:'⚓' },
+  TEMPLE:  { c:'#c09040', r:4, label:'Temple',          icon:'⛩' },
+  GROVE:   { c:'#50a050', r:3, label:'Druid Grove',     icon:'🌿' },
   INN:     { c:'#d4a44a', r:5, label:'Wayfarers\' Inn', icon:'🏠' },
 };
 
@@ -615,7 +627,6 @@ const isLand  = b => !isWater(b) && b!==BIOMES.BEACH;
 /* ═══════════════════════════════════════════════════════
    WORLD STATE
 ═══════════════════════════════════════════════════════ */
-
 const W=1000, H=1000, TS=10;
 let tiles=null, worldSeed=0;
 let pois=[], innTile=null;
@@ -647,19 +658,13 @@ function generateTerrain(w, h, seed) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   IMPROVED RIVER GENERATION
-   — Watershed flow-accumulation algorithm
-   — Only keeps rivers that actually reach the ocean
-   — No orphaned/dead-end river segments
+   RIVER GENERATION
 ═══════════════════════════════════════════════════════ */
 function genRivers(ts, w, h) {
   const DX = [0,1,1,1, 0,-1,-1,-1];
   const DY = [-1,-1,0,1,1, 1, 0,-1];
-
-  // Step 1: Each cell drains to its lowest neighbour
   const dir  = new Int8Array(w*h).fill(-1);
   const flow = new Float32Array(w*h).fill(1);
-
   for (let y=0; y<h; y++) for (let x=0; x<w; x++) {
     const idx = y*w+x;
     let minE = ts[idx].e, md = -1;
@@ -672,8 +677,6 @@ function genRivers(ts, w, h) {
     }
     dir[idx] = md;
   }
-
-  // Step 2: Flow accumulation — sort by elevation descending, pour downhill
   const order = Array.from({length:w*h}, (_,i)=>i).sort((a,b)=>ts[b].e-ts[a].e);
   for (const idx of order) {
     const d = dir[idx]; if (d<0) continue;
@@ -681,24 +684,13 @@ function genRivers(ts, w, h) {
     const nx2=x+DX[d], ny2=y+DY[d];
     if (nx2>=0&&nx2<w&&ny2>=0&&ny2<h) flow[ny2*w+nx2] += flow[idx];
   }
-
-  // Step 3: Threshold candidates (scaled to world size)
-  const area        = w*h;
-  const smallThresh = area/1600;
-  const bigThresh   = area/500;
-
+  const area=w*h, smallThresh=area/1600, bigThresh=area/500;
   const riverCandidate = new Uint8Array(w*h);
   for (let i=0; i<w*h; i++) {
-    if (flow[i]>smallThresh && ts[i].e>0.43 && ts[i].e<0.84)
-      riverCandidate[i] = 1;
+    if (flow[i]>smallThresh && ts[i].e>0.43 && ts[i].e<0.84) riverCandidate[i]=1;
   }
-
-  // Step 4: Only keep rivers that reach the ocean (eliminate inland dead-ends)
   const reachesOcean = new Uint8Array(w*h);
-  for (let i=0; i<w*h; i++) {
-    if (isWater(ts[i].biome)) reachesOcean[i] = 1;
-  }
-
+  for (let i=0; i<w*h; i++) { if (isWater(ts[i].biome)) reachesOcean[i]=1; }
   let changed=true, passes=0;
   while (changed && passes<80) {
     changed=false; passes++;
@@ -707,21 +699,14 @@ function genRivers(ts, w, h) {
       const d=dir[idx]; if (d<0) continue;
       const x=idx%w, y=(idx/w)|0;
       const nx2=x+DX[d], ny2=y+DY[d];
-      if (nx2>=0&&nx2<w&&ny2>=0&&ny2<h&&reachesOcean[ny2*w+nx2]) {
-        reachesOcean[idx]=1; changed=true;
-      }
+      if (nx2>=0&&nx2<w&&ny2>=0&&ny2<h&&reachesOcean[ny2*w+nx2]) { reachesOcean[idx]=1; changed=true; }
     }
   }
-
-  // Step 5: Apply to tiles
   for (let i=0; i<w*h; i++) {
     if (riverCandidate[i] && reachesOcean[i]) {
-      ts[i].river = true;
-      ts[i].riverWidth = flow[i]>bigThresh ? 2 : 1;
+      ts[i].river=true; ts[i].riverWidth=flow[i]>bigThresh?2:1;
     }
   }
-
-  // Step 6: Mark river banks for subtle blending
   for (let y=1; y<h-1; y++) for (let x=1; x<w-1; x++) {
     if (ts[y*w+x].river && ts[y*w+x].riverWidth===2) {
       for (let d=0; d<4; d++) {
@@ -760,7 +745,7 @@ function makeName(rng, type) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   POI PLACEMENT (no roads)
+   POI PLACEMENT
 ═══════════════════════════════════════════════════════ */
 function minDist(list, x, y, d) {
   for (const p of list) { const dx=p.x-x, dy=p.y-y; if (dx*dx+dy*dy<d*d) return false; }
@@ -773,12 +758,10 @@ function nearWater(x, y, r) {
   }
   return false;
 }
-
 function placePOIs(seed) {
   const rng = mulberry32(seed+54321), out=[];
   const cands = { VILLAGE:[],TOWN:[],CASTLE:[],DUNGEON:[],OUTPOST:[],RUINS:[],CAVE:[],PORT:[],TEMPLE:[],GROVE:[] };
   const margin = 4;
-
   for (let y=margin; y<H-margin; y++) for (let x=margin; x<W-margin; x++) {
     const t = tiles[y*W+x];
     const {biome:b, e} = t;
@@ -797,10 +780,8 @@ function placePOIs(seed) {
     if (rng()<0.025) cands.RUINS.push({x,y});
     if (flat&&nearWater(x,y,2)) cands.PORT.push({x,y});
   }
-
   const shuf = a => { for (let i=a.length-1;i>0;i--){const j=(rng()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];} };
   Object.values(cands).forEach(shuf);
-
   const goals = { VILLAGE:20, TOWN:7, CASTLE:6, DUNGEON:14, OUTPOST:10, RUINS:18, CAVE:9, PORT:7, TEMPLE:7, GROVE:7 };
   const dists = { VILLAGE:18, TOWN:32, CASTLE:35, DUNGEON:12, OUTPOST:16, RUINS:9, CAVE:11, PORT:22, TEMPLE:14, GROVE:12 };
   for (const [type, count] of Object.entries(goals)) {
@@ -810,8 +791,6 @@ function placePOIs(seed) {
       if (minDist(out, x, y, dists[type])) { out.push({x,y,type,name:makeName(rng,type)}); placed++; }
     }
   }
-
-  // Place INN near center as safe spawn
   if (CONFIG.SPAWN_IN_INN) {
     const cx=Math.floor(W/2), cy=Math.floor(H/2);
     let bestInn=null, bestD=9999;
@@ -848,10 +827,8 @@ function buildOffscreen() {
   const cw=W*TS, ch=H*TS;
   offC=document.createElement('canvas'); offC.width=cw; offC.height=ch;
   offCtx=offC.getContext('2d');
-
   const img=offCtx.createImageData(cw,ch);
   const d=img.data;
-
   for (let y=0; y<H; y++) for (let x=0; x<W; x++) {
     const t = tiles[y*W+x];
     const [r,g,b] = h2r((BC[t.biome]||{c:'#888'}).c);
@@ -859,22 +836,18 @@ function buildOffscreen() {
     let pr=Math.max(0,Math.min(255,r+v*255));
     let pg=Math.max(0,Math.min(255,g+v*255));
     let pb=Math.max(0,Math.min(255,b+v*255));
-
     if (t.river && t.e>0.43) {
       if (t.riverWidth===2) { pr=28; pg=90;  pb=168; }
       else                  { pr=38; pg=112; pb=180; }
     } else if (t.riverEdge) {
       pr=Math.max(0,pr-18); pg=Math.max(0,pg-18); pb=Math.max(0,pb-18);
     }
-
     for (let ty=0; ty<TS; ty++) for (let tx=0; tx<TS; tx++) {
       const px=((y*TS+ty)*cw+(x*TS+tx))*4;
       d[px]=pr; d[px+1]=pg; d[px+2]=pb; d[px+3]=255;
     }
   }
   offCtx.putImageData(img,0,0);
-
-  // Draw POIs on offscreen canvas
   for (const p of pois) drawPOI(offCtx, p);
 }
 
@@ -937,15 +910,16 @@ function drawPlayerTokens(ctx) {
 ═══════════════════════════════════════════════════════ */
 let vx=0, vy=0, zoom=1;
 let minZoomAllowed = CONFIG.MIN_ZOOM;
-const NARR_H = 135; // compact narrator height
+const NARR_H = 135;
 
 function clampZoom(z) { return Math.max(minZoomAllowed, Math.min(CONFIG.MAX_ZOOM, z)); }
 
+/* FIX: only resize canvas when dimensions actually change */
 function renderToScreen() {
   const canvas=document.getElementById('mapCanvas');
   const area=document.getElementById('mapArea');
   const aW=area.clientWidth, aH=area.clientHeight-NARR_H;
-  canvas.width=aW; canvas.height=aH;
+  if (canvas.width!==aW||canvas.height!==aH) { canvas.width=aW; canvas.height=aH; }
   const ctx=canvas.getContext('2d');
   ctx.fillStyle='#030201'; ctx.fillRect(0,0,aW,aH);
   if (!offC) return;
@@ -958,9 +932,10 @@ function renderToScreen() {
   renderMMVP();
 }
 
-const MM=480;
+/* FIX: separate MM constant for big map, corner stays 120 */
+const MM=680;
 function renderMinimap() {
-  // Corner
+  // Corner (120×120)
   const cc=document.getElementById('minimapCornerCanvas');
   const cctx=cc.getContext('2d');
   if (!offC) return;
@@ -972,14 +947,14 @@ function renderMinimap() {
     cctx.fillStyle=name===user?'#c9a45c':'#6080cc'; cctx.fill();
     cctx.strokeStyle='#fff'; cctx.lineWidth=0.5; cctx.stroke();
   }
-  // Big
+  // Big (MM×390)
   const bc=document.getElementById('minimapBigCanvas');
-  bc.width=MM; bc.height=MM;
+  bc.width=MM; bc.height=390;
   const bctx=bc.getContext('2d');
-  bctx.clearRect(0,0,MM,MM);
-  bctx.drawImage(offC,0,0,MM,MM);
+  bctx.clearRect(0,0,MM,390);
+  bctx.drawImage(offC,0,0,MM,390);
   for (const [name,pos] of Object.entries(playerPositions)) {
-    const px=(pos.x/W)*MM, py=(pos.y/H)*MM;
+    const px=(pos.x/W)*MM, py=(pos.y/H)*390;
     bctx.beginPath(); bctx.arc(px,py,6,0,Math.PI*2);
     bctx.fillStyle=name===user?'#c9a45c':'#6080cc'; bctx.fill();
     bctx.strokeStyle='#fff'; bctx.lineWidth=1.5; bctx.stroke();
@@ -1045,7 +1020,7 @@ function zoomToTile(tx, ty, targetZoom, duration=1400) {
 /* ═══════════════════════════════════════════════════════
    MAP INTERACTION
 ═══════════════════════════════════════════════════════ */
-let drag=false, lmx=0, lmy=0;
+let drag=false, didDrag=false, lmx=0, lmy=0;
 const mc=document.getElementById('mapCanvas');
 
 mc.addEventListener('wheel', e=>{
@@ -1059,9 +1034,14 @@ mc.addEventListener('wheel', e=>{
   document.getElementById('zoomOutBtn').classList.toggle('disabled',zoom<=minZoomAllowed);
 },{passive:false});
 
-mc.addEventListener('mousedown',e=>{drag=true;lmx=e.clientX;lmy=e.clientY;mc.style.cursor='grabbing';});
+mc.addEventListener('mousedown',e=>{drag=true;didDrag=false;lmx=e.clientX;lmy=e.clientY;mc.style.cursor='grabbing';});
+
 window.addEventListener('mousemove',e=>{
-  if (drag) { vx+=e.clientX-lmx; vy+=e.clientY-lmy; lmx=e.clientX; lmy=e.clientY; renderToScreen(); return; }
+  if (drag) {
+    const dx=e.clientX-lmx, dy=e.clientY-lmy;
+    if (Math.abs(dx)>2||Math.abs(dy)>2) didDrag=true;
+    vx+=dx; vy+=dy; lmx=e.clientX; lmy=e.clientY; renderToScreen(); return;
+  }
   if (!offC||!tiles) return;
   const rect=mc.getBoundingClientRect();
   const mx=e.clientX-rect.left, my=e.clientY-rect.top;
@@ -1087,6 +1067,8 @@ window.addEventListener('mousemove',e=>{
     }
   } else { document.getElementById('tooltip').style.display='none'; }
 });
+
+/* FIX: reset drag on mouseup even outside window */
 window.addEventListener('mouseup',()=>{drag=false;if(mc)mc.style.cursor='crosshair';});
 
 function getHoveredPOI(mx, my) {
@@ -1102,7 +1084,6 @@ function getHoveredPOI(mx, my) {
 
 /* ═══════════════════════════════════════════════════════
    DOUBLE-CLICK / DOUBLE-TAP NAVIGATION
-   Single: narrate | Double: navigate to LocationName.html
 ═══════════════════════════════════════════════════════ */
 function nameToFilename(name) {
   return name.replace(/[^a-zA-Z0-9 ]/g,'').replace(/\s+/g,'') + '.html';
@@ -1111,8 +1092,9 @@ function nameToFilename(name) {
 let lastClickTime=0, lastClickPOI=null;
 const DOUBLE_CLICK_MS=400;
 
+/* FIX: use didDrag instead of drag to prevent misfire after dragging */
 mc.addEventListener('click', e=>{
-  if (!tiles||drag) return;
+  if (!tiles||didDrag) return;
   const rect=mc.getBoundingClientRect();
   const mx=e.clientX-rect.left, my=e.clientY-rect.top;
   const poi=getHoveredPOI(mx,my);
@@ -1158,16 +1140,30 @@ mc.addEventListener('touchend', e=>{
 },{passive:true});
 
 /* ═══════════════════════════════════════════════════════
-   MINIMAP TOGGLE (M key)
+   MINIMAP TOGGLE
 ═══════════════════════════════════════════════════════ */
 let minimapVisible=false;
+
 function updateMinimapState() {
   document.getElementById('minimapBig').classList.toggle('hidden',!minimapVisible);
   document.getElementById('minimapCorner').style.display=minimapVisible?'none':'block';
   document.getElementById('mmHint').style.display=minimapVisible?'none':'block';
 }
+
+function closeBigMap() {
+  if (!minimapVisible) return;
+  minimapVisible=false;
+  updateMinimapState();
+}
+
+/* FIX: Escape closes big map or inventory; M blocked while inventory open */
 document.addEventListener('keydown', e=>{
+  if (e.key==='Escape') {
+    if (minimapVisible) { closeBigMap(); return; }
+    if (document.getElementById('invOv').classList.contains('active')) { closeInv(); return; }
+  }
   if (e.key.toLowerCase()==='m') {
+    if (document.getElementById('invOv').classList.contains('active')) return;
     if (!hasMapItem()) { showNotif('You need a Cartographer\'s Map!',true); return; }
     minimapVisible=!minimapVisible;
     updateMinimapState();
@@ -1186,7 +1182,6 @@ function setMsg(m) { document.getElementById('loadMsg').textContent=m; }
    WORLD BUILD
 ═══════════════════════════════════════════════════════ */
 async function buildWorld(seed) {
-  W; H; // reference constants
   worldSeed=seed;
   setMsg('Shaping the earth...'); setP(5); await yld();
   tiles=generateTerrain(W,H,seed);
@@ -1228,6 +1223,8 @@ async function rebuildWorld(seed) {
   setP(0); setMsg('The realm shifts...');
   await buildWorld(seed);
   document.getElementById('loadOverlay').classList.add('hidden');
+  /* FIX: reset minimapVisible so corner always reappears after rebuild */
+  minimapVisible=false;
   renderMinimap(); resetView();
   spawnPlayerAt(user);
   updateMinimapState();
@@ -1505,7 +1502,7 @@ function closeInv() { document.getElementById('invOv').classList.remove('active'
 let notifTimer;
 function showNotif(msg, isErr=false) {
   const el=document.getElementById('notif');
-  el.textContent=msg; el.className=(isErr?'err':'')+' show';
+  el.textContent=msg; el.className=(isErr?'err ':'')+' show';
   clearTimeout(notifTimer); notifTimer=setTimeout(()=>{el.className=isErr?'err':'';},3200);
 }
 
@@ -1522,7 +1519,9 @@ function beforeUnload(e) { e.preventDefault(); e.returnValue=''; }
 window.addEventListener('beforeunload',beforeUnload);
 history.pushState(null,'',location.href);
 window.addEventListener('popstate',()=>history.pushState(null,'',location.href));
-window.addEventListener('resize',()=>{ if (offC) renderToScreen(); });
+
+/* FIX: also redraw big minimap on resize if open */
+window.addEventListener('resize',()=>{ if (offC) { renderToScreen(); if (minimapVisible) renderMinimap(); } });
 
 /* ═══════════════════════════════════════════════════════
    INIT
