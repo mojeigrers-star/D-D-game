@@ -1108,6 +1108,7 @@ mc.addEventListener('click', e=>{
     if (lastClickPOI&&lastClickPOI.name===poi.name&&(now-lastClickTime)<DOUBLE_CLICK_MS) {
       const filename=nameToFilename(poi.name);
       showNotif(`⚔ Entering ${poi.name}...`);
+      window.removeEventListener('beforeunload', beforeUnload);
       setTimeout(()=>{ window.location.href=filename; },600);
       lastClickTime=0; lastClickPOI=null; return;
     }
@@ -1132,6 +1133,7 @@ mc.addEventListener('touchend', e=>{
     if (lastTapPOI&&lastTapPOI.name===poi.name&&(now-lastTapTime)<DOUBLE_CLICK_MS) {
       const filename=nameToFilename(poi.name);
       showNotif(`⚔ Entering ${poi.name}...`);
+      window.removeEventListener('beforeunload', beforeUnload);
       setTimeout(()=>{ window.location.href=filename; },600);
       lastTapTime=0; lastTapPOI=null; return;
     }
