@@ -59,9 +59,9 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 #minimapCorner.locked #minimapCornerCanvas{opacity:0.15;filter:grayscale(1)}
 #minimapCornerCanvas{display:block;image-rendering:pixelated}
 #mmvp{position:absolute;border:1px solid rgba(201,164,92,.8);pointer-events:none;box-shadow:inset 0 0 4px rgba(201,164,92,.2)}
-#minimapBig{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);width:680px;height:420px;border:2px solid var(--bdr2);background:rgba(3,2,1,.97);box-shadow:0 0 80px rgba(0,0,0,.95),0 0 0 9999px rgba(0,0,0,.72);z-index:60;border-radius:4px;display:flex;flex-direction:column;transition:opacity .25s,transform .25s}
+#minimapBig{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);width:680px;height:420px;border:2px solid var(--bdr2);background:rgba(3,2,1,.97);box-shadow:0 0 80px rgba(0,0,0,.95),0 0 0 9999px rgba(0,0,0,.72);z-index:60;border-radius:4px;display:flex;flex-direction:column;transition:opacity .25s,transform .25s;overflow:hidden}
 #minimapBig.hidden{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.94)}
-#minimapBigCanvas{display:block;image-rendering:pixelated;width:680px;height:390px}
+#minimapBigCanvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width:100%;flex:1;min-height:0}
 .minimap-title{font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);letter-spacing:2px;text-align:center;padding:4px 0 2px;border-bottom:1px solid var(--bdr)}
 
 /* ── COORDS / ZOOM ── */
@@ -947,14 +947,19 @@ function renderMinimap() {
     cctx.fillStyle=name===user?'#c9a45c':'#6080cc'; cctx.fill();
     cctx.strokeStyle='#fff'; cctx.lineWidth=0.5; cctx.stroke();
   }
-  // Big (MM×390)
+   // Big — measure container so canvas fills it exactly
   const bc=document.getElementById('minimapBigCanvas');
-  bc.width=MM; bc.height=390;
+  const bigPanel=document.getElementById('minimapBig');
+  const headerEl=bc.previousElementSibling;
+  const bW=bigPanel.clientWidth;
+  const bH=bigPanel.clientHeight-(headerEl?headerEl.offsetHeight:30);
+  bc.width=Math.max(1,bW); bc.height=Math.max(1,bH);
   const bctx=bc.getContext('2d');
-  bctx.clearRect(0,0,MM,390);
-  bctx.drawImage(offC,0,0,MM,390);
+  bctx.clearRect(0,0,bW,bH);
+  bctx.imageSmoothingEnabled=false;
+  bctx.drawImage(offC,0,0,bW,bH);
   for (const [name,pos] of Object.entries(playerPositions)) {
-    const px=(pos.x/W)*MM, py=(pos.y/H)*390;
+    const px=(pos.x/W)*bW, py=(pos.y/H)*bH;
     bctx.beginPath(); bctx.arc(px,py,6,0,Math.PI*2);
     bctx.fillStyle=name===user?'#c9a45c':'#6080cc'; bctx.fill();
     bctx.strokeStyle='#fff'; bctx.lineWidth=1.5; bctx.stroke();
