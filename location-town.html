@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Town — The Realm Awakens</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    :root {
+      --loc-accent: #e89a30;
+    }
+
+    body {
+      background: #090704;
+    }
+
+    /* ── Hero Banner ── */
+    .loc-hero {
+      min-height: 170px;
+      background: linear-gradient(160deg, #1a1204 0%, #0c0904 60%, #080608 100%);
+      border-bottom: 1px solid rgba(232, 154, 48, .2);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px 24px 18px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .loc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 30% 50%, rgba(232, 154, 48, .07), transparent);
+    }
+
+    .hero-icon {
+      font-size: 68px;
+      margin-right: 20px;
+      filter: drop-shadow(0 0 20px rgba(232, 154, 48, .4));
+      flex-shrink: 0;
+    }
+
+    .hero-text {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-location-type {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--txt3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hero-location-name {
+      font-family: 'Uncial Antiqua', cursive;
+      color: #e89a30;
+      font-size: 26px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 24px rgba(232, 154, 48, .35);
+      line-height: 1.1;
+    }
+
+    .hero-desc {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      color: var(--txt2);
+      font-size: 13px;
+      margin-top: 6px;
+      max-width: 520px;
+      line-height: 1.55;
+    }
+
+    /* ── Guild Banners ── */
+    .guild-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(232, 154, 48, .06);
+      border: 1px solid rgba(232, 154, 48, .2);
+      border-radius: 3px;
+      margin-bottom: 8px;
+    }
+
+    .guild-icon   { font-size: 22px; }
+
+    .guild-name {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: #e89a30;
+    }
+
+    .guild-sub {
+      font-size: 10px;
+      color: var(--txt3);
+      margin-top: 1px;
+    }
+
+    .guild-status {
+      margin-left: auto;
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--txt3);
+      border: 1px solid rgba(61, 46, 26, .4);
+      padding: 2px 7px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="loc-ambience" id="ambience"></div>
+
+<div class="loc-wrap">
+
+  <!-- ── Top Header ── -->
+  <header class="loc-header">
+    <button class="loc-back-btn" onclick="Core.leave()">← Leave</button>
+    <div class="loc-title-wrap">
+      <div class="loc-place-name" id="placeName">Town</div>
+      <div class="loc-place-sub">🏙 TOWN · Market &amp; Guilds</div>
+    </div>
+    <div class="loc-save-badge" id="saveBadge">✓ Saved</div>
+  </header>
+
+  <div class="loc-body">
+
+    <!-- ── Left Sidebar: Character ── -->
+    <aside class="loc-sidebar">
+
+      <div class="card">
+        <div class="card-title">Adventurer</div>
+        <div class="char-portrait">
+          <div class="char-avatar" id="charAvatar">⚔</div>
+          <div>
+            <div class="char-name" id="charName">—</div>
+            <div class="char-sub"  id="charSub">—</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">❤ HP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="barHp"></div></div>
+            <span class="stat-bar-val" id="valHp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">✦ MP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-mp" id="barMp"></div></div>
+            <span class="stat-bar-val" id="valMp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">★ XP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-xp" id="barXp"></div></div>
+            <span class="stat-bar-val" id="valXp">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Attributes</div>
+        <div class="stat-grid" id="statGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Actions</div>
+        <button class="action-btn" onclick="doGuild()">
+          <span class="action-btn-icon">⚔</span> Adventurers' Guild
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn" onclick="doBank()">
+          <span class="action-btn-icon">🏦</span> Town Bank
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn danger" onclick="Core.leave()">
+          <span class="action-btn-icon">🗺</span> Leave Town
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="loc-center">
+
+      <div class="loc-hero">
+        <div class="hero-icon">🏙</div>
+        <div class="hero-text">
+          <div class="hero-location-type">Town</div>
+          <div class="hero-location-name" id="heroName">Ironford</div>
+          <div class="hero-desc">
+            A proper town with stone walls and a market in full cry. Merchants hawk their wares
+            from colourful stalls, militia patrol the gates, and the smell of fresh bread mingles
+            with horse, steel, and opportunity.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active"  onclick="switchTab('market',     this)">🛒 Market</button>
+        <button class="tab-btn"         onclick="switchTab('blacksmith', this)">⚒ Blacksmith</button>
+        <button class="tab-btn"         onclick="switchTab('guild',      this)">⚔ Guild</button>
+        <button class="tab-btn"         onclick="switchTab('npcs',       this)">👥 Townsfolk</button>
+      </div>
+
+      <!-- MARKET tab -->
+      <div class="tab-pane active" id="tab-market">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">🛒 Market Stalls</div>
+          <div id="marketItems"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Alchemist's Corner</div>
+          <div id="alchemyItems"></div>
+        </div>
+      </div>
+
+      <!-- BLACKSMITH tab -->
+      <div class="tab-pane" id="tab-blacksmith">
+        <div class="card">
+          <div class="card-title">⚒ Blacksmith's Forge</div>
+          <p style="font-family:'Crimson Text',serif;font-size:13px;color:var(--txt2);font-style:italic;margin-bottom:12px;line-height:1.55">
+            "Good steel takes time. But gold makes it faster." The smell of hot metal and coal fills the forge.
+          </p>
+          <div id="smithItems"></div>
+        </div>
+      </div>
+
+      <!-- GUILD tab -->
+      <div class="tab-pane" id="tab-guild">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">⚔ Adventurers' Guild</div>
+          <div id="guildBanners"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Contract Board</div>
+          <div id="contractBoard"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-title">Event Log</div>
+          <div class="event-log" id="eventLog">
+            <div class="event-line">◈ You pass through the town gate. Militia nod you through.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOWNSFOLK tab -->
+      <div class="tab-pane" id="tab-npcs">
+        <div class="card">
+          <div class="card-title">Townsfolk</div>
+          <div id="npcList"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── Right Sidebar: Inventory ── -->
+    <aside class="loc-inv-sidebar">
+      <div class="card">
+        <div class="card-title">Gold</div>
+        <div class="gold-row">
+          <span class="gold-icon">⚜</span>
+          <span class="gold-val" id="invGold">0</span>
+          <span class="gold-lbl">COINS</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Inventory</div>
+        <div class="inv-grid" id="invGrid"></div>
+      </div>
+    </aside>
+
+  </div><!-- /.loc-body -->
+
+  <!-- ── Dialogue Box ── -->
+  <div class="dialogue-box">
+    <div class="dialogue-speaker" id="dlgSpeaker">◈ Town Crier</div>
+    <div class="dialogue-text"   id="dlgText"></div>
+  </div>
+
+</div><!-- /.loc-wrap -->
+
+<div id="locNotif"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CORE  —  save / load / shared helpers
+   ═══════════════════════════════════════════════════════════ */
+const Core = (() => {
+
+  // ── Storage keys ──────────────────────────────────────────
+  const SAVE_KEY = 'dnd_save';
+  const LK = {
+    char:  u => 'dnd_char_'      + u,
+    stats: u => 'dnd_stats_'     + u,
+    inv:   u => 'dnd_inventory_' + u,
+    equip: u => 'dnd_equipped_'  + u,
+  };
+
+  // ── Default factories ──────────────────────────────────────
+  const defPlayer = name => ({
+    name, race: 'human', class: 'fighter', sex: 'male',
+    level: 1, xp: 0, xpMax: 100,
+    hp: 50, hpMax: 50, mp: 20, mpMax: 20,
+    gold: 0, ac: 10, speed: 30,
+    str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,
+    reputation: {}, statusEffects: [], skills: [],
+    attacks: [{ id: 'strike', name: 'Strike', dmg: '1d6', type: 'physical', cooldown: 0 }],
+  });
+
+  const defInventory = () => new Array(24).fill(null);
+
+  const defEquipped = () => ({
+    weapon: null, offhand: null, armor: null, helmet: null, ring: null,
+  });
+
+  const defWorld = () => ({
+    time: 0, weather: 'clear',
+    visited: {}, quests: {}, factions: {}, npcStates: {}, flags: {},
+  });
+
+  // ── Helpers ────────────────────────────────────────────────
+  const tryParse = str => {
+    try { return str ? JSON.parse(str) : null; }
+    catch (e) { return null; }
+  };
+
+  function persist(state) {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+    catch (e) { /* storage full or unavailable */ }
+  }
+
+  // ── Load state ─────────────────────────────────────────────
+  function load() {
+    // Try unified save first
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        state.player    = Object.assign(defPlayer(state.player?.name || 'Adventurer'), state.player || {});
+        state.inventory = state.inventory || defInventory();
+        state.equipped  = Object.assign(defEquipped(), state.equipped || {});
+        state.world     = Object.assign(defWorld(),    state.world    || {});
+        return state;
+      }
+    } catch (e) { /* fall through to legacy load */ }
+
+    // Fall back to legacy per-key storage
+    const u   = localStorage.getItem('dnd_user') || 'Adventurer';
+    const ch  = tryParse(localStorage.getItem(LK.char(u)))  || {};
+    const st  = tryParse(localStorage.getItem(LK.stats(u))) || {};
+    const inv = tryParse(localStorage.getItem(LK.inv(u)))   || defInventory();
+    const eq  = tryParse(localStorage.getItem(LK.equip(u))) || defEquipped();
+
+    const hpMax = (st.con || 10) * 5;
+    const mpMax = (st.int || 10) * 3;
+
+    const state = {
+      player: Object.assign(defPlayer(u), {
+        name: u,
+        race:  ch.race  || 'human',
+        class: ch.class || 'fighter',
+        level: st.level || 1,
+        xp:    st.xp    || 0,
+        xpMax: st.xpMax || 100,
+        hp: hpMax, hpMax,
+        mp: mpMax, mpMax,
+        gold: st.gold || 0,
+        str: st.str || 10, dex: st.dex || 10, con: st.con || 10,
+        int: st.int || 10, wis: st.wis || 10, cha: st.cha || 10,
+      }),
+      inventory: inv,
+      equipped:  eq,
+      world:     defWorld(),
+    };
+
+    persist(state);
+    return state;
+  }
+
+  // ── Internal state ─────────────────────────────────────────
+  let _state    = load();
+  let _saveTimer = null;
+
+  // ── Save ───────────────────────────────────────────────────
+  function save(showBadge = true) {
+    const p = _state.player;
+    const u = p.name;
+
+    try {
+      localStorage.setItem(LK.char(u),  JSON.stringify({ race: p.race, class: p.class, sex: p.sex }));
+      localStorage.setItem(LK.stats(u), JSON.stringify({
+        level: p.level, xp: p.xp, xpMax: p.xpMax,
+        str: p.str, dex: p.dex, con: p.con,
+        int: p.int, wis: p.wis, cha: p.cha,
+        gold: p.gold,
+      }));
+      localStorage.setItem(LK.inv(u),   JSON.stringify(_state.inventory));
+      localStorage.setItem(LK.equip(u), JSON.stringify(_state.equipped));
+    } catch (e) { /* storage full or unavailable */ }
+
+    persist(_state);
+
+    if (showBadge) {
+      const badge = document.getElementById('saveBadge');
+      if (badge) {
+        badge.classList.add('show');
+        clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(() => badge.classList.remove('show'), 2200);
+      }
+    }
+  }
+
+  // ── Class icons ────────────────────────────────────────────
+  const CLASS_ICONS = {
+    fighter:   '⚔',  wizard:   '🧙', rogue:    '🗡',
+    ranger:    '🏹', cleric:   '✝',  paladin:  '🛡',
+    barbarian: '🪓', bard:     '🎵', druid:    '🌿',
+    warlock:   '👁', monk:     '👊', sorcerer: '🔮',
+  };
+
+  const capitalize = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+
+  // ── Notification ───────────────────────────────────────────
+  // FIX: className was `(err?'err ':'')+' show'` — extra spaces & leading space
+  // FIX: timeout was resetting to `err?'err':''` instead of clearing fully
+  function notify(msg, isError = false) {
+    const el = document.getElementById('locNotif');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = (isError ? 'err' : '') + ' show';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3200);
+  }
+
+  // ── Public API ─────────────────────────────────────────────
+  return {
+    get:    () => _state,
+    player: () => _state.player,
+    inv:    () => _state.inventory,
+    world:  () => _state.world,
+    save,
+
+    modifyPlayer(fn) { fn(_state.player); save(); },
+
+    giveItem(item) {
+      const slot = _state.inventory.findIndex(s => s === null);
+      if (slot === -1) return false;
+      _state.inventory[slot] = item;
+      save();
+      return true;
+    },
+
+    spendGold(amount) {
+      if (_state.player.gold < amount) return false;
+      _state.player.gold -= amount;
+      save();
+      return true;
+    },
+
+    gainGold(amount) {
+      _state.player.gold += amount;
+      save();
+    },
+
+    gainXP(amount) {
+      const p = _state.player;
+      p.xp += amount;
+      while (p.xp >= p.xpMax) {
+        p.xp    -= p.xpMax;
+        p.level += 1;
+        p.xpMax  = Math.floor(p.xpMax * 1.5);
+        p.hpMax += 5;  p.hp = p.hpMax;
+        p.mpMax += 3;  p.mp = p.mpMax;
+        notify('⬆ Level Up! Level ' + p.level + '!');
+      }
+      save();
+    },
+
+    healHP(amount) {
+      const p = _state.player;
+      p.hp = Math.min(p.hpMax, p.hp + amount);
+      save();
+    },
+
+    markVisited(name, type) {
+      _state.world.visited[name] = { type, time: _state.world.time };
+      save();
+    },
+
+    leave() {
+      save();
+      window.location.href = 'game-multi.html';
+    },
+
+    notify,
+    classIcon: cls => CLASS_ICONS[cls] || '⚔',
+    cap: capitalize,
+  };
+
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+   ═══════════════════════════════════════════════════════════ */
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+let _typewriterTimer = null;
+function typeText(elId, text, speed = 18) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  el.innerHTML = '';
+  let i = 0;
+  clearInterval(_typewriterTimer);
+
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  el.appendChild(cursor);
+
+  _typewriterTimer = setInterval(() => {
+    if (i < text.length) {
+      el.insertBefore(document.createTextNode(text[i]), cursor);
+      i++;
+    } else {
+      clearInterval(_typewriterTimer);
+      cursor.remove();
+    }
+  }, speed);
+}
+
+function logEvent(text, type = '') {
+  const log = document.getElementById('eventLog');
+  if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'event-line' + (type ? ' ' + type : '');
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function spawnAmbience(color, count = 20) {
+  const container = document.getElementById('ambience');
+  for (let i = 0; i < count; i++) {
+    const pt = document.createElement('div');
+    pt.className = 'amb-pt';
+    pt.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `bottom:${Math.random() * 30}%`,
+      `width:${1 + Math.random() * 2}px`,
+      `height:${1 + Math.random() * 2}px`,
+      `background:${color}`,
+      `animation-delay:${Math.random() * 12}s`,
+      `animation-duration:${6 + Math.random() * 8}s`,
+    ].join(';');
+    container.appendChild(pt);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   HUD & INVENTORY RENDERING
+   ═══════════════════════════════════════════════════════════ */
+
+function updateHUD() {
+  const p = Core.player();
+  document.getElementById('charAvatar').textContent = Core.classIcon(p.class);
+  document.getElementById('charName').textContent   = p.name;
+  document.getElementById('charSub').textContent    = `Lv.${p.level} ${Core.cap(p.race)} ${Core.cap(p.class)}`;
+
+  document.getElementById('barHp').style.width = (p.hp / p.hpMax * 100) + '%';
+  document.getElementById('barMp').style.width = (p.mp / p.mpMax * 100) + '%';
+  document.getElementById('barXp').style.width = (p.xp / p.xpMax * 100) + '%';
+
+  document.getElementById('valHp').textContent = `${p.hp}/${p.hpMax}`;
+  document.getElementById('valMp').textContent = `${p.mp}/${p.mpMax}`;
+  document.getElementById('valXp').textContent = `${p.xp}/${p.xpMax}`;
+
+  const grid = document.getElementById('statGrid');
+  grid.innerHTML = '';
+  [['STR', p.str], ['DEX', p.dex], ['CON', p.con],
+   ['INT', p.int], ['WIS', p.wis], ['CHA', p.cha]].forEach(([key, val]) => {
+    grid.innerHTML += `
+      <div class="stat-cell">
+        <div class="stat-cell-val">${val}</div>
+        <div class="stat-cell-name">${key}</div>
+      </div>`;
+  });
+}
+
+function updateInventoryPanel() {
+  const inv = Core.inv();
+  const p   = Core.player();
+
+  document.getElementById('invGold').textContent = p.gold;
+
+  const grid = document.getElementById('invGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 24; i++) {
+    const item = inv[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot' + (item ? ' occ' : '');
+    if (item) {
+      slot.textContent = item.icon || '📦';
+      slot.title       = item.name;
+    }
+    grid.appendChild(slot);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DATA — Shop / NPC / Quest lists
+   ═══════════════════════════════════════════════════════════ */
+
+const MARKET = [
+  { id: 'health_potion', name: 'Health Potion',  icon: '🧪', price: 25, desc: '2d4+2 HP',         type: 'consumable', slot: null },
+  { id: 'rations',       name: 'Travel Rations',  icon: '🧆', price:  5, desc: '1 day food',       type: 'consumable', slot: null },
+  { id: 'torch',         name: 'Torch',           icon: '🕯', price:  2, desc: '1 hour light',     type: 'utility',    slot: null },
+  { id: 'rope',          name: 'Hempen Rope',     icon: '🪢', price:  8, desc: '50 ft',            type: 'utility',    slot: null },
+  { id: 'lantern',       name: 'Hooded Lantern',  icon: '🏮', price: 15, desc: '6h bright',        type: 'utility',    slot: null },
+  { id: 'bandage',       name: 'Bandages',        icon: '🩹', price:  3, desc: 'Stabilise wounds', type: 'consumable', slot: null },
+];
+
+const ALCHEMY = [
+  { id: 'mana_potion', name: 'Mana Potion', icon: '💙', price: 35, desc: '2d4+2 MP',    type: 'consumable', slot: null },
+  { id: 'antitoxin',   name: 'Antitoxin',   icon: '💊', price: 50, desc: 'Cures poison', type: 'consumable', slot: null },
+  { id: 'smoke_bomb',  name: 'Smoke Bomb',  icon: '💨', price: 20, desc: 'Escape tool',  type: 'utility',    slot: null },
+];
+
+const SMITH = [
+  { id: 'shortsword',  name: 'Shortsword',  icon: '🗡', price: 60, desc: '+1d6 dmg', type: 'weapon', slot: 'weapon'  },
+  { id: 'chain_shirt', name: 'Chain Shirt', icon: '🧥', price: 90, desc: '+3 AC',    type: 'armor',  slot: 'armor'   },
+  { id: 'shield',      name: 'Iron Shield', icon: '🛡', price: 45, desc: '+2 AC',    type: 'armor',  slot: 'offhand' },
+  { id: 'war_axe',     name: 'War Axe',     icon: '🪓', price: 80, desc: '+1d8 dmg', type: 'weapon', slot: 'weapon'  },
+];
+
+const NPCS = [
+  { name: 'Captain Hern',    role: 'Town Guard Captain',    icon: '💂', dialogue: "We keep the peace here. Don't make me prove it." },
+  { name: 'Lyra Goldtongue', role: 'Merchant Guild Rep',    icon: '👩', dialogue: 'Everything has a price. Including information.' },
+  { name: 'Brother Aldus',   role: 'Temple Acolyte',        icon: '✝',  dialogue: 'The temple offers healing — for a modest tithe.' },
+  { name: 'Sven the Smith',  role: 'Blacksmith',            icon: '⚒',  dialogue: "I craft the finest blades this side of the capital. Don't insult me with lowball offers." },
+];
+
+const CONTRACTS = [
+  { icon: '💀', title: 'Bandit Camp',       desc: 'Clear the camp east of the road.',              reward: '80g + XP'   },
+  { icon: '🐉', title: 'Drake Sighting',    desc: 'Investigate reported drake attacks on caravans.', reward: '150g'      },
+  { icon: '📦', title: 'Escort Contract',   desc: 'Guard a merchant caravan to the port.',          reward: '60g + item' },
+];
+
+const GUILD_FACTIONS = [
+  ['⚔', 'Blades of Ironford', 'Mercenary Company', 'Neutral'],
+  ['🌿', 'The Green Circle',  'Druid Alliance',    'Friendly'],
+  ['🗡', 'Shadowhand',        'Thieves Guild',     'Unknown'],
+];
+
+
+/* ═══════════════════════════════════════════════════════════
+   BUILDERS — render lists into the DOM
+   ═══════════════════════════════════════════════════════════ */
+
+function buildShop(items, elId) {
+  const container = document.getElementById(elId);
+  container.innerHTML = '';
+
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'shop-item fade-in';
+    row.innerHTML = `
+      <div class="shop-item-icon">${item.icon}</div>
+      <div class="shop-item-info">
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-desc">${item.desc}</div>
+      </div>
+      <div class="shop-item-price">⚜${item.price}</div>`;
+
+    row.onclick = () => {
+      if (!Core.spendGold(item.price)) {
+        Core.notify('Not enough gold!', true);
+        return;
+      }
+      if (!Core.giveItem(item)) {
+        Core.gainGold(item.price);  // refund
+        Core.notify('Inventory full!', true);
+        return;
+      }
+      updateHUD();
+      updateInventoryPanel();
+      Core.notify('Purchased: ' + item.name);
+      logEvent('⚜ Bought ' + item.name + ' for ' + item.price + 'g.', 'gold');
+    };
+
+    container.appendChild(row);
+  });
+}
+
+function buildNPCs() {
+  const container = document.getElementById('npcList');
+  container.innerHTML = '';
+
+  NPCS.forEach(npc => {
+    const row = document.createElement('div');
+    row.className = 'npc-row fade-in';
+    row.innerHTML = `
+      <div class="npc-avatar">${npc.icon}</div>
+      <div class="npc-info">
+        <div class="npc-name">${npc.name}</div>
+        <div class="npc-role">${npc.role}</div>
+      </div>
+      <div class="npc-badge">Talk</div>`;
+
+    row.onclick = () => {
+      document.getElementById('dlgSpeaker').textContent = '◈ ' + npc.name;
+      typeText('dlgText', npc.dialogue);
+    };
+
+    container.appendChild(row);
+  });
+}
+
+function buildContracts() {
+  const container = document.getElementById('contractBoard');
+  container.innerHTML = '';
+
+  CONTRACTS.forEach(q => {
+    container.innerHTML += `
+      <div class="notice-item fade-in" style="
+        display:flex; align-items:flex-start; gap:8px;
+        padding:8px 0; border-bottom:1px solid rgba(61,46,26,.3);
+        font-family:'Crimson Text',serif; font-size:13px; color:var(--txt2)">
+        <span style="font-size:16px">${q.icon}</span>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--txt);margin-bottom:2px">${q.title}</div>
+          <div>${q.desc}</div>
+          <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold);margin-top:2px">Reward: ${q.reward}</div>
+        </div>
+      </div>`;
+  });
+}
+
+function buildGuildBanners() {
+  const container = document.getElementById('guildBanners');
+  container.innerHTML = '';
+
+  GUILD_FACTIONS.forEach(([icon, name, type, status]) => {
+    container.innerHTML += `
+      <div class="guild-banner">
+        <div class="guild-icon">${icon}</div>
+        <div>
+          <div class="guild-name">${name}</div>
+          <div class="guild-sub">${type}</div>
+        </div>
+        <div class="guild-status">${status}</div>
+      </div>`;
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   ACTION HANDLERS
+   ═══════════════════════════════════════════════════════════ */
+
+function doGuild() {
+  document.getElementById('dlgSpeaker').textContent = '◈ Guildmaster Aldric';
+  typeText('dlgText', 'The guildmaster looks you over. "New faces. Good. We need capable hands. Check the contract board — gold for the brave."');
+  logEvent("◈ Visited Adventurers' Guild.", 'info');
+  Core.gainXP(5);
+  updateHUD();
+}
+
+function doBank() {
+  const p = Core.player();
+  document.getElementById('dlgSpeaker').textContent = '◈ Bank Clerk';
+  typeText('dlgText', `"Welcome, traveller. Your current balance: ${p.gold} gold." The bank clerk adjusts their spectacles primly.`);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  const townName = params.get('name') || 'Ironford';
+
+  document.getElementById('placeName').textContent = townName;
+  document.getElementById('heroName').textContent  = townName;
+
+  Core.markVisited(townName, 'TOWN');
+  updateHUD();
+  updateInventoryPanel();
+
+  buildShop(MARKET,  'marketItems');
+  buildShop(ALCHEMY, 'alchemyItems');
+  buildShop(SMITH,   'smithItems');
+  buildNPCs();
+  buildContracts();
+  buildGuildBanners();
+  spawnAmbience('#e89a30', 18);
+
+  typeText('dlgText', `The gates of ${townName} stand open. The town crier announces the day's news as militia wave your party through. A proper town — stone walls, a busy market, and the promise of commerce.`);
+
+  Core.save();
+});
+</script>
+</body>
+</html>

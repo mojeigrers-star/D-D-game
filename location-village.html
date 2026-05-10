@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Village — The Realm Awakens</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    :root {
+      --loc-accent: #6aa84e;
+      --loc-glow: rgba(106, 168, 78, .15);
+    }
+
+    body {
+      background: #060a04;
+    }
+
+    /* ── Hero Banner ── */
+    .loc-hero {
+      min-height: 170px;
+      background: linear-gradient(160deg, #0e1a06 0%, #080c04 60%, #060a04 100%);
+      border-bottom: 1px solid rgba(106, 168, 78, .2);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px 24px 18px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .loc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 30% 50%, rgba(106, 168, 78, .07), transparent);
+    }
+
+    .hero-icon {
+      font-size: 68px;
+      margin-right: 20px;
+      filter: drop-shadow(0 0 20px rgba(106, 168, 78, .45));
+      flex-shrink: 0;
+    }
+
+    .hero-text {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-location-type {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--txt3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hero-location-name {
+      font-family: 'Uncial Antiqua', cursive;
+      color: #7cc86e;
+      font-size: 26px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 24px rgba(106, 168, 78, .35);
+      line-height: 1.1;
+    }
+
+    .hero-desc {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      color: var(--txt2);
+      font-size: 13px;
+      margin-top: 6px;
+      max-width: 520px;
+      line-height: 1.55;
+    }
+
+    /* ── Notice Board ── */
+    .notice-board {
+      background: rgba(80, 50, 20, .18);
+      border: 1px solid rgba(160, 120, 60, .3);
+      border-radius: 3px;
+      padding: 12px;
+    }
+
+    .notice-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(61, 46, 26, .3);
+      font-family: 'Crimson Text', serif;
+      font-size: 13px;
+      color: var(--txt2);
+    }
+
+    .notice-item:last-child {
+      border-bottom: none;
+    }
+
+    .notice-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .notice-reward {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="loc-ambience" id="ambience"></div>
+
+<div class="loc-wrap">
+
+  <!-- ── Top Header ── -->
+  <header class="loc-header">
+    <button class="loc-back-btn" onclick="Core.leave()">← Leave</button>
+    <div class="loc-title-wrap">
+      <div class="loc-place-name" id="placeName">Village</div>
+      <div class="loc-place-sub">🏘 VILLAGE · Settlement</div>
+    </div>
+    <div class="loc-save-badge" id="saveBadge">✓ Saved</div>
+  </header>
+
+  <div class="loc-body">
+
+    <!-- ── Left Sidebar: Character ── -->
+    <aside class="loc-sidebar">
+
+      <div class="card">
+        <div class="card-title">Adventurer</div>
+        <div class="char-portrait">
+          <div class="char-avatar" id="charAvatar">⚔</div>
+          <div>
+            <div class="char-name" id="charName">—</div>
+            <div class="char-sub"  id="charSub">—</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">❤ HP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="barHp"></div></div>
+            <span class="stat-bar-val" id="valHp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">✦ MP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-mp" id="barMp"></div></div>
+            <span class="stat-bar-val" id="valMp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">★ XP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-xp" id="barXp"></div></div>
+            <span class="stat-bar-val" id="valXp">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Attributes</div>
+        <div class="stat-grid" id="statGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Actions</div>
+        <button class="action-btn" onclick="doExplore()">
+          <span class="action-btn-icon">🔍</span> Explore
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn" onclick="doRest()">
+          <span class="action-btn-icon">💤</span> Rest
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn danger" onclick="Core.leave()">
+          <span class="action-btn-icon">🗺</span> Leave Village
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="loc-center">
+
+      <div class="loc-hero">
+        <div class="hero-icon">🏘</div>
+        <div class="hero-text">
+          <div class="hero-location-type">Village</div>
+          <div class="hero-location-name" id="heroName">Ashford</div>
+          <div class="hero-desc" id="heroDesc">
+            Smoke curls from thatched chimneys. The village square is quiet save for the creak
+            of a well-rope and the distant lowing of cattle. Wary eyes watch your party from
+            behind curtained windows.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('square', this)">🏘 Square</button>
+        <button class="tab-btn"        onclick="switchTab('trader', this)">🛒 Trader</button>
+        <button class="tab-btn"        onclick="switchTab('quests', this)">📜 Notice Board</button>
+        <button class="tab-btn"        onclick="switchTab('npcs',   this)">👥 Villagers</button>
+      </div>
+
+      <!-- SQUARE tab -->
+      <div class="tab-pane active" id="tab-square">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Village Square</div>
+          <p id="squareDesc" style="font-family:'Crimson Text',serif;font-size:13px;color:var(--txt2);font-style:italic;line-height:1.6;margin-bottom:10px">
+            The square is dominated by an ancient oak, its bark carved with decades of initials.
+            A small shrine to a local deity is draped in fresh wildflowers.
+          </p>
+        </div>
+        <div class="card">
+          <div class="card-title">Event Log</div>
+          <div class="event-log" id="eventLog">
+            <div class="event-line">◈ You enter the village. Chickens scatter from beneath your boots.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRADER tab -->
+      <div class="tab-pane" id="tab-trader">
+        <div class="card">
+          <div class="card-title">🛒 Village Trader</div>
+          <div id="shopItems"></div>
+        </div>
+      </div>
+
+      <!-- NOTICE BOARD tab -->
+      <div class="tab-pane" id="tab-quests">
+        <div class="card">
+          <div class="card-title">📜 Notice Board</div>
+          <div class="notice-board" id="questBoard"></div>
+        </div>
+      </div>
+
+      <!-- VILLAGERS tab -->
+      <div class="tab-pane" id="tab-npcs">
+        <div class="card">
+          <div class="card-title">Villagers</div>
+          <div id="npcList"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── Right Sidebar: Inventory ── -->
+    <aside class="loc-inv-sidebar">
+      <div class="card">
+        <div class="card-title">Gold</div>
+        <div class="gold-row">
+          <span class="gold-icon">⚜</span>
+          <span class="gold-val" id="invGold">0</span>
+          <span class="gold-lbl">COINS</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Inventory</div>
+        <div class="inv-grid" id="invGrid"></div>
+      </div>
+    </aside>
+
+  </div><!-- /.loc-body -->
+
+  <!-- ── Dialogue Box ── -->
+  <div class="dialogue-box">
+    <div class="dialogue-speaker" id="dlgSpeaker">◈ Village Elder</div>
+    <div class="dialogue-text"   id="dlgText"></div>
+    <div class="dialogue-actions" id="dlgActions"></div>
+  </div>
+
+</div><!-- /.loc-wrap -->
+
+<div id="locNotif"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CORE  —  save / load / shared helpers
+   ═══════════════════════════════════════════════════════════ */
+const Core = (() => {
+
+  // ── Storage keys ──────────────────────────────────────────
+  const SAVE_KEY = 'dnd_save';
+  const LK = {
+    char:  u => 'dnd_char_'      + u,
+    stats: u => 'dnd_stats_'     + u,
+    inv:   u => 'dnd_inventory_' + u,
+    equip: u => 'dnd_equipped_'  + u,
+  };
+
+  // ── Default factories ──────────────────────────────────────
+  const defPlayer = name => ({
+    name, race: 'human', class: 'fighter', sex: 'male',
+    level: 1, xp: 0, xpMax: 100,
+    hp: 50, hpMax: 50, mp: 20, mpMax: 20,
+    gold: 0, ac: 10, speed: 30,
+    str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,
+    reputation: {}, statusEffects: [], skills: [],
+    attacks: [{ id: 'strike', name: 'Strike', dmg: '1d6', type: 'physical', cooldown: 0 }],
+  });
+
+  const defInventory = () => new Array(24).fill(null);
+
+  const defEquipped = () => ({
+    weapon: null, offhand: null, armor: null, helmet: null, ring: null,
+  });
+
+  const defWorld = () => ({
+    time: 0, weather: 'clear',
+    visited: {}, quests: {}, factions: {}, npcStates: {}, flags: {},
+  });
+
+  // ── Helpers ────────────────────────────────────────────────
+  const tryParse = str => {
+    try { return str ? JSON.parse(str) : null; }
+    catch (e) { return null; }
+  };
+
+  function persist(state) {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+    catch (e) { /* storage full or unavailable */ }
+  }
+
+  // ── Load state ─────────────────────────────────────────────
+  function load() {
+    // Try unified save first
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        state.player    = Object.assign(defPlayer(state.player?.name || 'Adventurer'), state.player || {});
+        state.inventory = state.inventory || defInventory();
+        state.equipped  = Object.assign(defEquipped(), state.equipped || {});
+        state.world     = Object.assign(defWorld(),    state.world    || {});
+        return state;
+      }
+    } catch (e) { /* fall through to legacy load */ }
+
+    // Fall back to legacy per-key storage
+    const u   = localStorage.getItem('dnd_user') || 'Adventurer';
+    const ch  = tryParse(localStorage.getItem(LK.char(u)))  || {};
+    const st  = tryParse(localStorage.getItem(LK.stats(u))) || {};
+    const inv = tryParse(localStorage.getItem(LK.inv(u)))   || defInventory();
+    const eq  = tryParse(localStorage.getItem(LK.equip(u))) || defEquipped();
+
+    const hpMax = (st.con || 10) * 5;
+    const mpMax = (st.int || 10) * 3;
+
+    const state = {
+      player: Object.assign(defPlayer(u), {
+        name: u,
+        race:  ch.race  || 'human',
+        class: ch.class || 'fighter',
+        sex:   ch.sex   || 'male',
+        level: st.level || 1,
+        xp:    st.xp    || 0,
+        xpMax: st.xpMax || 100,
+        hp: hpMax, hpMax,
+        mp: mpMax, mpMax,
+        gold: st.gold || 0,
+        str: st.str || 10, dex: st.dex || 10, con: st.con || 10,
+        int: st.int || 10, wis: st.wis || 10, cha: st.cha || 10,
+      }),
+      inventory: inv,
+      equipped:  eq,
+      world:     defWorld(),
+    };
+
+    persist(state);
+    return state;
+  }
+
+  // ── Internal state ─────────────────────────────────────────
+  let _state     = load();
+  let _saveTimer = null;
+
+  // ── Save ───────────────────────────────────────────────────
+  function save(showBadge = true) {
+    const p = _state.player;
+    const u = p.name;
+
+    try {
+      localStorage.setItem(LK.char(u),  JSON.stringify({ race: p.race, class: p.class, sex: p.sex }));
+      localStorage.setItem(LK.stats(u), JSON.stringify({
+        level: p.level, xp: p.xp, xpMax: p.xpMax,
+        str: p.str, dex: p.dex, con: p.con,
+        int: p.int, wis: p.wis, cha: p.cha,
+        gold: p.gold,
+      }));
+      localStorage.setItem(LK.inv(u),   JSON.stringify(_state.inventory));
+      localStorage.setItem(LK.equip(u), JSON.stringify(_state.equipped));
+    } catch (e) { /* storage full or unavailable */ }
+
+    persist(_state);
+
+    if (showBadge) {
+      const badge = document.getElementById('saveBadge');
+      if (badge) {
+        badge.classList.add('show');
+        clearTimeout(_saveTimer);
+        _saveTimer = setTimeout(() => badge.classList.remove('show'), 2200);
+      }
+    }
+  }
+
+  // ── Class icons ────────────────────────────────────────────
+  const CLASS_ICONS = {
+    fighter:   '⚔',  wizard:   '🧙', rogue:    '🗡',
+    ranger:    '🏹', cleric:   '✝',  paladin:  '🛡',
+    barbarian: '🪓', bard:     '🎵', druid:    '🌿',
+    warlock:   '👁', monk:     '👊', sorcerer: '🔮',
+  };
+
+  const capitalize = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+
+  // ── Notification ───────────────────────────────────────────
+  // FIX: notify was defined AFTER the return statement — unreachable in original
+  // FIX: className had stray spaces; timeout didn't clear the class fully
+  function notify(msg, isError = false) {
+    const el = document.getElementById('locNotif');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = (isError ? 'err' : '') + ' show';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3200);
+  }
+
+  // ── Public API ─────────────────────────────────────────────
+  return {
+    get:    () => _state,
+    player: () => _state.player,
+    inv:    () => _state.inventory,
+    world:  () => _state.world,
+    save,
+
+    modifyPlayer(fn)    { fn(_state.player);    save(); },
+    modifyInventory(fn) { fn(_state.inventory); save(); },
+    modifyWorld(fn)     { fn(_state.world);     save(); },
+
+    giveItem(item) {
+      const slot = _state.inventory.findIndex(s => s === null);
+      if (slot === -1) return false;
+      _state.inventory[slot] = item;
+      save();
+      return true;
+    },
+
+    spendGold(amount) {
+      if (_state.player.gold < amount) return false;
+      _state.player.gold -= amount;
+      save();
+      return true;
+    },
+
+    gainGold(amount) {
+      _state.player.gold += amount;
+      save();
+    },
+
+    gainXP(amount) {
+      const p = _state.player;
+      p.xp += amount;
+      while (p.xp >= p.xpMax) {
+        p.xp    -= p.xpMax;
+        p.level += 1;
+        p.xpMax  = Math.floor(p.xpMax * 1.5);
+        p.hpMax += 5;  p.hp = p.hpMax;
+        p.mpMax += 3;  p.mp = p.mpMax;
+        notify('⬆ Level Up! Level ' + p.level + '!');
+      }
+      save();
+    },
+
+    healHP(amount) {
+      const p = _state.player;
+      p.hp = Math.min(p.hpMax, p.hp + amount);
+      save();
+    },
+
+    restoreMP(amount) {
+      const p = _state.player;
+      p.mp = Math.min(p.mpMax, p.mp + amount);
+      save();
+    },
+
+    markVisited(name, type) {
+      _state.world.visited[name] = { type, time: _state.world.time };
+      save();
+    },
+
+    leave() {
+      save();
+      window.location.href = 'game-multi.html';
+    },
+
+    notify,
+    classIcon: cls => CLASS_ICONS[cls] || '⚔',
+    cap: capitalize,
+  };
+
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+   ═══════════════════════════════════════════════════════════ */
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+let _typewriterTimer = null;
+function typeText(elId, text, speed = 18) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  el.innerHTML = '';
+  let i = 0;
+  clearInterval(_typewriterTimer);
+
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  el.appendChild(cursor);
+
+  _typewriterTimer = setInterval(() => {
+    if (i < text.length) {
+      el.insertBefore(document.createTextNode(text[i]), cursor);
+      i++;
+    } else {
+      clearInterval(_typewriterTimer);
+      cursor.remove();
+    }
+  }, speed);
+}
+
+function logEvent(text, type = '') {
+  const log = document.getElementById('eventLog');
+  if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'event-line' + (type ? ' ' + type : '');
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function spawnAmbience(color, count = 20) {
+  const container = document.getElementById('ambience');
+  for (let i = 0; i < count; i++) {
+    const pt = document.createElement('div');
+    pt.className = 'amb-pt';
+    pt.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `bottom:${Math.random() * 30}%`,
+      `width:${1 + Math.random() * 2}px`,
+      `height:${1 + Math.random() * 2}px`,
+      `background:${color}`,
+      `animation-delay:${Math.random() * 12}s`,
+      `animation-duration:${6 + Math.random() * 8}s`,
+    ].join(';');
+    container.appendChild(pt);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   HUD & INVENTORY RENDERING
+   ═══════════════════════════════════════════════════════════ */
+
+function updateHUD() {
+  const p = Core.player();
+
+  document.getElementById('charAvatar').textContent = Core.classIcon(p.class);
+  document.getElementById('charName').textContent   = p.name;
+  document.getElementById('charSub').textContent    = `Lv.${p.level} ${Core.cap(p.race)} ${Core.cap(p.class)}`;
+
+  document.getElementById('barHp').style.width = (p.hp / p.hpMax * 100) + '%';
+  document.getElementById('barMp').style.width = (p.mp / p.mpMax * 100) + '%';
+  document.getElementById('barXp').style.width = (p.xp / p.xpMax * 100) + '%';
+
+  document.getElementById('valHp').textContent = `${p.hp}/${p.hpMax}`;
+  document.getElementById('valMp').textContent = `${p.mp}/${p.mpMax}`;
+  document.getElementById('valXp').textContent = `${p.xp}/${p.xpMax}`;
+
+  const grid = document.getElementById('statGrid');
+  grid.innerHTML = '';
+  [['STR', p.str], ['DEX', p.dex], ['CON', p.con],
+   ['INT', p.int], ['WIS', p.wis], ['CHA', p.cha]].forEach(([key, val]) => {
+    grid.innerHTML += `
+      <div class="stat-cell">
+        <div class="stat-cell-val">${val}</div>
+        <div class="stat-cell-name">${key}</div>
+      </div>`;
+  });
+}
+
+function updateInventoryPanel() {
+  const inv = Core.inv();
+  const p   = Core.player();
+
+  document.getElementById('invGold').textContent = p.gold;
+
+  const grid = document.getElementById('invGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 24; i++) {
+    const item = inv[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot' + (item ? ' occ' : '');
+    if (item) {
+      slot.textContent = item.icon || '📦';
+      slot.title       = item.name;
+    }
+    grid.appendChild(slot);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DATA — Shop / NPC / Quest lists
+   ═══════════════════════════════════════════════════════════ */
+
+const rng = n => Math.floor(Math.random() * n);
+
+const VILLAGE_SHOP = [
+  { id: 'health_potion', name: 'Health Potion',  icon: '🧪', price: 25, desc: 'Restores 2d4+2 HP',  type: 'consumable', slot: null    },
+  { id: 'rations',       name: 'Travel Rations',  icon: '🧆', price:  5, desc: 'A day of food',       type: 'consumable', slot: null    },
+  { id: 'torch',         name: 'Torch',           icon: '🕯', price:  2, desc: 'Burns 1 hour',        type: 'utility',    slot: null    },
+  { id: 'rope',          name: 'Hempen Rope',     icon: '🪢', price:  8, desc: '50 feet of rope',     type: 'utility',    slot: null    },
+  { id: 'dagger',        name: 'Iron Dagger',     icon: '🗡', price: 20, desc: '+1d4 dmg',            type: 'weapon',     slot: 'weapon'  },
+  { id: 'shield',        name: 'Wooden Shield',   icon: '🛡', price: 15, desc: '+1 AC',               type: 'armor',      slot: 'offhand' },
+];
+
+const VILLAGE_NPCS = [
+  {
+    name: 'Elder Thom', role: 'Village Elder', icon: '👴',
+    dialogue: "You look like capable folk. We've had trouble with wolves these past nights. Clear them from the eastern pasture and I'll see you rewarded.",
+  },
+  {
+    name: 'Marta', role: 'Farmer', icon: '👩‍🌾',
+    dialogue: "I don't trust strangers. No offence. Just... we had a bad summer.",
+  },
+  {
+    name: 'Pip', role: "Miller's Son", icon: '👦',
+    dialogue: "Did you come from the city? What's it like? Is it really all towers and magic?",
+  },
+  {
+    name: 'Widow Grell', role: 'Herbalist', icon: '🌿',
+    dialogue: 'I can mix poultices for a price. My herbs are the finest this side of the mountains.',
+  },
+];
+
+const VILLAGE_QUESTS = [
+  { icon: '🐺', title: 'Wolf Trouble',   desc: 'Clear wolves from the eastern pasture.',          reward: '30g + XP'     },
+  { icon: '📦', title: 'Lost Delivery',  desc: "A merchant's cart never arrived. Find it.",        reward: '20g'          },
+  { icon: '🌾', title: 'Harvest Help',   desc: 'Help bring in the harvest before the rains.',      reward: '15g + Rations' },
+];
+
+const EXPLORE_EVENTS = [
+  () => {
+    const gold = 5 + rng(20);
+    Core.gainGold(gold);
+    logEvent(`⚜ Found ${gold} gold in an old pot.`, 'gold');
+    return `You rummage behind the smithy and find an old pot with ${gold} gold coins inside.`;
+  },
+  () => {
+    const hp = 5 + rng(10);
+    Core.healHP(hp);
+    logEvent(`❤ Rested in the shade: +${hp} HP.`, 'good');
+    return 'You sit beneath the great oak in the square and rest briefly. You feel refreshed.';
+  },
+  () => {
+    Core.gainXP(15);
+    logEvent('★ Helped a villager: +15 XP.', 'good');
+    return 'A villager thanks you for helping carry supplies from the mill. They give you a warm nod.';
+  },
+  () => {
+    logEvent('Nothing of note.', '');
+    return 'You walk the village perimeter. All quiet. A dog watches you suspiciously.';
+  },
+];
+
+
+/* ═══════════════════════════════════════════════════════════
+   BUILDERS — render lists into the DOM
+   ═══════════════════════════════════════════════════════════ */
+
+function buildShop() {
+  const container = document.getElementById('shopItems');
+  container.innerHTML = '';
+
+  VILLAGE_SHOP.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'shop-item fade-in';
+    row.innerHTML = `
+      <div class="shop-item-icon">${item.icon}</div>
+      <div class="shop-item-info">
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-desc">${item.desc}</div>
+      </div>
+      <div class="shop-item-price">⚜${item.price}</div>`;
+    row.onclick = () => buyItem(item);
+    container.appendChild(row);
+  });
+}
+
+function buyItem(item) {
+  if (!Core.spendGold(item.price)) {
+    Core.notify('Not enough gold!', true);
+    return;
+  }
+  if (!Core.giveItem(item)) {
+    Core.gainGold(item.price);  // refund
+    Core.notify('Inventory full!', true);
+    return;
+  }
+  updateHUD();
+  updateInventoryPanel();
+  Core.notify('Purchased: ' + item.name);
+  logEvent('⚜ Bought ' + item.name + ' for ' + item.price + 'g.', 'gold');
+}
+
+function buildNPCs() {
+  const container = document.getElementById('npcList');
+  container.innerHTML = '';
+
+  VILLAGE_NPCS.forEach(npc => {
+    const row = document.createElement('div');
+    row.className = 'npc-row fade-in';
+    row.innerHTML = `
+      <div class="npc-avatar">${npc.icon}</div>
+      <div class="npc-info">
+        <div class="npc-name">${npc.name}</div>
+        <div class="npc-role">${npc.role}</div>
+      </div>
+      <div class="npc-badge">Talk</div>`;
+    row.onclick = () => {
+      document.getElementById('dlgSpeaker').textContent = `◈ ${npc.name} · ${npc.role}`;
+      typeText('dlgText', npc.dialogue);
+    };
+    container.appendChild(row);
+  });
+}
+
+function buildQuests() {
+  const container = document.getElementById('questBoard');
+  container.innerHTML = '';
+
+  VILLAGE_QUESTS.forEach(q => {
+    container.innerHTML += `
+      <div class="notice-item">
+        <div class="notice-icon">${q.icon}</div>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--txt);margin-bottom:2px">${q.title}</div>
+          <div>${q.desc}</div>
+          <div class="notice-reward">Reward: ${q.reward}</div>
+        </div>
+      </div>`;
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   ACTION HANDLERS
+   ═══════════════════════════════════════════════════════════ */
+
+function doExplore() {
+  const result = EXPLORE_EVENTS[rng(EXPLORE_EVENTS.length)]();
+  document.getElementById('dlgSpeaker').textContent = '◈ The Dungeon Master';
+  typeText('dlgText', result);
+  updateHUD();
+  updateInventoryPanel();
+}
+
+function doRest() {
+  const p  = Core.player();
+  const hp = Math.floor((p.hpMax - p.hp) / 2);
+  Core.healHP(hp);
+  updateHUD();
+  logEvent(`💤 Short rest: +${hp} HP.`, 'good');
+  document.getElementById('dlgSpeaker').textContent = '◈ The Dungeon Master';
+  typeText('dlgText', 'You find a quiet barn and rest your weary feet. The smell of hay and the warmth of livestock are oddly comforting.');
+  Core.save();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+
+window.addEventListener('load', () => {
+  const params    = new URLSearchParams(location.search);
+  const villageName = params.get('name') || 'Ashford';
+
+  document.getElementById('placeName').textContent = villageName;
+  document.getElementById('heroName').textContent  = villageName;
+
+  Core.markVisited(villageName, 'VILLAGE');
+  updateHUD();
+  updateInventoryPanel();
+
+  buildShop();
+  buildNPCs();
+  buildQuests();
+  spawnAmbience('#6aa84e', 15);
+
+  typeText('dlgText', `You arrive at ${villageName}. The elder watches from the doorway of the longhouse, arms folded. "State your business, travellers. We don't get many of your kind around here — and that's usually a mercy."`);
+
+  Core.save();
+});
+</script>
+</body>
+</html>

@@ -59,8 +59,10 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 #minimapCorner.locked #minimapCornerCanvas{opacity:0.15;filter:grayscale(1)}
 #minimapCornerCanvas{display:block;image-rendering:pixelated}
 #mmvp{position:absolute;border:1px solid rgba(201,164,92,.8);pointer-events:none;box-shadow:inset 0 0 4px rgba(201,164,92,.2)}
+/* FIX: overflow:hidden clips canvas to border frame */
 #minimapBig{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);width:680px;height:420px;border:2px solid var(--bdr2);background:rgba(3,2,1,.97);box-shadow:0 0 80px rgba(0,0,0,.95),0 0 0 9999px rgba(0,0,0,.72);z-index:60;border-radius:4px;display:flex;flex-direction:column;transition:opacity .25s,transform .25s;overflow:hidden}
 #minimapBig.hidden{opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.94)}
+/* FIX: canvas fills remaining height via flex */
 #minimapBigCanvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width:100%;flex:1;min-height:0}
 .minimap-title{font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);letter-spacing:2px;text-align:center;padding:4px 0 2px;border-bottom:1px solid var(--bdr)}
 
@@ -179,7 +181,7 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .load-bar{width:220px;height:2px;background:rgba(255,255,255,.05);border:1px solid var(--bdr)}
 .load-fill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold));transition:width .2s}
 
-/* ── NOTIFICATION — fixed: opacity+visibility on .show ── */
+/* ── NOTIFICATION ── */
 #notif{position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(8,6,8,.97);border:1px solid var(--gold);border-radius:4px;padding:10px 20px;color:var(--gold);font-size:12px;letter-spacing:1px;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .4s,visibility .4s;pointer-events:none;white-space:nowrap;opacity:0;visibility:hidden}
 #notif.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
 #notif.err{border-color:var(--red);color:var(--red)}
@@ -214,7 +216,7 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
 .inv-slot.occ{border-color:var(--bdr2);background:rgba(61,46,26,.2)}
 .inv-slot.has-minimap-item{border-color:rgba(100,180,255,.4);background:rgba(100,180,255,.06)}
 
-/* ── MINIMAP M-KEY HINT — fixed position above corner map ── */
+/* ── MINIMAP M-KEY HINT ── */
 #mmHint{position:absolute;bottom:276px;right:16px;background:rgba(8,6,8,.75);border:1px solid var(--bdr);padding:3px 8px;font-family:'Cinzel',serif;font-size:8px;color:var(--txt3);border-radius:2px;letter-spacing:1px;pointer-events:none;z-index:20;text-align:center;width:120px}
 
 /* ── CURSOR BLINK ── */
@@ -304,17 +306,17 @@ body{font-family:'IM Fell English',serif;color:var(--txt);display:flex;flex-dire
       <button class="zbtn" style="font-size:11px" onclick="resetView()" title="Reset View">⌂</button>
     </div>
 
-    <!-- Corner minimap — always visible when map closed -->
+    <!-- Corner minimap -->
     <div id="minimapCorner">
       <div class="minimap-title">◈ CHART</div>
       <canvas id="minimapCornerCanvas" width="120" height="120"></canvas>
       <div id="mmvp"></div>
     </div>
 
-    <!-- Big minimap — toggled with M, click backdrop to close -->
+    <!-- Big minimap — toggled with M -->
     <div id="minimapBig" class="hidden">
       <div id="minimapBackdrop" onclick="closeBigMap()" style="position:fixed;inset:0;z-index:-1"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0">
+      <div id="minimapBigHeader" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--bdr);flex-shrink:0">
         <span style="font-family:'Cinzel',serif;font-size:10px;color:var(--gold);letter-spacing:2px">◈ CARTOGRAPHER'S CHART</span>
         <span style="font-family:'Cinzel',serif;font-size:9px;color:var(--txt3);letter-spacing:1px">[M] or [Esc] to close</span>
       </div>
@@ -429,7 +431,6 @@ const ITEM_DEFS = {
   health_potion: { id:'health_potion', name:'Health Potion',       icon:'🧪', type:'consumable', slot:null,     desc:'Restores 2d4+2 HP.' },
   rations:       { id:'rations',       name:'Travel Rations',      icon:'🧆', type:'consumable', slot:null,     desc:'A day\'s worth of food.' },
 };
-
 const EQUIP_SLOTS = [
   { id:'weapon',  label:'Weapon',   icon:'⚔' },
   { id:'offhand', label:'Off-Hand', icon:'🛡' },
@@ -437,13 +438,10 @@ const EQUIP_SLOTS = [
   { id:'helmet',  label:'Helmet',   icon:'⛑' },
   { id:'ring',    label:'Ring',     icon:'💍' },
 ];
-
 function loadInventory() {
   const saved = localStorage.getItem('dnd_inventory_' + user);
   return saved ? JSON.parse(saved) : new Array(24).fill(null);
 }
-
-/* FIX: cache invalidated on save */
 let _mapItemCache = null;
 function saveInventory(inv) {
   localStorage.setItem('dnd_inventory_' + user, JSON.stringify(inv));
@@ -455,7 +453,6 @@ function loadEquipped() {
   const eq = {}; EQUIP_SLOTS.forEach(s => eq[s.id] = null); return eq;
 }
 function saveEquipped(eq) { localStorage.setItem('dnd_equipped_' + user, JSON.stringify(eq)); }
-
 function giveStarterItems() {
   if (!CONFIG.START_WITH_STARTER_PACK) return;
   let inv = loadInventory();
@@ -466,8 +463,6 @@ function giveStarterItems() {
   starterItems.forEach((item, i) => { inv[i] = item; });
   saveInventory(inv);
 }
-
-/* FIX: cached hasMapItem */
 function hasMapItem() {
   if (_mapItemCache !== null) return _mapItemCache;
   _mapItemCache = loadInventory().some(i => i && i.id === 'map_scroll');
@@ -579,7 +574,6 @@ function hash2(ix, iy, seed) {
 }
 const lerp = (a, b, t) => a + (b - a) * t;
 const ss   = t => t * t * (3 - 2 * t);
-
 function vnoise(x, y, seed) {
   const ix=Math.floor(x), iy=Math.floor(y), fx=x-ix, fy=y-iy;
   const ux=ss(fx), uy=ss(fy);
@@ -603,7 +597,6 @@ function islandMask(nx, ny) {
   const cx=nx*0.55+0.08, cy=ny*0.60-0.04;
   return 1.05 - Math.sqrt(cx*cx + cy*cy) * 1.18;
 }
-
 function getBiome(e, m, t) {
   if (e<0.22) return BIOMES.DEEP_OCEAN; if (e<0.35) return BIOMES.OCEAN;
   if (e<0.41) return BIOMES.SHALLOW;    if (e<0.45) return BIOMES.BEACH;
@@ -620,7 +613,6 @@ function getBiome(e, m, t) {
   if (m<0.70) return t>0.62?BIOMES.TROP_FOREST:t>0.38?BIOMES.FOREST:BIOMES.TAIGA;
   return t>0.62?BIOMES.JUNGLE:t>0.38?BIOMES.RAIN_FOREST:BIOMES.TAIGA;
 }
-
 const isWater = b => b===BIOMES.DEEP_OCEAN||b===BIOMES.OCEAN||b===BIOMES.SHALLOW;
 const isLand  = b => !isWater(b) && b!==BIOMES.BEACH;
 
@@ -880,7 +872,6 @@ function drawPOI(ctx, p) {
    PLAYER TOKENS
 ═══════════════════════════════════════════════════════ */
 let playerPositions = {};
-
 function drawPlayerTokens(ctx) {
   for (const [name, pos] of Object.entries(playerPositions)) {
     const cx=(pos.x*TS+TS/2)*zoom+vx;
@@ -914,7 +905,6 @@ const NARR_H = 135;
 
 function clampZoom(z) { return Math.max(minZoomAllowed, Math.min(CONFIG.MAX_ZOOM, z)); }
 
-/* FIX: only resize canvas when dimensions actually change */
 function renderToScreen() {
   const canvas=document.getElementById('mapCanvas');
   const area=document.getElementById('mapArea');
@@ -932,8 +922,6 @@ function renderToScreen() {
   renderMMVP();
 }
 
-/* FIX: separate MM constant for big map, corner stays 120 */
-const MM=680;
 function renderMinimap() {
   // Corner (120×120)
   const cc=document.getElementById('minimapCornerCanvas');
@@ -947,7 +935,8 @@ function renderMinimap() {
     cctx.fillStyle=name===user?'#c9a45c':'#6080cc'; cctx.fill();
     cctx.strokeStyle='#fff'; cctx.lineWidth=0.5; cctx.stroke();
   }
-   // Big — measure container so canvas fills it exactly
+  // Big — measure container so canvas fills it exactly
+  // FIX: use previousElementSibling to get the actual header (not the fixed backdrop)
   const bc=document.getElementById('minimapBigCanvas');
   const bigPanel=document.getElementById('minimapBig');
   const headerEl=bc.previousElementSibling;
@@ -1073,7 +1062,6 @@ window.addEventListener('mousemove',e=>{
   } else { document.getElementById('tooltip').style.display='none'; }
 });
 
-/* FIX: reset drag on mouseup even outside window */
 window.addEventListener('mouseup',()=>{drag=false;if(mc)mc.style.cursor='crosshair';});
 
 function getHoveredPOI(mx, my) {
@@ -1089,15 +1077,30 @@ function getHoveredPOI(mx, my) {
 
 /* ═══════════════════════════════════════════════════════
    DOUBLE-CLICK / DOUBLE-TAP NAVIGATION
+   FIX: routes to type-based pages with name as URL param
+   FIX: removes beforeunload before navigating so no dialog
 ═══════════════════════════════════════════════════════ */
-function nameToFilename(name) {
-  return name.replace(/[^a-zA-Z0-9 ]/g,'').replace(/\s+/g,'') + '.html';
+function nameToFilename(poi) {
+  const typePage = {
+    VILLAGE: 'location-village.html',
+    TOWN:    'location-town.html',
+    CASTLE:  'location-castle.html',
+    DUNGEON: 'location-dungeon.html',
+    OUTPOST: 'location-outpost.html',
+    RUINS:   'location-ruins.html',
+    CAVE:    'location-cave.html',
+    PORT:    'location-port.html',
+    TEMPLE:  'location-temple.html',
+    GROVE:   'location-grove.html',
+    INN:     'location-inn.html',
+  };
+  const page = typePage[poi.type] || 'location-generic.html';
+  return `${page}?name=${encodeURIComponent(poi.name)}&type=${poi.type}`;
 }
 
 let lastClickTime=0, lastClickPOI=null;
 const DOUBLE_CLICK_MS=400;
 
-/* FIX: use didDrag instead of drag to prevent misfire after dragging */
 mc.addEventListener('click', e=>{
   if (!tiles||didDrag) return;
   const rect=mc.getBoundingClientRect();
@@ -1106,9 +1109,9 @@ mc.addEventListener('click', e=>{
   const now=Date.now();
   if (poi) {
     if (lastClickPOI&&lastClickPOI.name===poi.name&&(now-lastClickTime)<DOUBLE_CLICK_MS) {
-      const filename=nameToFilename(poi.name);
+      const filename=nameToFilename(poi);
       showNotif(`⚔ Entering ${poi.name}...`);
-      window.removeEventListener('beforeunload', beforeUnload);
+      window.removeEventListener('beforeunload', beforeUnload); // FIX: no dialog on intentional nav
       setTimeout(()=>{ window.location.href=filename; },600);
       lastClickTime=0; lastClickPOI=null; return;
     }
@@ -1131,9 +1134,9 @@ mc.addEventListener('touchend', e=>{
   const now=Date.now();
   if (poi) {
     if (lastTapPOI&&lastTapPOI.name===poi.name&&(now-lastTapTime)<DOUBLE_CLICK_MS) {
-      const filename=nameToFilename(poi.name);
+      const filename=nameToFilename(poi);
       showNotif(`⚔ Entering ${poi.name}...`);
-      window.removeEventListener('beforeunload', beforeUnload);
+      window.removeEventListener('beforeunload', beforeUnload); // FIX: no dialog on intentional nav
       setTimeout(()=>{ window.location.href=filename; },600);
       lastTapTime=0; lastTapPOI=null; return;
     }
@@ -1163,7 +1166,6 @@ function closeBigMap() {
   updateMinimapState();
 }
 
-/* FIX: Escape closes big map or inventory; M blocked while inventory open */
 document.addEventListener('keydown', e=>{
   if (e.key==='Escape') {
     if (minimapVisible) { closeBigMap(); return; }
@@ -1215,7 +1217,6 @@ function setPersistentSeed(seed) {
   localStorage.setItem(PERSISTENT_SEED_KEY,seed);
   localStorage.setItem('dnd_map_seed_'+user,seed);
 }
-
 function generateNewIsland() {
   if (!isHost) return;
   const seed=Math.floor(Math.random()*999999)+1;
@@ -1223,14 +1224,12 @@ function generateNewIsland() {
   if (socket) socket.emit('map-seed',{seed});
   rebuildWorld(seed);
 }
-
 async function rebuildWorld(seed) {
   setPersistentSeed(seed);
   document.getElementById('loadOverlay').classList.remove('hidden');
   setP(0); setMsg('The realm shifts...');
   await buildWorld(seed);
   document.getElementById('loadOverlay').classList.add('hidden');
-  /* FIX: reset minimapVisible so corner always reappears after rebuild */
   minimapVisible=false;
   renderMinimap(); resetView();
   spawnPlayerAt(user);
@@ -1242,7 +1241,6 @@ async function rebuildWorld(seed) {
    SPAWN SYSTEM
 ═══════════════════════════════════════════════════════ */
 let spawnTile=null;
-
 function findSpawnTile() {
   if (innTile) return Object.assign({},innTile);
   const cx=Math.floor(W/2), cy=Math.floor(H/2);
@@ -1256,7 +1254,6 @@ function findSpawnTile() {
   }
   return best||{x:cx,y:cy};
 }
-
 function spawnPlayerAt(name) {
   if (!spawnTile) spawnTile=findSpawnTile();
   const offset=Object.keys(playerPositions).length;
@@ -1286,7 +1283,6 @@ function populateSpawnScreen(roomPlayers) {
     list.appendChild(div);
   });
 }
-
 async function enterRealm() {
   document.getElementById('spawnOverlay').classList.add('hidden');
   spawnPlayerAt(user);
@@ -1352,7 +1348,6 @@ function narrateTerrain(t) {
   document.getElementById('narrSpeaker').textContent='◈ The Dungeon Master';
   typeNarr(msg);
 }
-
 let currentScene=0;
 const SCENES=[
   'Before you stretches a vast island realm — ancient, mysterious, alive. Mountains pierce the clouds to the north, dense forests whisper secrets in the east.',
@@ -1383,7 +1378,6 @@ function toggleParty() {
    SOCKET.IO
 ═══════════════════════════════════════════════════════ */
 let socket=null, partyPlayers=[];
-
 function connectSocket() {
   try {
     socket=io({transports:['websocket','polling']});
@@ -1422,7 +1416,6 @@ function connectSocket() {
     document.getElementById('connText').textContent='Offline mode';
   }
 }
-
 function renderPartyList(room) {
   const list=document.getElementById('partyList');
   const players=room.players||[];
@@ -1436,7 +1429,6 @@ function renderPartyList(room) {
   });
   if (!players.length) list.innerHTML='<div style="color:var(--txt3);font-size:11px;text-align:center;padding:16px">No adventurers found</div>';
 }
-
 function sendChat() {
   const inp=document.getElementById('chatIn');
   const msg=inp.value.trim(); if (!msg) return;
@@ -1527,7 +1519,6 @@ window.addEventListener('beforeunload',beforeUnload);
 history.pushState(null,'',location.href);
 window.addEventListener('popstate',()=>history.pushState(null,'',location.href));
 
-/* FIX: also redraw big minimap on resize if open */
 window.addEventListener('resize',()=>{ if (offC) { renderToScreen(); if (minimapVisible) renderMinimap(); } });
 
 /* ═══════════════════════════════════════════════════════
@@ -1536,7 +1527,6 @@ window.addEventListener('resize',()=>{ if (offC) { renderToScreen(); if (minimap
 window.addEventListener('load',async()=>{
   document.getElementById('loadOverlay').classList.remove('hidden');
   giveStarterItems();
-
   let seed;
   if (isHost) {
     const persistent=getPersistentSeed();
@@ -1548,7 +1538,6 @@ window.addEventListener('load',async()=>{
     seed=saved?parseInt(saved):(persistent||Math.floor(Math.random()*999999)+1);
     setPersistentSeed(seed);
   }
-
   await buildWorld(seed);
   spawnTile=findSpawnTile();
   (roomData.players||[user]).forEach(name=>spawnPlayerAt(name));

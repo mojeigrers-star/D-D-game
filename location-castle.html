@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Castle — The Realm Awakens</title>
+<link rel="stylesheet" href="shared-styles.css">
+<style>
+:root { --loc-accent:#9040d0; }
+body { background:#070508; }
+.loc-hero { min-height:175px; background:linear-gradient(160deg,#120a1a 0%,#080608 60%,#050408 100%); border-bottom:1px solid rgba(144,64,208,.25); display:flex; align-items:flex-end; padding:20px 24px 18px; position:relative; overflow:hidden; flex-shrink:0; }
+.loc-hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 50% 80% at 25% 50%,rgba(144,64,208,.08),transparent); }
+.hero-icon { font-size:72px; margin-right:20px; filter:drop-shadow(0 0 24px rgba(144,64,208,.5)); flex-shrink:0; }
+.hero-location-name { font-family:'Uncial Antiqua',cursive; color:#b060e8; font-size:26px; letter-spacing:2px; text-shadow:0 0 24px rgba(144,64,208,.4); line-height:1.1; }
+.hero-location-type { font-family:'Cinzel',serif; font-size:9px; color:var(--txt3); letter-spacing:3px; text-transform:uppercase; margin-bottom:4px; }
+.hero-desc { font-family:'Crimson Text',serif; font-style:italic; color:var(--txt2); font-size:13px; margin-top:6px; max-width:520px; line-height:1.55; }
+.faction-bar {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background:rgba(144,64,208,.06); border:1px solid rgba(144,64,208,.2);
+  border-radius:3px; margin-bottom:6px;
+}
+.faction-icon { font-size:18px; }
+.faction-name { font-family:'Cinzel',serif; font-size:11px; color:#b060e8; flex:1; }
+.faction-rep-track { width:80px; height:4px; background:rgba(255,255,255,.06); border-radius:2px; overflow:hidden; }
+.faction-rep-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,#4a3080,#9040d0); transition:width .4s; }
+.faction-rep-val { font-size:9px; color:var(--txt3); font-family:'Cinzel',serif; min-width:40px; text-align:right; }
+.throne-panel { background:linear-gradient(135deg,rgba(30,15,50,.7),rgba(8,6,8,.95)); border:1px solid rgba(144,64,208,.2); border-radius:4px; padding:16px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="loc-ambience" id="ambience"></div>
+<div class="loc-wrap">
+  <header class="loc-header">
+    <button class="loc-back-btn" onclick="Core.leave()">← Leave</button>
+    <div class="loc-title-wrap">
+      <div class="loc-place-name" id="placeName">Castle</div>
+      <div class="loc-place-sub">🏰 CASTLE · Seat of Power</div>
+    </div>
+    <div class="loc-save-badge" id="saveBadge">✓ Saved</div>
+  </header>
+
+  <div class="loc-body">
+    <aside class="loc-sidebar">
+      <div class="card"><div class="card-title">Adventurer</div>
+        <div class="char-portrait"><div class="char-avatar" id="charAvatar">⚔</div><div><div class="char-name" id="charName">—</div><div class="char-sub" id="charSub">—</div></div></div>
+        <div style="margin-top:10px">
+          <div class="stat-bar-row"><span class="stat-bar-lbl">❤ HP</span><div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="barHp"></div></div><span class="stat-bar-val" id="valHp">—</span></div>
+          <div class="stat-bar-row"><span class="stat-bar-lbl">✦ MP</span><div class="stat-bar-track"><div class="stat-bar-fill bar-mp" id="barMp"></div></div><span class="stat-bar-val" id="valMp">—</span></div>
+          <div class="stat-bar-row"><span class="stat-bar-lbl">★ XP</span><div class="stat-bar-track"><div class="stat-bar-fill bar-xp" id="barXp"></div></div><span class="stat-bar-val" id="valXp">—</span></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Attributes</div><div class="stat-grid" id="statGrid"></div></div>
+      <div class="card"><div class="card-title">Actions</div>
+        <button class="action-btn" onclick="doAudience()"><span class="action-btn-icon">👑</span> Request Audience</button>
+        <div style="height:5px"></div>
+        <button class="action-btn" onclick="doArmoury()"><span class="action-btn-icon">⚔</span> Castle Armoury</button>
+        <div style="height:5px"></div>
+        <button class="action-btn danger" onclick="Core.leave()"><span class="action-btn-icon">🚪</span> Leave Castle</button>
+      </div>
+    </aside>
+
+    <main class="loc-center">
+      <div class="loc-hero">
+        <div class="hero-icon">🏰</div>
+        <div class="hero-text">
+          <div class="hero-location-type">Castle</div>
+          <div class="hero-location-name" id="heroName">Greywatch Keep</div>
+          <div class="hero-desc">Battlements rise against a bruised sky. Guards in full plate watch from the towers, hands on their weapons. A tattered banner still flies above the gatehouse — the crest worn to near-illegibility by wind and weather.</div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('throne',this)">👑 Throne Room</button>
+        <button class="tab-btn" onclick="switchTab('armoury',this)">⚔ Armoury</button>
+        <button class="tab-btn" onclick="switchTab('factions',this)">⚜ Factions</button>
+        <button class="tab-btn" onclick="switchTab('npcs',this)">👥 Court</button>
+      </div>
+
+      <div class="tab-pane active" id="tab-throne">
+        <div class="throne-panel">
+          <div style="font-family:'Cinzel',serif;font-size:11px;color:#b060e8;letter-spacing:1px;margin-bottom:8px">👑 The Throne Room</div>
+          <p style="font-family:'Crimson Text',serif;font-size:13px;color:var(--txt2);font-style:italic;line-height:1.6;margin-bottom:12px">The great hall stretches before your party. Tapestries depicting battles line the walls. At the far end, an ornate throne sits — occupied or empty depending on the current holder's whims.</p>
+          <button class="action-btn primary" onclick="doAudience()"><span class="action-btn-icon">👑</span> Request Audience with the Lord</button>
+        </div>
+        <div class="card"><div class="card-title">Event Log</div><div class="event-log" id="eventLog"><div class="event-line">◈ Guards cross their halberds. "State your business."</div></div></div>
+      </div>
+
+      <div class="tab-pane" id="tab-armoury">
+        <div class="card"><div class="card-title">⚔ Castle Armoury — High Quality Goods</div><div id="armouryItems"></div></div>
+      </div>
+
+      <div class="tab-pane" id="tab-factions">
+        <div class="card"><div class="card-title">Faction Standing</div><div id="factionList"></div></div>
+        <div class="card" style="margin-top:12px"><div class="card-title">Improve Standing</div>
+          <button class="action-btn" onclick="doFactionJob()"><span class="action-btn-icon">⚜</span> Offer Service to the Crown</button>
+        </div>
+      </div>
+
+      <div class="tab-pane" id="tab-npcs"><div class="card"><div class="card-title">Court Members</div><div id="npcList"></div></div></div>
+    </main>
+
+    <aside class="loc-inv-sidebar">
+      <div class="card"><div class="card-title">Gold</div><div class="gold-row"><span class="gold-icon">⚜</span><span class="gold-val" id="invGold">0</span><span class="gold-lbl">COINS</span></div></div>
+      <div class="card"><div class="card-title">Inventory</div><div class="inv-grid" id="invGrid"></div></div>
+    </aside>
+  </div>
+
+  <div class="dialogue-box">
+    <div class="dialogue-speaker" id="dlgSpeaker">◈ Castle Herald</div>
+    <div class="dialogue-text" id="dlgText"></div>
+  </div>
+</div>
+<div id="locNotif"></div>
+
+<script>
+const Core=(()=>{const K='dnd_save';const LK={char:u=>'dnd_char_'+u,stats:u=>'dnd_stats_'+u,inv:u=>'dnd_inventory_'+u,equip:u=>'dnd_equipped_'+u};const def=n=>({name:n,race:'human',class:'fighter',sex:'male',level:1,xp:0,xpMax:100,hp:50,hpMax:50,mp:20,mpMax:20,gold:0,ac:10,speed:30,str:10,dex:10,con:10,int:10,wis:10,cha:10,reputation:{},statusEffects:[],skills:[],attacks:[{id:'strike',name:'Strike',dmg:'1d6',type:'physical',cooldown:0}]});const defI=()=>new Array(24).fill(null);const defE=()=>({weapon:null,offhand:null,armor:null,helmet:null,ring:null});const defW=()=>({time:0,weather:'clear',visited:{},quests:{},factions:{crown:50,guild:50,shadow:50},npcStates:{},flags:{}});const tp=s=>{try{return s?JSON.parse(s):null;}catch(e){return null;}};function persist(s){try{localStorage.setItem(K,JSON.stringify(s));}catch(e){}}function load(){try{const r=localStorage.getItem(K);if(r){const s=JSON.parse(r);s.player=Object.assign(def(s.player?.name||'Adventurer'),s.player||{});s.inventory=s.inventory||defI();s.equipped=Object.assign(defE(),s.equipped||{});s.world=Object.assign(defW(),s.world||{});if(!s.world.factions)s.world.factions={crown:50,guild:50,shadow:50};return s;}}catch(e){}const u=localStorage.getItem('dnd_user')||'Adventurer';const ch=tp(localStorage.getItem(LK.char(u)))||{};const st=tp(localStorage.getItem(LK.stats(u)))||{};const inv=tp(localStorage.getItem(LK.inv(u)))||defI();const eq=tp(localStorage.getItem(LK.equip(u)))||defE();const hM=(st.con||10)*5,mM=(st.int||10)*3;const s={player:Object.assign(def(u),{name:u,race:ch.race||'human',class:ch.class||'fighter',level:st.level||1,xp:st.xp||0,xpMax:st.xpMax||100,hp:hM,hpMax:hM,mp:mM,mpMax:mM,gold:st.gold||0,str:st.str||10,dex:st.dex||10,con:st.con||10,int:st.int||10,wis:st.wis||10,cha:st.cha||10}),inventory:inv,equipped:eq,world:defW()};persist(s);return s;}let _s=load(),_t=null;function save(b=true){const p=_s.player,u=p.name;try{localStorage.setItem(LK.char(u),JSON.stringify({race:p.race,class:p.class,sex:p.sex}));localStorage.setItem(LK.stats(u),JSON.stringify({level:p.level,xp:p.xp,xpMax:p.xpMax,str:p.str,dex:p.dex,con:p.con,int:p.int,wis:p.wis,cha:p.cha,gold:p.gold}));localStorage.setItem(LK.inv(u),JSON.stringify(_s.inventory));localStorage.setItem(LK.equip(u),JSON.stringify(_s.equipped));}catch(e){}persist(_s);if(b){const bd=document.getElementById('saveBadge');if(bd){bd.classList.add('show');clearTimeout(_t);_t=setTimeout(()=>bd.classList.remove('show'),2200);}}}const CI={fighter:'⚔',wizard:'🧙',rogue:'🗡',ranger:'🏹',cleric:'✝',paladin:'🛡',barbarian:'🪓',bard:'🎵',druid:'🌿',warlock:'👁',monk:'👊',sorcerer:'🔮'};const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';function notify(msg,err=false){const el=document.getElementById('locNotif');if(!el)return;el.textContent=msg;el.className=(err?'err ':'')+' show';clearTimeout(el._t);el._t=setTimeout(()=>el.className=err?'err':'',3200);}
+return{get:()=>_s,player:()=>_s.player,inv:()=>_s.inventory,world:()=>_s.world,save,modifyPlayer:fn=>{fn(_s.player);save();},modifyWorld:fn=>{fn(_s.world);save();},giveItem:item=>{const i=_s.inventory.findIndex(s=>s===null);if(i===-1)return false;_s.inventory[i]=item;save();return true;},spendGold:a=>{if(_s.player.gold<a)return false;_s.player.gold-=a;save();return true;},gainGold:a=>{_s.player.gold+=a;save();},gainXP:a=>{const p=_s.player;p.xp+=a;while(p.xp>=p.xpMax){p.xp-=p.xpMax;p.level++;p.xpMax=Math.floor(p.xpMax*1.5);p.hpMax+=5;p.hp=p.hpMax;p.mpMax+=3;p.mp=p.mpMax;notify('⬆ Level Up! Level '+p.level+'!');}save();},markVisited:(n,t)=>{_s.world.visited[n]={type:t,time:_s.world.time};save();},leave:()=>{save();window.location.href='game-multi.html';},notify,classIcon:cls=>CI[cls]||'⚔',cap,};})();
+
+function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');}
+let _tw=null;function typeText(id,text,speed=18){const el=document.getElementById(id);if(!el)return;el.innerHTML='';let i=0;clearInterval(_tw);const cur=document.createElement('span');cur.className='cursor';el.appendChild(cur);_tw=setInterval(()=>{if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;}else{clearInterval(_tw);cur.remove();}},speed);}
+function logEvent(t,type=''){const l=document.getElementById('eventLog');if(!l)return;const d=document.createElement('div');d.className='event-line'+(type?' '+type:'');d.textContent=t;l.appendChild(d);l.scrollTop=l.scrollHeight;}
+function spawnAmbience(color,n=15){const w=document.getElementById('ambience');for(let i=0;i<n;i++){const p=document.createElement('div');p.className='amb-pt';p.style.cssText=`left:${Math.random()*100}%;bottom:${Math.random()*30}%;width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;background:${color};animation-delay:${Math.random()*12}s;animation-duration:${6+Math.random()*8}s;`;w.appendChild(p);}}
+function updateHUD(){const p=Core.player();document.getElementById('charAvatar').textContent=Core.classIcon(p.class);document.getElementById('charName').textContent=p.name;document.getElementById('charSub').textContent=`Lv.${p.level} ${Core.cap(p.race)} ${Core.cap(p.class)}`;document.getElementById('barHp').style.width=(p.hp/p.hpMax*100)+'%';document.getElementById('barMp').style.width=(p.mp/p.mpMax*100)+'%';document.getElementById('barXp').style.width=(p.xp/p.xpMax*100)+'%';document.getElementById('valHp').textContent=`${p.hp}/${p.hpMax}`;document.getElementById('valMp').textContent=`${p.mp}/${p.mpMax}`;document.getElementById('valXp').textContent=`${p.xp}/${p.xpMax}`;const sg=document.getElementById('statGrid');sg.innerHTML='';[['STR',p.str],['DEX',p.dex],['CON',p.con],['INT',p.int],['WIS',p.wis],['CHA',p.cha]].forEach(([k,v])=>{sg.innerHTML+=`<div class="stat-cell"><div class="stat-cell-val">${v}</div><div class="stat-cell-name">${k}</div></div>`;});}
+function updateInventoryPanel(){const inv=Core.inv(),p=Core.player();document.getElementById('invGold').textContent=p.gold;const grid=document.getElementById('invGrid');grid.innerHTML='';for(let i=0;i<24;i++){const item=inv[i];const slot=document.createElement('div');slot.className='inv-slot'+(item?' occ':'');if(item){slot.textContent=item.icon||'📦';slot.title=item.name;}grid.appendChild(slot);}}
+
+const ARMOURY=[{id:'plate_armor',name:'Plate Armour',icon:'🥋',price:300,desc:'+6 AC',type:'armor',slot:'armor'},{id:'longsword',name:'Longsword',icon:'⚔',price:120,desc:'+1d8+2 dmg',type:'weapon',slot:'weapon'},{id:'tower_shield',name:'Tower Shield',icon:'🛡',price:200,desc:'+3 AC',type:'armor',slot:'offhand'},{id:'knights_helm',name:'Knight\'s Helm',icon:'⛑',price:150,desc:'+1 AC +save',type:'armor',slot:'helmet'}];
+const NPCS=[{name:'Lord Commander Veld',role:'Castle Commander',icon:'💂',dialogue:'"Your reputation precedes you. I have use for capable blades — if your loyalty can be purchased."'},{name:'Lady Mireth',role:'Court Mage',icon:'🧙',dialogue:'"Magic is the true currency of power. Gold merely keeps the fires burning."'},{name:'Chancellor Drax',role:'Royal Advisor',icon:'🧓',dialogue:'"Be careful who you make alliances with in this court. Everyone has at least two masters."'},{name:'Ser Edric',role:'Knight',icon:'⚔',dialogue:'"Honour is simple. Do what you said you would. Die if you must.'}];
+const FACTIONS=[{key:'crown',name:'The Crown',icon:'👑',desc:'Royal authority'},{key:'guild',name:'Merchant Guild',icon:'⚜',desc:'Trade power'},{key:'shadow',name:'Shadow Court',icon:'🗡',desc:'Hidden hand'}];
+
+function buildArmoury(){const c=document.getElementById('armouryItems');c.innerHTML='';ARMOURY.forEach(item=>{const d=document.createElement('div');d.className='shop-item fade-in';d.innerHTML=`<div class="shop-item-icon">${item.icon}</div><div class="shop-item-info"><div class="shop-item-name">${item.name}</div><div class="shop-item-desc">${item.desc}</div></div><div class="shop-item-price">⚜${item.price}</div>`;d.onclick=()=>{if(!Core.spendGold(item.price)){Core.notify('Not enough gold!',true);return;}if(!Core.giveItem(item)){Core.gainGold(item.price);Core.notify('Inventory full!',true);return;}updateHUD();updateInventoryPanel();Core.notify('Purchased: '+item.name);};c.appendChild(d);});}
+
+function buildNPCs(){const c=document.getElementById('npcList');c.innerHTML='';NPCS.forEach(npc=>{const d=document.createElement('div');d.className='npc-row fade-in';d.innerHTML=`<div class="npc-avatar">${npc.icon}</div><div class="npc-info"><div class="npc-name">${npc.name}</div><div class="npc-role">${npc.role}</div></div><div class="npc-badge">Talk</div>`;d.onclick=()=>{document.getElementById('dlgSpeaker').textContent=`◈ ${npc.name}`;typeText('dlgText',npc.dialogue);};c.appendChild(d);});}
+
+function buildFactions(){
+  const c=document.getElementById('factionList');c.innerHTML='';
+  const facs=Core.world().factions||{crown:50,guild:50,shadow:50};
+  FACTIONS.forEach(f=>{const v=facs[f.key]||50;const label=v>=75?'Ally':v>=50?'Neutral':v>=25?'Wary':'Hostile';c.innerHTML+=`<div class="faction-bar"><div class="faction-icon">${f.icon}</div><div style="flex:1"><div class="faction-name">${f.name}</div><div style="font-size:10px;color:var(--txt3)">${f.desc}</div></div><div class="faction-rep-track"><div class="faction-rep-fill" style="width:${v}%"></div></div><div class="faction-rep-val">${label}</div></div>`;});
+}
+
+function doAudience(){
+  const p=Core.player();const w=Core.world();
+  Core.modifyWorld(w=>{if(!w.factions)w.factions={crown:50};w.factions.crown=Math.min(100,(w.factions.crown||50)+5);});
+  Core.gainXP(20);updateHUD();buildFactions();
+  const lines=['The Lord regards your party from beneath a furrowed brow. "I have a task — dangerous, but well-rewarded. Speak to my steward about the details."','The Lord leans forward. "I hear you are capable. Prove it. There are bandits on the northern road that need... persuading."','The court falls silent as the Lord speaks. "Adventurers. Good. We need someone who asks no questions and leaves no trail."'];
+  typeText('dlgText',lines[Math.floor(Math.random()*lines.length)]);
+  document.getElementById('dlgSpeaker').textContent='◈ Lord Commander Veld';
+  logEvent('◈ Royal audience granted. +5 Crown reputation.','gold');
+}
+
+function doArmoury(){typeText('dlgText','The armorer wipes grease from his hands. "Finest castle-forged gear on the island. Coin only. No trade."');document.getElementById('dlgSpeaker').textContent='◈ Castle Armorer';}
+
+function doFactionJob(){
+  Core.modifyWorld(w=>{if(!w.factions)w.factions={};w.factions.crown=Math.min(100,(w.factions.crown||50)+10);});
+  const reward=30+Math.floor(Math.random()*40);Core.gainGold?Core.gainGold(reward):null;Core.gainXP(30);
+  updateHUD();updateInventoryPanel();buildFactions();
+  typeText('dlgText',`You spend a day in service to the Crown. A minor errand — well beneath your skills, but the gold (${reward}g) and goodwill are not unwelcome.`);
+  document.getElementById('dlgSpeaker').textContent='◈ Castle Herald';
+  logEvent(`⚜ Crown service: +${reward}g, +10 reputation.`,'gold');
+}
+
+window.addEventListener('load',()=>{
+  const params=new URLSearchParams(location.search);const name=params.get('name')||'Greywatch Keep';
+  document.getElementById('placeName').textContent=name;document.getElementById('heroName').textContent=name;
+  Core.markVisited(name,'CASTLE');updateHUD();updateInventoryPanel();
+  buildArmoury();buildNPCs();buildFactions();spawnAmbience('#9040d0',12);
+  typeText('dlgText',`The gates of ${name} creak open at your approach. A herald in faded livery steps forward. "State your allegiances and your purpose." The guards have not moved from their posts, but their hands have shifted to their sword-hilts.`);
+  Core.save();
+});
+</script>
+</body>
+</html>

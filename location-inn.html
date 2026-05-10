@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wayfarers' Inn — The Realm Awakens</title>
+  <link rel="stylesheet" href="shared-styles.css">
+  <style>
+    :root {
+      --loc-accent: #c9a45c;
+      --loc-bg:     linear-gradient(160deg, #1a1008 0%, #080608 60%);
+      --loc-glow:   rgba(201, 164, 92, .18);
+    }
+
+    body {
+      background: #0c0904;
+    }
+
+    /* ── Hero Banner ── */
+    .loc-hero {
+      width: 100%;
+      min-height: 180px;
+      background: linear-gradient(160deg, #2a1a08 0%, #120c04 60%, #080608 100%);
+      border-bottom: 1px solid rgba(201, 164, 92, .2);
+      display: flex;
+      align-items: flex-end;
+      padding: 20px 24px 18px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .loc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 30% 50%, rgba(201, 164, 92, .08), transparent);
+      pointer-events: none;
+    }
+
+    .hero-icon {
+      font-size: 72px;
+      margin-right: 20px;
+      filter: drop-shadow(0 0 24px rgba(201, 164, 92, .5));
+      flex-shrink: 0;
+    }
+
+    .hero-text {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-location-type {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--txt3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hero-location-name {
+      font-family: 'Uncial Antiqua', cursive;
+      color: var(--gold);
+      font-size: 28px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 30px rgba(201, 164, 92, .4);
+      line-height: 1.1;
+    }
+
+    .hero-desc {
+      font-family: 'Crimson Text', serif;
+      font-style: italic;
+      color: var(--txt2);
+      font-size: 13px;
+      margin-top: 6px;
+      max-width: 540px;
+      line-height: 1.55;
+    }
+
+    /* ── Fire Effect ── */
+    .fire-effect {
+      position: absolute;
+      right: 40px;
+      bottom: 0;
+      font-size: 52px;
+      animation: flicker 2.2s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 18px rgba(255, 120, 30, .6));
+    }
+
+    @keyframes flicker {
+      0%   { transform: scale(1)    rotate(-2deg); }
+      33%  { transform: scale(1.05) rotate(1deg);  }
+      66%  { transform: scale(.97)  rotate(-1deg); }
+      100% { transform: scale(1.03) rotate(2deg);  }
+    }
+
+    /* ── Rest Panels ── */
+    .rest-panel {
+      background: linear-gradient(135deg, rgba(40, 25, 8, .8), rgba(8, 6, 8, .9));
+      border: 1px solid rgba(201, 164, 92, .25);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .rest-cost {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .rest-note {
+      font-size: 11px;
+      color: var(--txt3);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    /* ── Rumours ── */
+    .rumour-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(61, 46, 26, .3);
+      font-family: 'Crimson Text', serif;
+      font-size: 13px;
+      color: var(--txt2);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .rumour-item:last-child {
+      border-bottom: none;
+    }
+
+    .rumour-src {
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: var(--txt3);
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="loc-ambience" id="ambience"></div>
+
+<div class="loc-wrap">
+
+  <!-- ── Top Header ── -->
+  <header class="loc-header">
+    <button class="loc-back-btn" onclick="Core.leave()">← Leave</button>
+    <div class="loc-title-wrap">
+      <div class="loc-place-name" id="placeName">Wayfarers' Inn</div>
+      <div class="loc-place-sub">🏠 INN · Rest &amp; Respite</div>
+    </div>
+    <div class="loc-save-badge" id="saveBadge">✓ Saved</div>
+  </header>
+
+  <div class="loc-body">
+
+    <!-- ── Left Sidebar: Character ── -->
+    <aside class="loc-sidebar">
+
+      <div class="card">
+        <div class="card-title">Adventurer</div>
+        <div class="char-portrait">
+          <div class="char-avatar" id="charAvatar">⚔</div>
+          <div>
+            <div class="char-name" id="charName">—</div>
+            <div class="char-sub"  id="charSub">—</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">❤ HP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-hp" id="barHp"></div></div>
+            <span class="stat-bar-val" id="valHp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">✦ MP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-mp" id="barMp"></div></div>
+            <span class="stat-bar-val" id="valMp">—</span>
+          </div>
+          <div class="stat-bar-row">
+            <span class="stat-bar-lbl">★ XP</span>
+            <div class="stat-bar-track"><div class="stat-bar-fill bar-xp" id="barXp"></div></div>
+            <span class="stat-bar-val" id="valXp">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Attributes</div>
+        <div class="stat-grid" id="statGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Actions</div>
+        <button class="action-btn primary" onclick="doRest(false)">
+          <span class="action-btn-icon">💤</span> Rest (Free)
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn" onclick="doRest(true)">
+          <span class="action-btn-icon">🛏</span> Full Night (10g)
+        </button>
+        <div style="height:5px"></div>
+        <button class="action-btn danger" onclick="Core.leave()">
+          <span class="action-btn-icon">🚪</span> Leave Inn
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="loc-center">
+
+      <div class="loc-hero">
+        <div class="hero-icon">🏠</div>
+        <div class="hero-text">
+          <div class="hero-location-type">Wayfarers' Inn</div>
+          <div class="hero-location-name" id="heroName">The Wanderer's Rest</div>
+          <div class="hero-desc" id="heroDesc">
+            Warm firelight and the smell of hearty stew fill the common room. Weary travellers
+            exchange tales, and the barkeep regards your party with practiced indifference.
+            A good place to rest, trade rumours, and spend gold.
+          </div>
+        </div>
+        <div class="fire-effect">🔥</div>
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('rest',    this)">🛏 Rest</button>
+        <button class="tab-btn"        onclick="switchTab('shop',    this)">🍺 Tavern</button>
+        <button class="tab-btn"        onclick="switchTab('npcs',    this)">👥 Company</button>
+        <button class="tab-btn"        onclick="switchTab('rumours', this)">📜 Rumours</button>
+      </div>
+
+      <!-- REST tab -->
+      <div class="tab-pane active" id="tab-rest">
+        <div class="rest-panel">
+          <div class="rest-cost">💤 Short Rest — Free</div>
+          <div class="rest-note">Recover half your missing HP. Takes no gold but restores no MP.</div>
+          <button class="action-btn primary" onclick="doRest(false)">
+            <span class="action-btn-icon">💤</span> Take a Short Rest
+          </button>
+        </div>
+        <div class="rest-panel">
+          <div class="rest-cost">🛏 Full Night — 10 Gold</div>
+          <div class="rest-note">Fully restores HP and MP. Removes minor ailments. Dream visions may occur.</div>
+          <button class="action-btn primary" onclick="doRest(true)">
+            <span class="action-btn-icon">🛏</span> Rent a Room
+          </button>
+        </div>
+        <div class="card">
+          <div class="card-title">Event Log</div>
+          <div class="event-log" id="eventLog">
+            <div class="event-line">◈ You push open the heavy door of the inn. Warmth washes over you.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAVERN tab -->
+      <div class="tab-pane" id="tab-shop">
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">🍺 Barkeep's Wares</div>
+          <div id="shopItems"></div>
+        </div>
+      </div>
+
+      <!-- COMPANY tab -->
+      <div class="tab-pane" id="tab-npcs">
+        <div class="card">
+          <div class="card-title">Patrons</div>
+          <div id="npcList"></div>
+        </div>
+      </div>
+
+      <!-- RUMOURS tab -->
+      <div class="tab-pane" id="tab-rumours">
+        <div class="card">
+          <div class="card-title">Overheard at the Bar</div>
+          <div id="rumourList"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── Right Sidebar: Inventory ── -->
+    <aside class="loc-inv-sidebar">
+      <div class="card">
+        <div class="card-title">Gold</div>
+        <div class="gold-row">
+          <span class="gold-icon">⚜</span>
+          <span class="gold-val" id="invGold">0</span>
+          <span class="gold-lbl">COINS</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Inventory</div>
+        <div class="inv-grid" id="invGrid"></div>
+      </div>
+    </aside>
+
+  </div><!-- /.loc-body -->
+
+  <!-- ── Dialogue Box ── -->
+  <div class="dialogue-box">
+    <div class="dialogue-speaker" id="dlgSpeaker">◈ Innkeeper</div>
+    <div class="dialogue-text"   id="dlgText"></div>
+    <div class="dialogue-actions" id="dlgActions"></div>
+  </div>
+
+</div><!-- /.loc-wrap -->
+
+<div id="locNotif"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CORE  —  save / load / shared helpers
+   ═══════════════════════════════════════════════════════════ */
+const Core = (() => {
+
+  // ── Storage keys ──────────────────────────────────────────
+  const SAVE_KEY    = 'dnd_save';
+  const LEGACY_KEYS = {
+    char:  u => 'dnd_char_'      + u,
+    stats: u => 'dnd_stats_'     + u,
+    inv:   u => 'dnd_inventory_' + u,
+    equip: u => 'dnd_equipped_'  + u,
+  };
+
+  // ── Default factories ──────────────────────────────────────
+  const defaultPlayer = name => ({
+    name, race: 'human', class: 'fighter', sex: 'male',
+    level: 1, xp: 0, xpMax: 100,
+    hp: 50, hpMax: 50, mp: 20, mpMax: 20,
+    gold: 0, ac: 10, speed: 30,
+    str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,
+    reputation: {}, statusEffects: [], skills: [],
+    attacks: [{ id: 'strike', name: 'Strike', dmg: '1d6', type: 'physical', cooldown: 0 }],
+  });
+
+  const defaultInventory = () => new Array(24).fill(null);
+
+  const defaultEquipped = () => ({
+    weapon: null, offhand: null, armor: null, helmet: null, ring: null,
+  });
+
+  const defaultWorld = () => ({
+    time: 0, weather: 'clear',
+    visited: {}, quests: {}, factions: {}, npcStates: {}, flags: {},
+  });
+
+  // ── Helpers ────────────────────────────────────────────────
+  const tryParse = str => {
+    try { return str ? JSON.parse(str) : null; }
+    catch (e) { return null; }
+  };
+
+  function persist(state) {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+    catch (e) { console.error('Save failed', e); }
+  }
+
+  // ── Load state ─────────────────────────────────────────────
+  function load() {
+    // Try unified save first
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        state.player    = Object.assign(defaultPlayer(state.player?.name || 'Adventurer'), state.player || {});
+        state.inventory = state.inventory || defaultInventory();
+        state.equipped  = Object.assign(defaultEquipped(), state.equipped || {});
+        state.world     = Object.assign(defaultWorld(),    state.world    || {});
+        return state;
+      }
+    } catch (e) { console.warn('Save corrupted, rebuilding.', e); }
+
+    // Fall back to legacy per-key storage
+    return buildFromLegacy();
+  }
+
+  function buildFromLegacy() {
+    const user  = localStorage.getItem('dnd_user') || 'Adventurer';
+    const char  = tryParse(localStorage.getItem(LEGACY_KEYS.char(user)))  || {};
+    const stats = tryParse(localStorage.getItem(LEGACY_KEYS.stats(user))) || {};
+    const inv   = tryParse(localStorage.getItem(LEGACY_KEYS.inv(user)))   || defaultInventory();
+    const equip = tryParse(localStorage.getItem(LEGACY_KEYS.equip(user))) || defaultEquipped();
+
+    const hpMax = (stats.con || 10) * 5;
+    const mpMax = (stats.int || 10) * 3;
+
+    const state = {
+      player: Object.assign(defaultPlayer(user), {
+        name:  user,
+        race:  char.race  || 'human',
+        class: char.class || 'fighter',
+        sex:   char.sex   || 'male',
+        level: stats.level || 1,
+        xp:    stats.xp    || 0,
+        xpMax: stats.xpMax || 100,
+        hp: hpMax, hpMax,
+        mp: mpMax, mpMax,
+        gold: stats.gold || 0,
+        str: stats.str || 10, dex: stats.dex || 10, con: stats.con || 10,
+        int: stats.int || 10, wis: stats.wis || 10, cha: stats.cha || 10,
+      }),
+      inventory: inv,
+      equipped:  equip,
+      world:     defaultWorld(),
+    };
+
+    persist(state);
+    return state;
+  }
+
+  // ── Internal state ─────────────────────────────────────────
+  let _state          = load();
+  let _saveBadgeTimer = null;
+
+  // ── Save ───────────────────────────────────────────────────
+  function save(showBadge = true) {
+    const p = _state.player;
+    const u = p.name;
+
+    // Keep legacy keys in sync for game-multi.html
+    try {
+      localStorage.setItem(LEGACY_KEYS.char(u),  JSON.stringify({ race: p.race, class: p.class, sex: p.sex }));
+      localStorage.setItem(LEGACY_KEYS.stats(u), JSON.stringify({
+        level: p.level, xp: p.xp, xpMax: p.xpMax,
+        str: p.str, dex: p.dex, con: p.con,
+        int: p.int, wis: p.wis, cha: p.cha,
+        gold: p.gold,
+      }));
+      localStorage.setItem(LEGACY_KEYS.inv(u),   JSON.stringify(_state.inventory));
+      localStorage.setItem(LEGACY_KEYS.equip(u), JSON.stringify(_state.equipped));
+    } catch (e) { /* storage full or unavailable */ }
+
+    persist(_state);
+    if (showBadge) flashSave();
+  }
+
+  function flashSave() {
+    const badge = document.getElementById('saveBadge');
+    if (!badge) return;
+    badge.classList.add('show');
+    clearTimeout(_saveBadgeTimer);
+    _saveBadgeTimer = setTimeout(() => badge.classList.remove('show'), 2200);
+  }
+
+  // ── Notification ───────────────────────────────────────────
+  // FIX: className had stray spaces; timeout didn't clear class fully
+  function notify(msg, isError = false) {
+    const el = document.getElementById('locNotif');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = (isError ? 'err' : '') + ' show';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3200);
+  }
+
+  // ── Class icons ────────────────────────────────────────────
+  const CLASS_ICONS = {
+    fighter:   '⚔',  wizard:   '🧙', rogue:    '🗡',
+    ranger:    '🏹', cleric:   '✝',  paladin:  '🛡',
+    barbarian: '🪓', bard:     '🎵', druid:    '🌿',
+    warlock:   '👁', monk:     '👊', sorcerer: '🔮',
+  };
+
+  const capitalize = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+
+  // ── Public API ─────────────────────────────────────────────
+  return {
+    get:    () => _state,
+    player: () => _state.player,
+    inv:    () => _state.inventory,
+    world:  () => _state.world,
+    save,
+    load,
+    flashSave,
+
+    modifyPlayer(fn)    { fn(_state.player);    save(); },
+    modifyInventory(fn) { fn(_state.inventory); save(); },
+    modifyWorld(fn)     { fn(_state.world);     save(); },
+
+    giveItem(item) {
+      const idx = _state.inventory.findIndex(s => s === null);
+      if (idx === -1) return false;
+      _state.inventory[idx] = item;
+      save();
+      return true;
+    },
+
+    spendGold(amount) {
+      if (_state.player.gold < amount) return false;
+      _state.player.gold -= amount;
+      save();
+      return true;
+    },
+
+    gainGold(amount) {
+      _state.player.gold += amount;
+      save();
+    },
+
+    gainXP(amount) {
+      const p = _state.player;
+      p.xp += amount;
+      while (p.xp >= p.xpMax) {
+        p.xp    -= p.xpMax;
+        p.level += 1;
+        p.xpMax  = Math.floor(p.xpMax * 1.5);
+        p.hpMax += 5;  p.hp = p.hpMax;
+        p.mpMax += 3;  p.mp = p.mpMax;
+        notify(`⬆ Level Up! You are now level ${p.level}!`);
+      }
+      save();
+    },
+
+    healHP(amount) {
+      const p = _state.player;
+      p.hp = Math.min(p.hpMax, p.hp + amount);
+      save();
+    },
+
+    restoreMP(amount) {
+      const p = _state.player;
+      p.mp = Math.min(p.mpMax, p.mp + amount);
+      save();
+    },
+
+    markVisited(name, type) {
+      _state.world.visited[name] = { type, time: _state.world.time };
+      save();
+    },
+
+    leave() {
+      save();
+      window.location.href = 'game-multi.html';
+    },
+
+    notify,
+    classIcon: cls => CLASS_ICONS[cls] || '⚔',
+    cap: capitalize,
+  };
+
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+   ═══════════════════════════════════════════════════════════ */
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+let _twTimer = null;
+function typeText(elId, text, speed = 18) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+
+  el.innerHTML = '';
+  let i = 0;
+  clearInterval(_twTimer);
+
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  el.appendChild(cursor);
+
+  _twTimer = setInterval(() => {
+    if (i < text.length) {
+      el.insertBefore(document.createTextNode(text[i]), cursor);
+      i++;
+    } else {
+      clearInterval(_twTimer);
+      cursor.remove();
+    }
+  }, speed);
+}
+
+function logEvent(text, type = '') {
+  const log = document.getElementById('eventLog');
+  if (!log) return;
+  const line = document.createElement('div');
+  line.className = 'event-line' + (type ? ' ' + type : '');
+  line.textContent = text;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function spawnAmbience(color = '#c9a45c', count = 25) {
+  const container = document.getElementById('ambience');
+  for (let i = 0; i < count; i++) {
+    const pt = document.createElement('div');
+    pt.className = 'amb-pt';
+    pt.style.cssText = [
+      `left:${Math.random() * 100}%`,
+      `bottom:${Math.random() * 30}%`,
+      `width:${1 + Math.random() * 2}px`,
+      `height:${1 + Math.random() * 2}px`,
+      `background:${color}`,
+      `animation-delay:${Math.random() * 12}s`,
+      `animation-duration:${6 + Math.random() * 8}s`,
+    ].join(';');
+    container.appendChild(pt);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   HUD & INVENTORY RENDERING
+   ═══════════════════════════════════════════════════════════ */
+
+function updateHUD() {
+  const p = Core.player();
+
+  document.getElementById('charAvatar').textContent = Core.classIcon(p.class);
+  document.getElementById('charName').textContent   = p.name;
+  document.getElementById('charSub').textContent    = `Lv.${p.level} ${Core.cap(p.race)} ${Core.cap(p.class)}`;
+
+  document.getElementById('barHp').style.width = (p.hp / p.hpMax * 100) + '%';
+  document.getElementById('barMp').style.width = (p.mp / p.mpMax * 100) + '%';
+  document.getElementById('barXp').style.width = (p.xp / p.xpMax * 100) + '%';
+
+  document.getElementById('valHp').textContent = `${p.hp}/${p.hpMax}`;
+  document.getElementById('valMp').textContent = `${p.mp}/${p.mpMax}`;
+  document.getElementById('valXp').textContent = `${p.xp}/${p.xpMax}`;
+
+  const grid = document.getElementById('statGrid');
+  grid.innerHTML = '';
+  [['STR', p.str], ['DEX', p.dex], ['CON', p.con],
+   ['INT', p.int], ['WIS', p.wis], ['CHA', p.cha]].forEach(([key, val]) => {
+    grid.innerHTML += `
+      <div class="stat-cell">
+        <div class="stat-cell-val">${val}</div>
+        <div class="stat-cell-name">${key}</div>
+      </div>`;
+  });
+}
+
+function updateInventoryPanel() {
+  const inv = Core.inv();
+  const p   = Core.player();
+
+  document.getElementById('invGold').textContent = p.gold;
+
+  const grid = document.getElementById('invGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 24; i++) {
+    const item = inv[i];
+    const slot = document.createElement('div');
+    slot.className = 'inv-slot' + (item ? ' occ' : '');
+    if (item) {
+      slot.textContent = item.icon || '📦';
+      slot.title       = item.name;
+    }
+    grid.appendChild(slot);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DATA — NPC / Shop / Rumour lists
+   ═══════════════════════════════════════════════════════════ */
+
+const INN_NPCS = [
+  { name: 'Bram Tallow',  role: 'Innkeeper',          icon: '🧓', dialogue: "Another adventurer? Aye, there's room. Mind you don't start a fight."        },
+  { name: 'Sera Vane',    role: 'Traveling Merchant',  icon: '👩', dialogue: "I've rare goods — not for the faint of heart or light of purse."             },
+  { name: 'Old Whittle',  role: 'Retired Soldier',     icon: '👴', dialogue: "I fought at Greymarch. Lost three good men. We won, but aye — we lost."      },
+  { name: 'Flit',         role: 'Halfling Bard',        icon: '🎵', dialogue: 'A song for a copper? No? Cheapskate.'                                        },
+  { name: 'Sister Morn',  role: 'Wandering Cleric',    icon: '✝',  dialogue: 'The gods watch all crossroads. Especially this one.'                          },
+];
+
+const INN_SHOP = [
+  { id: 'health_potion', name: 'Health Potion',  icon: '🧪', price: 25, desc: 'Restores 2d4+2 HP', type: 'consumable', slot: null },
+  { id: 'rations',       name: 'Travel Rations',  icon: '🧆', price:  5, desc: 'A day of food',     type: 'consumable', slot: null },
+  { id: 'torch',         name: 'Torch',           icon: '🕯', price:  2, desc: 'Burns for 1 hour',  type: 'utility',    slot: null },
+  { id: 'rope',          name: 'Hempen Rope',     icon: '🪢', price:  8, desc: '50 feet of rope',   type: 'utility',    slot: null },
+  { id: 'antitoxin',     name: 'Antitoxin',       icon: '💊', price: 50, desc: 'Cures poison',      type: 'consumable', slot: null },
+  { id: 'ale',           name: 'Flagon of Ale',   icon: '🍺', price:  1, desc: '+1 CHA for 1 hour', type: 'consumable', slot: null },
+];
+
+const INN_RUMOURS = [
+  { src: "A sellsword's whisper", text: "There's a dungeon east of here. Three parties went in last month. One came out."                   },
+  { src: "The bard's song",       text: "They say the old castle on the ridge changes hands with every moon. No one holds it long."          },
+  { src: "A sailor's tale",       text: "The port master takes a cut of everything. Everything. You know what I mean by everything."         },
+  { src: "Overheard at the bar",  text: "The grove to the south used to be a village. Something changed it. Something still lives there."   },
+  { src: "A merchant's warning",  text: "Don't take the mountain pass after dark. Not anymore."                                              },
+  { src: "Scrawled on a napkin",  text: "X marks the spot — but X keeps moving."                                                            },
+];
+
+
+/* ═══════════════════════════════════════════════════════════
+   BUILDERS — render lists into the DOM
+   ═══════════════════════════════════════════════════════════ */
+
+function buildShop() {
+  const container = document.getElementById('shopItems');
+  container.innerHTML = '';
+
+  INN_SHOP.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'shop-item fade-in';
+    row.innerHTML = `
+      <div class="shop-item-icon">${item.icon}</div>
+      <div class="shop-item-info">
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-desc">${item.desc}</div>
+      </div>
+      <div class="shop-item-price">⚜${item.price}</div>`;
+    row.onclick = () => buyItem(item);
+    container.appendChild(row);
+  });
+}
+
+function buyItem(item) {
+  if (!Core.spendGold(item.price)) {
+    Core.notify('Not enough gold!', true);
+    return;
+  }
+  if (!Core.giveItem(item)) {
+    Core.gainGold(item.price);  // refund
+    Core.notify('Inventory full!', true);
+    return;
+  }
+  updateHUD();
+  updateInventoryPanel();
+  Core.notify(`Purchased: ${item.name}`);
+  logEvent(`⚜ Bought ${item.name} for ${item.price} gold.`, 'gold');
+}
+
+function buildNPCs() {
+  const container = document.getElementById('npcList');
+  container.innerHTML = '';
+
+  INN_NPCS.forEach(npc => {
+    const row = document.createElement('div');
+    row.className = 'npc-row fade-in';
+    row.innerHTML = `
+      <div class="npc-avatar">${npc.icon}</div>
+      <div class="npc-info">
+        <div class="npc-name">${npc.name}</div>
+        <div class="npc-role">${npc.role}</div>
+      </div>
+      <div class="npc-badge">Talk</div>`;
+    row.onclick = () => talkNPC(npc);
+    container.appendChild(row);
+  });
+}
+
+function talkNPC(npc) {
+  document.getElementById('dlgSpeaker').textContent = `◈ ${npc.name} · ${npc.role}`;
+  typeText('dlgText', npc.dialogue);
+}
+
+function buildRumours() {
+  const container = document.getElementById('rumourList');
+  container.innerHTML = '';
+
+  INN_RUMOURS.forEach(r => {
+    container.innerHTML += `
+      <div class="rumour-item fade-in">
+        <span class="rumour-src">${r.src}</span>
+        "${r.text}"
+      </div>`;
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   ACTION HANDLERS
+   ═══════════════════════════════════════════════════════════ */
+
+function doRest(fullNight) {
+  const p = Core.player();
+
+  if (fullNight) {
+    if (!Core.spendGold(10)) {
+      Core.notify('Not enough gold! (10g required)', true);
+      return;
+    }
+    // Full restore
+    p.hp = p.hpMax;
+    p.mp = p.mpMax;
+    p.statusEffects = (p.statusEffects || []).filter(e => e.persistent);
+    Core.save();
+    updateHUD();
+    updateInventoryPanel();
+    logEvent('✓ You sleep soundly. Fully restored HP and MP.', 'good');
+    document.getElementById('dlgSpeaker').textContent = '◈ Bram Tallow · Innkeeper';
+    typeText('dlgText', "Bram Tallow tucks in the register. \"That's 10 gold. Sleep well — breakfast is at dawn.\"");
+    Core.notify('Fully rested!');
+    Core.gainXP(10);
+    updateHUD();
+  } else {
+    // Short rest — half of missing HP
+    const heal = Math.floor((p.hpMax - p.hp) / 2);
+    Core.healHP(heal);
+    Core.save();
+    updateHUD();
+    logEvent(`✓ Short rest: recovered ${heal} HP.`, 'good');
+    document.getElementById('dlgSpeaker').textContent = '◈ Bram Tallow · Innkeeper';
+    typeText('dlgText', '"Rest your feet a spell. No charge for a chair by the fire."');
+    Core.notify(`Recovered ${heal} HP`);
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+
+window.addEventListener('load', () => {
+  const params  = new URLSearchParams(location.search);
+  const locName = params.get('name') || "Wayfarers' Inn";
+
+  document.getElementById('placeName').textContent = locName;
+  document.getElementById('heroName').textContent  = locName;
+
+  Core.markVisited(locName, 'INN');
+  updateHUD();
+  updateInventoryPanel();
+
+  buildShop();
+  buildNPCs();
+  buildRumours();
+  spawnAmbience('#c9a45c', 20);
+
+  typeText('dlgText', `You step inside the ${locName}. Warm firelight pushes back the dark. Bram Tallow, the innkeeper, looks up from behind the counter. "Room or just the fire? Either way — welcome in."`);
+
+  Core.save();
+});
+</script>
+</body>
+</html>
