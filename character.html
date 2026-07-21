@@ -554,9 +554,13 @@ img.sprite-img[data-broken="true"] { display: none !important; }
   }
 
   // ===== ON LOAD =====
-  window.onload = function () {
+  window.onload = async function () {
     const user = localStorage.getItem('dnd_user');
     if (!user) { window.location.href = 'signin.html'; return; }
+
+    // Pull the latest saved character from the server first (in case this is a
+    // different device/browser than where it was last saved), then read as usual.
+    await charUtilsSyncFromServer(user);
 
     const params = new URLSearchParams(window.location.search);
     const isEdit = params.get('edit') === 'true';

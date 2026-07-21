@@ -108,7 +108,7 @@ const CHAR_UTILS_HAIR_FALLBACK = {
   small: { height: '42px',  marginLeft: '8px', bottom: '120px' },
 };
 
-// ── Load a character from localStorage ───────────────────────
+// ── Load a character from localStorage (fast, synchronous cache) ─
 function loadCharacter(username) {
   const raw = localStorage.getItem('dnd_character_' + username);
   if (!raw) return null;
@@ -118,9 +118,40 @@ function loadCharacter(username) {
   return c;
 }
 
-// ── Save a character to localStorage ─────────────────────────
+// ── Save a character to localStorage AND push it to the server ──
+// localStorage write is synchronous so the UI never waits on it.
+// The server push is fire-and-forget; if it fails (offline, server down)
+// the local copy still works, it just won't follow you to another device.
 function saveCharacter(username, charObj) {
   localStorage.setItem('dnd_character_' + username, JSON.stringify(charObj));
+  charUtilsSyncToServer(username, { character: charObj });
+}
+
+// ── Push any combination of character/stats/inventory to the server ──
+function charUtilsSyncToServer(username, payload) {
+  fetch('/api/playerdata/' + encodeURIComponent(username), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => { /* offline or server down — local copy still works */ });
+}
+
+// ── Pull saved data from the server into localStorage ──────────
+// Call this once, early, on page load (before any loadCharacter/loadStats/
+// buildInventory calls) so those synchronous reads see the up-to-date data.
+// Returns a Promise that resolves once localStorage has been updated
+// (or immediately if the server has nothing saved yet).
+async function charUtilsSyncFromServer(username) {
+  try {
+    const res = await fetch('/api/playerdata/' + encodeURIComponent(username));
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.character) localStorage.setItem('dnd_character_' + username, JSON.stringify(data.character));
+    if (data.stats)     localStorage.setItem('dnd_stats_' + username, JSON.stringify(data.stats));
+    if (data.inventory) localStorage.setItem('dnd_inventory_' + username, JSON.stringify(data.inventory));
+  } catch {
+    // offline or server down — fall back to whatever's already in localStorage
+  }
 }
 
 // ── Apply a character's sprites to a set of <img> elements ───

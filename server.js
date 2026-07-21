@@ -72,6 +72,58 @@ app.post('/api/login', async (req, res) => {
     });
 });
 
+// ===== PLAYER DATA (character, stats, inventory) =====
+
+// Load whatever's saved for this user. Returns nulls for fields never saved yet
+// so the frontend can fall back to its own defaults.
+app.get('/api/playerdata/:username', (req, res) => {
+    const { username } = req.params;
+    db.get('SELECT character_json, stats_json, inventory_json FROM player_data WHERE username = ?', [username], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.json({ character: null, stats: null, inventory: null });
+        res.json({
+            character: row.character_json ? JSON.parse(row.character_json) : null,
+            stats:     row.stats_json     ? JSON.parse(row.stats_json)     : null,
+            inventory: row.inventory_json ? JSON.parse(row.inventory_json) : null,
+        });
+    });
+});
+
+// Partial save: only overwrites the fields that were actually sent, so a stats-only
+// save doesn't wipe out a previously saved character/inventory and vice versa.
+app.post('/api/playerdata/:username', (req, res) => {
+    const { username } = req.params;
+    const { character, stats, inventory } = req.body;
+
+    db.get('SELECT * FROM player_data WHERE username = ?', [username], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+
+        const characterJson = character !== undefined ? JSON.stringify(character) : (row ? row.character_json : null);
+        const statsJson     = stats     !== undefined ? JSON.stringify(stats)     : (row ? row.stats_json     : null);
+        const inventoryJson = inventory !== undefined ? JSON.stringify(inventory) : (row ? row.inventory_json : null);
+
+        if (row) {
+            db.run(
+                'UPDATE player_data SET character_json = ?, stats_json = ?, inventory_json = ?, updated_at = CURRENT_TIMESTAMP WHERE username = ?',
+                [characterJson, statsJson, inventoryJson, username],
+                (err) => {
+                    if (err) return res.status(500).json({ error: 'Database error' });
+                    res.json({ message: 'Saved' });
+                }
+            );
+        } else {
+            db.run(
+                'INSERT INTO player_data (username, character_json, stats_json, inventory_json) VALUES (?, ?, ?, ?)',
+                [username, characterJson, statsJson, inventoryJson],
+                (err) => {
+                    if (err) return res.status(500).json({ error: 'Database error' });
+                    res.json({ message: 'Saved' });
+                }
+            );
+        }
+    });
+});
+
 // ===== ACCOUNT RECOVERY =====
 
 // Step 1: look up a user's security question by username

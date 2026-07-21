@@ -38,6 +38,23 @@ db.serialize(() => {
             }
         });
     });
+
+    // Server-side persistence for character appearance, stats, and inventory.
+    // Previously these lived only in each browser's localStorage, so progress
+    // was lost whenever someone switched devices or cleared their browser data.
+    db.run(`
+        CREATE TABLE IF NOT EXISTS player_data (
+            username TEXT PRIMARY KEY,
+            character_json TEXT,
+            stats_json TEXT,
+            inventory_json TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (username) REFERENCES users(username)
+        )
+    `, (err) => {
+        if (err) console.error('Error creating player_data table:', err);
+        else console.log('Player data table ready');
+    });
 });
 
 module.exports = db;

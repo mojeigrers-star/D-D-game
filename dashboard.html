@@ -304,6 +304,7 @@
             const saved = localStorage.getItem('dnd_inventory_' + user);
             const items = saved ? JSON.parse(saved) : new Array(24).fill(null);
             while (items.length < 24) items.push(null);
+            if (!saved) charUtilsSyncToServer(user, { inventory: items });
             const grid = document.getElementById('inventoryGrid');
             grid.innerHTML = '';
             let count = 0;
@@ -341,7 +342,7 @@
             const key   = 'dnd_stats_' + user;
             const saved = localStorage.getItem(key);
             const s = saved ? JSON.parse(saved) : { level:1, xp:0, xpMax:100, str:10, dex:10, con:10, int:10, wis:10, cha:10, gold:0 };
-            if (!saved) localStorage.setItem(key, JSON.stringify(s));
+            if (!saved) { localStorage.setItem(key, JSON.stringify(s)); charUtilsSyncToServer(user, { stats: s }); }
 
             document.getElementById('levelBadge').textContent = 'Level ' + s.level;
             document.getElementById('xpTotal').textContent    = s.xp + ' / ' + s.xpMax + ' XP';
@@ -362,9 +363,14 @@
             document.getElementById('chaBar').style.width = (s.cha / 20 * 100) + '%';
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             const user = localStorage.getItem('dnd_user');
             if (!user) { window.location.href = 'index.html'; return; }
+
+            // Pull latest saved character/stats/inventory from the server first,
+            // in case this is a different device/browser than last time.
+            await charUtilsSyncFromServer(user);
+
             document.getElementById('charName').textContent = user;
             showModeBadge();
             loadCharacterSprite();   // ← now uses character-utils.js
