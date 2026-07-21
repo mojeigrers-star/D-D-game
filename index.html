@@ -145,7 +145,8 @@
                 messageDiv.textContent = data.message;
                 localStorage.setItem('dnd_user', username);
                 setTimeout(() => {
-                window.location.href = 'mode-select.html';  // always
+                    const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+                    window.location.href = redirectTo ? decodeURIComponent(redirectTo) : 'mode-select.html';
                 }, 500);
                 } else {
                     messageDiv.textContent = data.error;

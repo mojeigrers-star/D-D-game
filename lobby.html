@@ -620,7 +620,12 @@ let knownPlayers = [];
 
 const activeRequests = [];
 
-if (!username) { window.location.href = 'index.html'; }
+if (!username) {
+    // Preserve where the player was trying to go (e.g. a join invite link) so we can
+    // send them back here automatically after they log in.
+    const returnUrl = window.location.pathname + window.location.search;
+    window.location.href = 'index.html?redirect=' + encodeURIComponent(returnUrl);
+}
 
 const rejoinCode = params.get('rejoin');
 const joinCode   = params.get('join');
