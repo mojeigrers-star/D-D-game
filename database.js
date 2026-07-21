@@ -24,6 +24,19 @@ db.serialize(() => {
         } else {
             console.log('Users table ready');
         }
+
+        // Migration: add security question/answer columns for existing databases.
+        // SQLite has no "ADD COLUMN IF NOT EXISTS", so we check pragma first.
+        db.all(`PRAGMA table_info(users)`, (err, columns) => {
+            if (err) return console.error('Error reading table info:', err);
+            const names = columns.map(c => c.name);
+            if (!names.includes('security_question')) {
+                db.run(`ALTER TABLE users ADD COLUMN security_question TEXT`);
+            }
+            if (!names.includes('security_answer_hash')) {
+                db.run(`ALTER TABLE users ADD COLUMN security_answer_hash TEXT`);
+            }
+        });
     });
 });
 

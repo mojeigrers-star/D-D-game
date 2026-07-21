@@ -33,6 +33,20 @@
                     <label class="dnd-label" for="password">Secret Phrase</label>
                     <input class="dnd-input" type="password" id="password" placeholder="Enter your secret..." required>
                 </div>
+                <div class="dnd-form-group" id="securityGroup" style="display:none;">
+                    <label class="dnd-label" for="securityQuestion">Guardian's Riddle</label>
+                    <select class="dnd-input" id="securityQuestion">
+                        <option value="What was your first pet's name?">What was your first pet's name?</option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What was the name of your first school?">What was the name of your first school?</option>
+                        <option value="What is your favorite fictional character?">What is your favorite fictional character?</option>
+                    </select>
+                </div>
+                <div class="dnd-form-group" id="securityAnswerGroup" style="display:none;">
+                    <label class="dnd-label" for="securityAnswer">Your Answer</label>
+                    <input class="dnd-input" type="text" id="securityAnswer" placeholder="Answer for account recovery...">
+                </div>
                 <button type="submit" class="dnd-btn" id="submitBtn">Begin Quest</button>
             </form>
 
@@ -40,7 +54,7 @@
 
             <div class="dnd-links">
                 <a href="#" id="toggleLink">New Adventurer? Create Character</a>
-                <a href="#">Forgot Your Spell? Recover Account</a>
+                <a href="recover.html">Forgot Your Spell? Recover Account</a>
             </div>
 
             <p class="dnd-footer">&#9830; May the dice be ever in your favor &#9830;</p>
@@ -69,6 +83,9 @@
         const submitBtn    = document.getElementById('submitBtn');
         const authForm     = document.getElementById('authForm');
         const messageDiv   = document.getElementById('message');
+        const securityGroup       = document.getElementById('securityGroup');
+        const securityAnswerGroup = document.getElementById('securityAnswerGroup');
+        const securityAnswerInput = document.getElementById('securityAnswer');
 
         toggleLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -79,12 +96,18 @@
                 formIcon.innerHTML       = '&#9876;';
                 submitBtn.textContent    = 'Begin Quest';
                 toggleLink.textContent   = 'New Adventurer? Create Character';
+                securityGroup.style.display       = 'none';
+                securityAnswerGroup.style.display = 'none';
+                securityAnswerInput.required       = false;
             } else {
                 formTitle.textContent    = 'Join the Realm';
                 formSubtitle.textContent = 'Begin Your Legend';
                 formIcon.innerHTML       = '&#9878;';
                 submitBtn.textContent    = 'Create Character';
                 toggleLink.textContent   = 'Already an Adventurer? Sign In';
+                securityGroup.style.display       = 'block';
+                securityAnswerGroup.style.display = 'block';
+                securityAnswerInput.required       = true;
             }
             messageDiv.style.display = 'none';
         });
@@ -99,12 +122,17 @@
             submitBtn.disabled    = true;
 
             const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            const payload = { username, password };
+            if (!isLoginMode) {
+                payload.securityQuestion = document.getElementById('securityQuestion').value;
+                payload.securityAnswer   = securityAnswerInput.value.trim();
+            }
 
             try {
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify(payload)
                 });
                 const data = await response.json();
 

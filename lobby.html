@@ -517,6 +517,7 @@
                     <div class="room-code-value" id="displayCode">????</div>
                     <div class="room-code-hint">Share this with your companions</div>
                     <button class="copy-btn" onclick="copyCode()">&#128203; Copy Code</button>
+                    <button class="copy-btn" style="margin-left:8px;" onclick="copyInviteLink()">&#128279; Copy Invite Link</button>
                 </div>
 
                 <div class="status-bar">
@@ -622,6 +623,7 @@ const activeRequests = [];
 if (!username) { window.location.href = 'index.html'; }
 
 const rejoinCode = params.get('rejoin');
+const joinCode   = params.get('join');
 
 if (action === 'host') {
     document.getElementById('joinEntry').style.display = 'none';
@@ -641,6 +643,9 @@ if (action === 'host') {
         showReconnectingOverlay(rejoinCode);
         // Auto-connect after a brief tick so the overlay renders first
         setTimeout(doJoin, 200);
+    } else if (joinCode) {
+        // ===== INVITE LINK: prefill the code, let the player confirm by clicking Enter the Realm =====
+        document.getElementById('joinCodeInput').value = joinCode.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4);
     }
 }
 
@@ -823,6 +828,12 @@ function sendChat() {
 function copyCode() {
     if (!myRoom) return;
     navigator.clipboard.writeText(myRoom.code).then(() => showNotif('Room code copied!'));
+}
+
+function copyInviteLink() {
+    if (!myRoom) return;
+    const link = `${window.location.origin}${window.location.pathname}?join=${myRoom.code}`;
+    navigator.clipboard.writeText(link).then(() => showNotif('Invite link copied!'));
 }
 
 function leaveRoom() {

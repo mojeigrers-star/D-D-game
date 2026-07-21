@@ -21,17 +21,21 @@ app.use(express.static(__dirname));
 // ===== AUTH ROUTES =====
 
 app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, securityQuestion, securityAnswer } = req.body;
     if (!username || !password)
         return res.status(400).json({ error: 'Username and password required' });
     if (password.length < 6)
         return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (!securityQuestion || !securityAnswer)
+        return res.status(400).json({ error: 'Security question and answer required' });
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        // Normalize answer (trim + lowercase) before hashing so recovery isn't case/whitespace sensitive.
+        const hashedAnswer = await bcrypt.hash(securityAnswer.trim().toLowerCase(), 10);
         db.run(
-            'INSERT INTO users (username, password_hash) VALUES (?, ?)',
-            [username, hashedPassword],
+            'INSERT INTO users (username, password_hash, security_question, security_answer_hash) VALUES (?, ?, ?, ?)',
+            [username, hashedPassword, securityQuestion, hashedAnswer],
             function (err) {
                 if (err) {
                     if (err.message.includes('UNIQUE'))
@@ -62,6 +66,53 @@ app.post('/api/login', async (req, res) => {
             } else {
                 res.status(401).json({ error: 'Invalid username or password' });
             }
+        } catch {
+            res.status(500).json({ error: 'Server error' });
+        }
+    });
+});
+
+// ===== ACCOUNT RECOVERY =====
+
+// Step 1: look up a user's security question by username
+app.post('/api/recover/question', (req, res) => {
+    const { username } = req.body;
+    if (!username)
+        return res.status(400).json({ error: 'Username required' });
+
+    db.get('SELECT security_question FROM users WHERE username = ?', [username], (err, user) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        // Same generic error whether the user doesn't exist or has no question set,
+        // so we don't reveal which usernames exist.
+        if (!user || !user.security_question)
+            return res.status(404).json({ error: 'No recovery info found for that name' });
+        res.json({ securityQuestion: user.security_question });
+    });
+});
+
+// Step 2: verify the answer and set a new password
+app.post('/api/recover/reset', async (req, res) => {
+    const { username, securityAnswer, newPassword } = req.body;
+    if (!username || !securityAnswer || !newPassword)
+        return res.status(400).json({ error: 'Username, answer, and new password required' });
+    if (newPassword.length < 6)
+        return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+    db.get('SELECT security_answer_hash FROM users WHERE username = ?', [username], async (err, user) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!user || !user.security_answer_hash)
+            return res.status(404).json({ error: 'No recovery info found for that name' });
+
+        try {
+            const match = await bcrypt.compare(securityAnswer.trim().toLowerCase(), user.security_answer_hash);
+            if (!match)
+                return res.status(401).json({ error: 'That answer is not correct' });
+
+            const newHash = await bcrypt.hash(newPassword, 10);
+            db.run('UPDATE users SET password_hash = ? WHERE username = ?', [newHash, username], (err) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                res.json({ message: 'Password reset successfully' });
+            });
         } catch {
             res.status(500).json({ error: 'Server error' });
         }
